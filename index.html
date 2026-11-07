@@ -1,806 +1,767 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="theme-color" content="#07111d">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>번영의 나무 AI 분석기</title>
 <style>
 :root{
- --bg:#07111d;--panel:#101e30;--panel2:#17283d;--line:#30445c;
- --gold:#f2d47b;--muted:#aab9ca;--blue:#287cff;--red:#ed4054;
- --green:#159e70;--white:#f4f7fc
+  --bg:#090d18;--panel:#141c2d;--panel2:#1b2740;
+  --line:#2c3a55;--text:#f4f7ff;--muted:#9aa9c3;
+  --blue:#2787ff;--red:#f04455;--green:#18c78a;--gold:#ffd166;
 }
 *{box-sizing:border-box}
-html{font-size:18px}
 body{
- margin:0;background:var(--bg);color:var(--white);
- font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif;
- padding:env(safe-area-inset-top) 10px calc(25px + env(safe-area-inset-bottom));
- max-width:950px;margin:auto
+  margin:0;background:var(--bg);color:var(--text);
+  font-family:Arial,"Noto Sans KR",sans-serif;
+  padding:12px;max-width:900px;margin:auto;
 }
-button,input,select{font:inherit}
-button{cursor:pointer;border:0}
-.hero{text-align:center;padding:18px 4px}
-.eyebrow{font-size:12px;color:var(--gold);font-weight:900;letter-spacing:2px}
-.hero h1{font-size:clamp(25px,6vw,36px);color:var(--gold);margin:8px 0}
-.hero p{font-size:13px;color:var(--muted);margin:0}
-.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;position:sticky;top:0;z-index:5;background:var(--bg);padding:5px 0 10px}
-.tab{padding:14px 3px;border-radius:10px;background:#1b2b40;color:#dce5f1;font-weight:900;font-size:14px}
-.tab.active{background:var(--gold);color:#172033}
-.panel{background:linear-gradient(145deg,#122239,#0e1a2b);border:1px solid var(--line);border-radius:15px;padding:14px;margin-bottom:12px}
-.panel h2{font-size:18px;color:var(--gold);margin:0 0 12px}
-.small{font-size:13px;color:var(--muted);line-height:1.6}
-.entry{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
-.entry button{padding:20px 3px;border-radius:13px;color:white;font-size:clamp(17px,4vw,22px);font-weight:950}
-.player{background:var(--blue)}
-.banker{background:var(--red)}
-.tie{background:var(--green)}
-.actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
-.actions button,.secondary{flex:1;min-width:100px;padding:13px 7px;border-radius:10px;background:#40536b;color:white;font-size:14px;font-weight:850}
-.danger{background:#713d46!important}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
-.stat{background:var(--panel2);border-radius:11px;padding:12px 4px;text-align:center;color:#d6e0eb;font-size:13px}
-.stat strong{display:block;font-size:25px;margin-top:4px}
-.blueText{color:#78aaff}.redText{color:#ff8291}.greenText{color:#54d6a5}
-.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.pick-card{background:var(--panel2);border:1px solid var(--line);border-radius:13px;padding:14px;text-align:center}
-.pick-card .label{font-size:13px;color:var(--muted)}
-.pick-card .pick{font-size:38px;font-weight:1000;margin:6px 0}
-.pick-card .sub{font-size:13px;color:var(--gold)}
-.notice{background:#1a2b40;border-left:4px solid var(--gold);padding:12px;border-radius:7px;color:#d2deec;font-size:13px;line-height:1.6}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.board-scroll{overflow:auto;max-height:370px;padding-bottom:5px}
-.board{display:grid;grid-template-rows:repeat(6,43px);grid-auto-columns:43px;grid-auto-flow:column;gap:4px;width:max-content}
-.cell{border:1px solid #34485e;border-radius:8px;display:grid;place-items:center;color:#65788c;font-size:20px;font-weight:950;background:#101e30}
-.cell.P{background:var(--blue);color:white;border-color:#6aa4ff}
-.cell.B{background:var(--red);color:white;border-color:#ff8490}
-.cell.T{background:var(--green);color:white;border-color:#60ddb0}
-.modelrow{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:11px 2px;border-bottom:1px solid #30445c;font-size:13px}
-.modelrow b{white-space:nowrap;color:var(--gold)}
-.tag{border-radius:20px;padding:5px 9px;background:#30445c;color:var(--gold);font-size:12px}
-.field{display:flex;flex-direction:column;gap:5px}
-.field label{font-size:13px;color:var(--muted)}
-input,select{width:100%;min-width:0;background:#091525;color:white;border:1px solid #49617c;border-radius:9px;padding:12px}
-.wide{width:100%;padding:14px;border-radius:11px;background:var(--gold);color:#172033;font-weight:950}
-.history{max-height:260px;overflow:auto}
-.historyrow{display:flex;justify-content:space-between;gap:8px;padding:10px 0;border-bottom:1px solid #30445c;font-size:13px}
-.scenario{display:flex;justify-content:space-between;padding:9px 2px;border-bottom:1px solid #30445c;font-size:13px}
-.hide{display:none!important}
-.foot{text-align:center;color:#8192a6;font-size:12px;padding:12px}
+h1{font-size:25px;margin:8px 0 4px;text-align:center}
+.sub{text-align:center;color:var(--muted);font-size:13px;margin-bottom:14px}
+.panel{
+  background:var(--panel);border:1px solid var(--line);
+  border-radius:15px;padding:14px;margin-bottom:12px;
+}
+.section-title{font-size:17px;font-weight:900;margin-bottom:12px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+button{
+  border:0;border-radius:11px;padding:13px 15px;
+  font-size:17px;font-weight:900;color:white;cursor:pointer;
+}
+button:active{transform:scale(.97)}
+.pbtn{background:var(--blue);flex:1}
+.bbtn{background:var(--red);flex:1}
+.tbtn{background:#159b70;flex:1}
+.gray{background:#34435d}
+.gold{background:#9a711c}
+.smallbtn{font-size:14px;padding:10px 12px}
+.pickbox{
+  border:2px solid var(--line);border-radius:14px;
+  padding:15px;text-align:center;background:#101827;
+}
+.pick-label{font-size:13px;color:var(--muted)}
+.pick{
+  font-size:42px;font-weight:1000;margin:5px 0;
+}
+.pick.P{color:#58a5ff}.pick.B{color:#ff6675}
+.big{font-size:26px;font-weight:900}
+.muted{color:var(--muted)}
+.importance{font-size:30px;color:var(--gold);font-weight:1000}
+.statgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{
+  background:var(--panel2);padding:12px 5px;
+  border-radius:10px;text-align:center;
+}
+.stat strong{display:block;font-size:23px;margin-top:5px}
+input[type=number]{
+  width:100%;background:#0b1322;border:1px solid var(--line);
+  color:white;border-radius:9px;padding:12px;font-size:18px;
+}
+input[type=range]{width:100%;accent-color:var(--gold)}
+.board-wrap{overflow-x:auto;padding-bottom:5px}
+.board{
+  display:grid;grid-template-columns:repeat(80,minmax(35px,1fr));
+  gap:3px;min-width:3050px;
+}
+.cell{
+  height:43px;border:1px solid #34415a;border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  position:relative;background:#0d1524;font-size:17px;font-weight:900;
+}
+.cell.P{color:#58a5ff;background:#10294b}
+.cell.B{color:#ff6675;background:#3a1723}
+.cell.T{color:#39dca7;background:#103b31}
+.cell .mark{
+  position:absolute;right:1px;top:-5px;font-size:15px;
+  font-weight:1000;text-shadow:0 1px 3px black;
+}
+.mark.hit{color:#22e6a0}
+.mark.miss{color:#ff4058}
+.mark.none{color:#8491a7}
+.cellno{
+  position:absolute;bottom:1px;right:3px;
+  color:#8290a7;font-size:8px;font-weight:400;
+}
+.grid80{
+  display:grid;grid-template-columns:repeat(10,1fr);gap:5px;
+}
+.mini{
+  background:#0e1728;border:1px solid var(--line);
+  border-radius:7px;padding:7px 2px;text-align:center;
+  font-size:12px;color:var(--muted);
+}
+.mini strong{display:block;font-size:15px;color:white}
+.details{font-size:13px;color:var(--muted);line-height:1.6}
+.engine-list{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;
+}
+.engine{
+  background:#0d1626;border:1px solid #263650;
+  border-radius:8px;padding:8px;font-size:12px;
+}
+.engine b{display:block;font-size:13px;margin-bottom:3px}
+.engine .pp{color:#58a5ff}.engine .bb{color:#ff6675}
+.good{color:#20dca1}.bad{color:#ff6575}
+.notice{font-size:12px;color:#9aa9c3;line-height:1.55}
 @media(min-width:650px){
- body{padding-left:22px;padding-right:22px}
- .board{grid-template-rows:repeat(6,48px);grid-auto-columns:48px}
- .cell{font-size:22px}
+  body{padding:18px}
+  .engine-list{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
 </style>
 </head>
 <body>
 
-<header class="hero">
- <div class="eyebrow">✦ PROSPERITY TREE · AI ENGINE ✦</div>
- <h1>번영의 나무 AI 분석기</h1>
- <p>확률 추론 · 적응형 모델 · 순차 검증 · 경로 탐색</p>
-</header>
+<h1>🌳 번영의 나무 AI 분석기</h1>
+<div class="sub">실시간 확률 분석 · 단일픽 · 자동 적중 검증</div>
 
-<nav class="tabs">
- <button class="tab active" data-tab="live">실시간 분석</button>
- <button class="tab" data-tab="models">엔진 분석</button>
- <button class="tab" data-tab="records">기록 관리</button>
-</nav>
+<div class="panel">
+  <div class="section-title">현재 단일픽</div>
+  <div class="pickbox">
+    <div class="pick-label">다음 판 예상픽</div>
+    <div id="pick" class="pick">분석 대기</div>
+    <div id="pickText" class="muted">결과를 입력하면 분석합니다</div>
+    <div style="margin-top:12px">
+      <span class="pick-label">픽 중요도</span>
+      <div id="importance" class="importance">--</div>
+      <div id="confidenceText" class="muted">데이터 대기 중</div>
+    </div>
+  </div>
+  <div class="statgrid" style="margin-top:10px">
+    <div class="stat"><span class="muted">P 추정</span><strong id="probP">--</strong></div>
+    <div class="stat"><span class="muted">B 추정</span><strong id="probB">--</strong></div>
+    <div class="stat"><span class="muted">분석 데이터</span><strong id="dataN">0</strong></div>
+  </div>
+  <div class="notice" style="margin-top:10px">
+    P/B 추정치는 모델의 통계적 추정값입니다. 중요도는 실제 당첨 확률과 동일하지 않습니다.
+  </div>
+</div>
 
-<main>
-<section id="live" class="view">
+<div class="panel">
+  <div class="section-title">배팅 금액 조절</div>
+  <div class="row">
+    <div style="flex:1">
+      <label class="muted">기준 금액 (원)</label>
+      <input id="baseMoney" type="number" min="0" step="1000" value="10000">
+    </div>
+    <div style="flex:1">
+      <label class="muted">최대 금액 (원)</label>
+      <input id="maxMoney" type="number" min="0" step="1000" value="30000">
+    </div>
+  </div>
+  <div style="margin-top:12px">
+    <div class="row" style="justify-content:space-between">
+      <span class="muted">중요도 적용 비율</span>
+      <strong id="moneyRate">0</strong>
+    </div>
+    <input id="moneySlider" type="range" min="0" max="100" value="100">
+  </div>
+  <div class="pickbox" style="margin-top:10px">
+    <div class="pick-label">계산된 참고 금액</div>
+    <div id="suggestMoney" class="big">0원</div>
+    <div class="notice">금액은 기준 금액 × 중요도 × 적용 비율로 산출하며 최대 금액을 넘지 않습니다.</div>
+  </div>
+</div>
 
- <div class="panel">
-  <h2>① 결과 입력</h2>
-  <div class="entry">
-   <button class="player" onclick="addResult('P')">🔵 PLAYER</button>
-   <button class="banker" onclick="addResult('B')">🔴 BANKER</button>
-   <button class="tie" onclick="addResult('T')">🟢 TIE</button>
+<div class="panel">
+  <div class="section-title">결과 입력</div>
+  <div class="row">
+    <button class="pbtn" onclick="addResult('P')">PLAYER P</button>
+    <button class="bbtn" onclick="addResult('B')">BANKER B</button>
+    <button class="tbtn" onclick="addResult('T')">TIE T</button>
   </div>
-  <div class="actions">
-   <button onclick="undoResult()">↶ 되돌리기</button>
-   <button class="danger" onclick="newShoe()">새 슈 시작</button>
+  <div class="row" style="margin-top:9px">
+    <button class="gray smallbtn" onclick="undo()">↶ 실행 취소</button>
+    <button class="gray smallbtn" onclick="newShoe()">새 슈</button>
+    <button class="gold smallbtn" onclick="exportData()">기록 내보내기</button>
   </div>
-  <div class="small" style="margin-top:9px">
-   타이는 기록하지만 P/B 통계와 전이 분석에서는 제외합니다.
-   입력 즉시 모든 모델과 다음 픽을 다시 계산합니다.
-  </div>
- </div>
+</div>
 
- <div class="panel">
-  <h2>② 다음 판 최종 예상픽</h2>
-  <div class="pick-card">
-   <div class="label">통합 AI 예상</div>
-   <div class="pick" id="mainPick">대기</div>
-   <div class="sub" id="mainSub">결과 입력 대기</div>
+<div class="panel">
+  <div class="section-title">예상픽 검증</div>
+  <div class="statgrid">
+    <div class="stat"><span class="muted">적중</span><strong id="hitN" class="good">0</strong></div>
+    <div class="stat"><span class="muted">미적중</span><strong id="missN" class="bad">0</strong></div>
+    <div class="stat"><span class="muted">판정률</span><strong id="hitRate">--</strong></div>
   </div>
-  <div class="notice" id="decisionReason" style="margin-top:10px">
-   결과를 입력하면 분석을 시작합니다.
+  <div class="notice" style="margin-top:9px">
+    각 결과 입력 전에 저장된 예상픽과 비교합니다. 타이는 P/B 판정에서 제외합니다.
+    예상픽이 없었던 결과는 판정하지 않습니다.
   </div>
-  <div class="stats" style="margin-top:10px">
-   <div class="stat">모델 합의<strong id="agree">-</strong></div>
-   <div class="stat">분석 표본<strong id="sampleN">0</strong></div>
-   <div class="stat">검증 예측<strong id="wfN">0</strong></div>
-  </div>
- </div>
+</div>
 
- <div class="panel">
-  <h2>③ 플레이어 · 뱅커 페어</h2>
-  <div class="result-grid">
-   <div class="pick-card">
-    <div class="label">🔵 PLAYER PAIR</div>
-    <div class="pick blueText" id="pairP">대기</div>
-    <div class="sub">첫 두 장 동일 랭크</div>
-   </div>
-   <div class="pick-card">
-    <div class="label">🔴 BANKER PAIR</div>
-    <div class="pick redText" id="pairB">대기</div>
-    <div class="sub">첫 두 장 동일 랭크</div>
-   </div>
+<div class="panel">
+  <div class="section-title">80판 입력판 · 틀린 칸 X 표시</div>
+  <div class="board-wrap">
+    <div id="board" class="board"></div>
   </div>
-  <div class="small" id="pairNote" style="margin-top:10px">
-   표준 8덱 카드 구성 기준 시뮬레이션
+  <div class="row" style="margin-top:10px">
+    <span class="notice">🔵 P 플레이어　🔴 B 뱅커　🟢 T 타이　🟢 O 적중　🔴 X 미적중</span>
   </div>
- </div>
+</div>
 
- <div class="panel">
-  <h2>④ 모델별 계산 기여도</h2>
-  <div id="modelRows" class="small">분석 대기</div>
- </div>
+<div class="panel">
+  <div class="section-title">통계 모델 분석</div>
+  <div class="details" id="modelSummary">결과를 입력하면 각 모델이 분석합니다.</div>
+  <div class="engine-list" id="engineList" style="margin-top:10px"></div>
+</div>
 
- <div class="panel">
-  <h2>⑤ 미래 6판 경로 탐색</h2>
-  <div class="small">
-   현재 통합 추정값을 사용한 64개 경로 비교입니다.
-   실제 미래 결과를 보장하는 예측은 아닙니다.
-  </div>
-  <div id="scenarioList"></div>
- </div>
-
- <div class="panel">
-  <h2>⑥ 6행 × 80열 결과판</h2>
-  <div class="stats" style="margin-bottom:10px">
-   <div class="stat">🔵 PLAYER<strong id="countP" class="blueText">0</strong></div>
-   <div class="stat">🔴 BANKER<strong id="countB" class="redText">0</strong></div>
-   <div class="stat">🟢 TIE<strong id="countT" class="greenText">0</strong></div>
-  </div>
-  <div class="small" id="shoeCount">입력 0 / 80</div>
-  <div class="board-scroll">
-   <div class="board" id="board"></div>
-  </div>
- </div>
-
- <div class="panel">
-  <h2>⑦ 실제 카드 구성 입력 (선택)</h2>
-  <div class="grid2">
-   <div class="field">
-    <label>카드 랭크</label>
-    <select id="dealRank">
-     <option>A</option><option>2</option><option>3</option>
-     <option>4</option><option>5</option><option>6</option>
-     <option>7</option><option>8</option><option>9</option>
-     <option>10</option><option>J</option><option>Q</option><option>K</option>
-    </select>
-   </div>
-   <div class="field">
-    <label>카드 위치</label>
-    <select id="dealSide">
-     <option value="P">PLAYER</option>
-     <option value="B">BANKER</option>
-     <option value="?">미지정</option>
-    </select>
-   </div>
-  </div>
-  <div class="actions">
-   <button onclick="addDealtCard()">카드 추가</button>
-   <button onclick="undoDealtCard()">마지막 카드 삭제</button>
-  </div>
-  <div class="small" id="dealtList" style="margin-top:9px">실제 카드 입력 없음</div>
- </div>
-
-</section>
-
-<section id="models" class="view hide">
- <div class="panel">
-  <h2>활성 분석 엔진</h2>
-  <div class="notice">
-   각 엔진은 별도의 계산값을 산출합니다.
-   검증 표본이 충분하면 과거 순차 예측 성능으로 가중치를 최적화합니다.
-   표본이 부족하면 동일 가중치로 시작합니다.
-  </div>
-  <div id="engineDetail"></div>
- </div>
-
- <div class="panel">
-  <h2>워크포워드 검증</h2>
-  <div class="stats">
-   <div class="stat">검증 수<strong id="vN">0</strong></div>
-   <div class="stat">적중 수<strong id="vHit">-</strong></div>
-   <div class="stat">Brier<strong id="vBrier">-</strong></div>
-  </div>
-  <div class="small" id="vNote" style="margin-top:10px">
-   이전 결과만으로 다음 결과를 예측한 뒤 실제 결과와 비교합니다.
-  </div>
- </div>
-
- <div class="panel">
-  <h2>수학적 진단</h2>
-  <div id="mathDetail" class="small"></div>
- </div>
-</section>
-
-<section id="records" class="view hide">
- <div class="panel">
-  <h2>슈 기록 및 백업</h2>
-  <div class="actions">
-   <button onclick="saveCurrentShoe()">현재 슈 저장</button>
-   <button onclick="exportData()">JSON 백업</button>
-  </div>
-  <label class="wide" style="display:block;text-align:center;margin-top:10px">
-   백업 불러오기
-   <input type="file" id="importFile" accept="application/json" style="display:none">
-  </label>
-  <div class="history" id="history" style="margin-top:12px"></div>
- </div>
- <div class="panel">
-  <h2>전체 데이터 초기화</h2>
-  <button class="wide danger" onclick="wipeAll()">전체 데이터 삭제</button>
- </div>
-</section>
-</main>
-
-<footer class="foot">
- 번영의 나무 · 통계 분석 참고 도구 · 적중 및 수익 보장 기능 아님
-</footer>
+<div class="panel">
+  <div class="section-title">최근 입력 결과</div>
+  <div id="recent" class="details">아직 입력된 결과가 없습니다.</div>
+</div>
 
 <script>
-'use strict';
+"use strict";
 
-const KEY='prosperity_tree_engine_v2';
-const BASE_P=.4932;
-const BASE_B=.5068;
-const TIE=.0952;
-const MODEL_COUNT=9;
+const KEY="prosperity_tree_stat_engine_v2";
+const ROWS=6,COLS=80;
 
-let state={
- shoe:[],
- dealt:[],
- history:[]
-};
+let state=loadState();
+let latest=null;
 
-const $=id=>document.getElementById(id);
-const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
-const mean=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:0;
-const pb=()=>state.shoe.filter(x=>x==='P'||x==='B');
-
-function persist(){
- try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}
+function loadState(){
+  try{
+    const x=JSON.parse(localStorage.getItem(KEY));
+    if(x && Array.isArray(x.records)) return x;
+  }catch(e){}
+  return {records:[],version:2};
 }
-function load(){
- try{
-  const x=JSON.parse(localStorage.getItem(KEY)||'null');
-  if(x&&Array.isArray(x.shoe))state={...state,...x};
- }catch(e){}
+function save(){
+  localStorage.setItem(KEY,JSON.stringify(state));
 }
-function logit(p){
- p=clamp(p,.000001,.999999);
- return Math.log(p/(1-p));
+function pb(){
+  return state.records.filter(x=>x.result==="P"||x.result==="B");
 }
-function sigmoid(x){
- return 1/(1+Math.exp(-clamp(x,-20,20)));
+function clamp(x,a,b){return Math.max(a,Math.min(b,x))}
+function sigmoid(x){return 1/(1+Math.exp(-clamp(x,-20,20)))}
+function logit(p){p=clamp(p,.001,.999);return Math.log(p/(1-p))}
+function mean(a){return a.length?a.reduce((s,x)=>s+x,0)/a.length:.5}
+function variance(a){
+  if(a.length<2)return 0;
+  const m=mean(a);
+  return a.reduce((s,x)=>s+(x-m)**2,0)/(a.length-1);
 }
+function sd(a){return Math.sqrt(variance(a))}
 function entropy(p){
- p=clamp(p,.000001,.999999);
- return -(p*Math.log2(p)+(1-p)*Math.log2(1-p));
+  p=clamp(p,.0001,.9999);
+  return -(p*Math.log2(p)+(1-p)*Math.log2(1-p));
 }
-function kl(p,q){
- p=clamp(p,.000001,.999999);
- q=clamp(q,.000001,.999999);
- return p*Math.log(p/q)+(1-p)*Math.log((1-p)/(1-q));
-}
-function jsd(p,q){
- return .5*kl(p,(p+q)/2)+.5*kl(q,(p+q)/2);
-}
-function smoothRate(seq,a=1,b=1){
- return (seq.filter(x=>x==='P').length+a)/(seq.length+a+b);
+function toNum(x,d=0){let n=Number(x);return Number.isFinite(n)?n:d}
+function fmtMoney(n){return Math.round(n).toLocaleString("ko-KR")+"원"}
+
+function addModel(name,p,weight,valid=true,reason=""){
+  p=clamp(p,.02,.98);
+  return {name,p,weight,valid,reason};
 }
 
-/* 1. 베이지안 */
-function modelPredictions(seq){
- const n=seq.length;
- const p0=BASE_P;
+/* 모델은 각각 별도 계산을 수행합니다.
+   데이터가 부족한 모델은 유효 투표에서 제외합니다. */
+function analyzeModels(){
+  const a=pb().map(x=>x.result==="P"?1:0);
+  const n=a.length;
+  const models=[];
+  if(n===0)return models;
 
- const recent=seq.slice(-12);
- const short=seq.slice(-6);
+  const p0=.4932;
 
- const priorA=p0*30;
- const priorB=(1-p0)*30;
- const bayes=(seq.filter(x=>x==='P').length+priorA)/(n+priorA+priorB);
-
- /* 2. 마르코프 1차 */
- let markov=p0;
- if(n>=2){
-  const last=seq[n-1];
-  const arr=[];
-  for(let i=1;i<n;i++){
-   if(seq[i-1]===last)arr.push(seq[i]);
+  // 1. 전체 베이지안 사전분포
+  {
+    const p=(a.reduce((s,x)=>s+x,0)+20*p0)/(n+20);
+    models.push(addModel("베타-이항 베이지안",p,1.2));
   }
-  markov=(arr.filter(x=>x==='P').length+3*p0)/(arr.length+3);
- }
 
- /* 3. 마르코프 2차 */
- let high=markov;
- if(n>=3){
-  const key=seq.slice(-2).join('');
-  const arr=[];
-  for(let i=2;i<n;i++){
-   if(seq.slice(i-2,i).join('')===key)arr.push(seq[i]);
+  // 2. 최근 관측 가중 베이지안
+  {
+    let s=20*p0,w=20;
+    a.forEach((x,i)=>{
+      const k=Math.pow(.94,n-1-i);
+      s+=x*k;w+=k;
+    });
+    models.push(addModel("지수 가중 베이지안",s/w,1.2));
   }
-  const raw=(arr.filter(x=>x==='P').length+3*markov)/(arr.length+3);
-  high=(arr.length/(arr.length+10))*raw+(10/(arr.length+10))*markov;
- }
 
- /* 4. EWMA */
- let num=0,den=0;
- seq.forEach((x,i)=>{
-  const w=Math.pow(.86,n-1-i);
-  num+=w*(x==='P'?1:0);
-  den+=w;
- });
- const ewma=(num+4*p0)/(den+4);
-
- /* 5. 2상태 HMM */
- let states=[.5,.5];
- const emission=[.57,.43];
- const trans=[[.88,.12],[.12,.88]];
- for(const y of seq){
-  const obs=y==='P';
-  const next=[0,0];
-  for(let j=0;j<2;j++){
-   for(let i=0;i<2;i++){
-    next[j]+=states[i]*trans[i][j]*(obs?emission[j]:1-emission[j]);
-   }
+  // 3. 최근 5개
+  {
+    const z=a.slice(-5);
+    models.push(addModel("최근 5회 빈도",(z.reduce((s,x)=>s+x,0)+3*p0)/(z.length+3),.8,z.length>=3));
   }
-  const z=next[0]+next[1]||1;
-  states=next.map(v=>v/z);
- }
- const hmm=states[0]*emission[0]+states[1]*emission[1];
 
- /* 6. 칼만형 잠재 상태 추정 */
- let x=logit(p0),v=.18;
- for(const y of seq){
-  v+=.035;
-  const obs=logit(y==='P'?.82:.18);
-  const R=.85;
-  const K=v/(v+R);
-  x+=K*(obs-x);
-  v=(1-K)*v;
- }
- const kalman=sigmoid(x);
-
- /* 7. CUSUM 변화 감지 */
- let pos=0,neg=0;
- for(const y of seq){
-  const d=(y==='P'?1:0)-p0;
-  pos=Math.max(0,pos+d-.12);
-  neg=Math.max(0,neg-d-.12);
- }
- const cusum=clamp(p0+(pos-neg)*.012,.35,.65);
-
- /* 8. 블록 부트스트랩형 진단 */
- let boot=p0;
- if(n>=4){
-  const vals=[];
-  for(let i=0;i<=n-4;i++){
-   const block=seq.slice(i,i+4);
-   vals.push((block.filter(x=>x==='P').length+.5)/5);
+  // 4. 최근 10개
+  {
+    const z=a.slice(-10);
+    models.push(addModel("최근 10회 빈도",(z.reduce((s,x)=>s+x,0)+5*p0)/(z.length+5),.9,z.length>=5));
   }
-  boot=.7*mean(vals)+.3*p0;
- }
 
- /* 9. 엔트로피 기반 수축 */
- const recentRate=smoothRate(recent);
- const ent=entropy(recentRate);
- const entropyModel=p0+(recentRate-p0)*clamp(1-ent*.55,.25,.65);
+  // 5. 최근 20개
+  {
+    const z=a.slice(-20);
+    models.push(addModel("최근 20회 빈도",(z.reduce((s,x)=>s+x,0)+8*p0)/(z.length+8),.9,z.length>=8));
+  }
 
- return [
-  {id:'bayes',name:'베이지안 베타-이항',p:bayes,desc:'사후확률 갱신'},
-  {id:'markov',name:'마르코프 1차',p:markov,desc:'직전 결과 조건부 전이'},
-  {id:'high',name:'마르코프 2차',p:high,desc:'최근 두 결과 조건부 전이'},
-  {id:'ewma',name:'EWMA',p:ewma,desc:'최근 관측 가중 추정'},
-  {id:'hmm',name:'2상태 HMM',p:hmm,desc:'잠재 상태 필터링'},
-  {id:'kalman',name:'칼만형 추정',p:kalman,desc:'잠재 로그오즈 필터'},
-  {id:'cusum',name:'CUSUM',p:cusum,desc:'누적 변화 진단'},
-  {id:'bootstrap',name:'블록 재표본 진단',p:boot,desc:'4개 블록 재표본'},
-  {id:'entropy',name:'엔트로피 수축',p:entropyModel,desc:'불확실성 기반 수축'}
- ];
+  // 6. 최근 40개
+  {
+    const z=a.slice(-40);
+    models.push(addModel("최근 40회 빈도",(z.reduce((s,x)=>s+x,0)+12*p0)/(z.length+12),.8,z.length>=12));
+  }
+
+  // 7. Markov 1차
+  {
+    let p=0,b=0;
+    for(let i=1;i<n;i++){
+      if(a[i-1]===1){p++;if(a[i]===1)b++;}
+    }
+    const q=(b+3*p0)/(p+3);
+    models.push(addModel("1차 마르코프 P전이",q,1.0,p>=3));
+  }
+
+  // 8. Markov 1차 B전이
+  {
+    let p=0,b=0;
+    for(let i=1;i<n;i++){
+      if(a[i-1]===0){p++;if(a[i]===1)b++;}
+    }
+    const q=(b+3*p0)/(p+3);
+    models.push(addModel("1차 마르코프 B전이",q,1.0,p>=3));
+  }
+
+  // 9. Markov 2차
+  {
+    let yes=0,total=0;
+    for(let i=2;i<n;i++){
+      if(a[i-2]===a[n-2] && a[i-1]===a[n-1]){
+        total++;if(a[i]===1)yes++;
+      }
+    }
+    models.push(addModel("2차 마르코프", (yes+4*p0)/(total+4),1.0,total>=3));
+  }
+
+  // 10. Markov 3차
+  {
+    let yes=0,total=0;
+    if(n>=4){
+      const key=a.slice(-3).join("");
+      for(let i=3;i<n;i++){
+        if(a.slice(i-3,i).join("")===key){total++;if(a[i]===1)yes++;}
+      }
+    }
+    models.push(addModel("3차 마르코프",(yes+5*p0)/(total+5),.8,total>=3));
+  }
+
+  // 11. EWMA
+  {
+    let q=p0;
+    for(const x of a)q=.78*q+.22*x;
+    models.push(addModel("EWMA 빠른 반응",q,1.0,n>=3));
+  }
+
+  // 12. EWMA 완만
+  {
+    let q=p0;
+    for(const x of a)q=.92*q+.08*x;
+    models.push(addModel("EWMA 완만 반응",q,.9,n>=5));
+  }
+
+  // 13. Beta-binomial recent window
+  {
+    const z=a.slice(-15);
+    models.push(addModel("15회 이동 베이지안",(z.reduce((s,x)=>s+x,0)+4*p0)/(z.length+4),.9,z.length>=5));
+  }
+
+  // 14. Laplace-smoothed frequency
+  {
+    const z=a.slice(-30);
+    models.push(addModel("30회 라플라스 빈도",(z.reduce((s,x)=>s+x,0)+1)/(z.length+2),.8,z.length>=5));
+  }
+
+  // 15. Logistic trend regression
+  {
+    let sx=0,sy=0,sxx=0,sxy=0;
+    const z=a.slice(-30),m=z.length;
+    z.forEach((v,i)=>{sx+=i;sy+=v;sxx+=i*i;sxy+=i*v;});
+    const den=m*sxx-sx*sx;
+    const slope=den?((m*sxy-sx*sy)/den):0;
+    const intercept=m?(sy-slope*sx)/m:p0;
+    const forecast=clamp(intercept+slope*m,.05,.95);
+    models.push(addModel("로지스틱 추세 근사",sigmoid(logit(forecast)),.6,m>=8));
+  }
+
+  // 16. CUSUM drift-adjusted
+  {
+    let pos=0,neg=0;
+    for(const x of a){
+      const d=x-p0;
+      pos=Math.max(0,pos+d-.04);
+      neg=Math.min(0,neg+d+.04);
+    }
+    const drift=clamp((pos+neg)*.10,-.12,.12);
+    models.push(addModel("CUSUM 변화 감지",p0+drift,.7,n>=8));
+  }
+
+  // 17. Beta prior with adaptive recency
+  {
+    const z=a.slice(-12);
+    const q=(z.reduce((s,x)=>s+x,0)+6*p0)/(z.length+6);
+    models.push(addModel("적응형 사전분포",q,.8,z.length>=5));
+  }
+
+  // 18. Block frequency
+  {
+    const z=a.slice(-24);
+    const blocks=[];
+    for(let i=0;i<z.length;i+=4)blocks.push(mean(z.slice(i,i+4)));
+    models.push(addModel("블록 평균 추정",mean(blocks),.6,blocks.length>=3));
+  }
+
+  // 19. Runs-aware shrinkage
+  {
+    let runs=0;
+    for(let i=1;i<n;i++)if(a[i]!==a[i-1])runs++;
+    const q=(a.reduce((s,x)=>s+x,0)+8*p0)/(n+8);
+    const factor=clamp((runs/Math.max(1,n-1)-.5)*.12,-.04,.04);
+    models.push(addModel("런 길이 보정 빈도",q+factor,.5,n>=8));
+  }
+
+  // 20. Entropy shrinkage
+  {
+    const z=a.slice(-20),q=mean(z);
+    const h=entropy(q);
+    const shrink=clamp((1-h)*.12,0,.12);
+    models.push(addModel("엔트로피 수축 추정",p0+(q-p0)*(1-shrink),.7,z.length>=8));
+  }
+
+  // 21. Exponential weighted transition
+  {
+    let yes=0,total=0;
+    for(let i=1;i<n;i++){
+      const w=Math.pow(.9,n-1-i);
+      if(a[i-1]===a[n-1]){total+=w;yes+=w*a[i];}
+    }
+    models.push(addModel("가중 전이 모델",(yes+3*p0)/(total+3),.8,total>=2));
+  }
+
+  // 22. Two-state HMM filtering with fixed parameters
+  {
+    let stateP=.5,stateB=.5;
+    const trans=[[.52,.48],[.48,.52]];
+    for(const obs of a){
+      const nextP=stateP*trans[0][0]+stateB*trans[1][0];
+      const nextB=stateP*trans[0][1]+stateB*trans[1][1];
+      const likeP=obs===1?.55:.45;
+      const likeB=obs===0?.55:.45;
+      const norm=nextP*likeP+nextB*likeB;
+      stateP=nextP*likeP/norm;
+      stateB=nextB*likeB/norm;
+    }
+    const forecast=stateP*trans[0][0]+stateB*trans[1][0];
+    models.push(addModel("2상태 HMM 필터",forecast,.7,n>=8));
+  }
+
+  // 23. Particle-style ensemble approximation
+  {
+    const z=a.slice(-20);
+    const q=mean(z);
+    const q2=mean(a.slice(-8));
+    models.push(addModel("입자 앙상블 근사",.65*q+.35*q2,.7,n>=8));
+  }
+
+  // 24. Change-point mixture
+  {
+    const short=mean(a.slice(-6));
+    const long=mean(a.slice(-30));
+    const recent=a.slice(-6);
+    const change=sd(recent)>.48?.65:.3;
+    const q=change*short+(1-change)*long;
+    models.push(addModel("변화점 혼합 추정",q,.7,n>=8));
+  }
+
+  // 25. Kalman-style adaptive state
+  {
+    let x=p0,v=.03;
+    for(const obs of a){
+      v+=.01;
+      const k=v/(v+.25);
+      x+=k*(obs-x);
+      v=(1-k)*v;
+    }
+    models.push(addModel("칼만 상태 추정",x,.7,n>=5));
+  }
+
+  // 26. Jeffreys prior
+  {
+    const s=a.reduce((u,x)=>u+x,0);
+    const q=(s+.5)/(n+1);
+    models.push(addModel("제프리스 사전분포",q,.8,n>=3));
+  }
+
+  // 27. Wilson-centered frequency
+  {
+    const z=a.slice(-25),q=mean(z),m=z.length;
+    const zc=1.96;
+    const center=(q+zc*zc/(2*m))/(1+zc*zc/m);
+    models.push(addModel("Wilson 중심 추정",center,.6,m>=8));
+  }
+
+  // 28. Bayesian odds update
+  {
+    let odds=1;
+    for(const x of a.slice(-15)){
+      odds*=x?1.04:.96;
+      odds=clamp(odds,.25,4);
+    }
+    models.push(addModel("베이지안 오즈 갱신",odds/(1+odds),.5,n>=8));
+  }
+
+  // 29. Sign test
+  {
+    const z=a.slice(-12),q=mean(z);
+    models.push(addModel("부호 검정 추정",p0+(q-p0)*.6,.6,z.length>=6));
+  }
+
+  // 30. Median block estimator
+  {
+    const z=a.slice(-24),blocks=[];
+    for(let i=0;i<z.length;i+=3)blocks.push(mean(z.slice(i,i+3)));
+    blocks.sort((x,y)=>x-y);
+    const med=blocks.length?blocks[Math.floor(blocks.length/2)]:p0;
+    models.push(addModel("블록 중앙값 추정",med,.6,blocks.length>=4));
+  }
+
+  return models;
 }
 
-/* 순차 검증 */
-function brier(p,y){
- return (p-(y==='P'?1:0))**2;
-}
-function logloss(p,y){
- const z=y==='P'?p:1-p;
- return -Math.log(clamp(z,.000001,1));
-}
-function walkForward(seq){
- const rows=[];
- for(let i=8;i<seq.length;i++){
-  const hist=seq.slice(0,i);
-  const mods=modelPredictions(hist);
-  const pred=mean(mods.map(m=>m.p));
-  rows.push({p:pred,y:seq[i]});
- }
- const hits=rows.filter(r=>(r.p>=.5?'P':'B')===r.y).length;
- return {
-  n:rows.length,
-  hits,
-  hit:rows.length?hits/rows.length:null,
-  brier:rows.length?mean(rows.map(r=>brier(r.p,r.y))):null,
-  logloss:rows.length?mean(rows.map(r=>logloss(r.p,r.y))):null
- };
-}
+function calculate(){
+  const models=analyzeModels();
+  const valid=models.filter(m=>m.valid);
+  if(!valid.length){
+    latest=null;renderPick();return;
+  }
 
-/* 결정론적 유전 알고리즘 가중치 최적화 */
-function geneticWeights(seq,mods){
- const training=[];
- for(let i=8;i<seq.length;i++){
-  training.push({
-   m:modelPredictions(seq.slice(0,i)),
-   y:seq[i]
+  // family-balanced weighting: avoid treating related models as independent evidence
+  const familyMap={
+    "베타-이항 베이지안":"bayes","지수 가중 베이지안":"bayes",
+    "15회 이동 베이지안":"bayes","적응형 사전분포":"bayes",
+    "제프리스 사전분포":"bayes","베이지안 오즈 갱신":"bayes",
+    "1차 마르코프 P전이":"markov","1차 마르코프 B전이":"markov",
+    "2차 마르코프":"markov","3차 마르코프":"markov",
+    "가중 전이 모델":"markov",
+    "EWMA 빠른 반응":"adaptive","EWMA 완만 반응":"adaptive",
+    "CUSUM 변화 감지":"adaptive","칼만 상태 추정":"adaptive",
+    "변화점 혼합 추정":"adaptive","2상태 HMM 필터":"adaptive",
+    "입자 앙상블 근사":"adaptive"
+  };
+
+  const fam={};
+  valid.forEach(m=>{
+    const f=familyMap[m.name]||"frequency";
+    if(!fam[f])fam[f]={sum:0,w:0};
+    fam[f].sum+=m.p*m.weight;
+    fam[f].w+=m.weight;
   });
- }
- const k=mods.length;
- if(training.length<20)return Array(k).fill(1/k);
 
- let seed=2166136261;
- for(const ch of seq){
-  seed=Math.imul(seed^ch.charCodeAt(0),16777619);
- }
- const rnd=()=>{
-  seed=(Math.imul(seed,1664525)+1013904223)>>>0;
-  return seed/4294967296;
- };
- const normalize=a=>{
-  const s=a.reduce((x,y)=>x+y,0);
-  return a.map(x=>x/s);
- };
- let pop=Array.from({length:24},()=>normalize(
-  Array.from({length:k},()=>rnd()+.05)
- ));
- function score(w){
-  return mean(training.map(r=>{
-   const p=clamp(r.m.reduce((s,m,i)=>s+w[i]*m.p,0),.001,.999);
-   return logloss(p,r.y);
-  }));
- }
- for(let g=0;g<35;g++){
-  pop.sort((a,b)=>score(a)-score(b));
-  const next=pop.slice(0,6).map(x=>x.slice());
-  while(next.length<24){
-   const a=pop[Math.floor(rnd()*8)];
-   const b=pop[Math.floor(rnd()*8)];
-   const c=a.map((v,i)=>Math.max(.001,
-    (rnd()<.5?v:b[i])+(rnd()-.5)*.08
-   ));
-   next.push(normalize(c));
+  const familyWeights={bayes:1.2,markov:.8,adaptive:.8,frequency:1.0};
+  let total=0,weight=0;
+  Object.keys(fam).forEach(f=>{
+    const fw=familyWeights[f]||1;
+    const p=fam[f].sum/fam[f].w;
+    total+=p*fw;weight+=fw;
+  });
+
+  const raw=weight?total/weight:.4932;
+  const n=pb().length;
+
+  // Strong shrinkage to baseline prevents exaggerated forecasts from small samples.
+  const reliability=n/(n+35);
+  const finalP=.4932+(raw-.4932)*reliability;
+  const finalB=1-finalP;
+  const pick=finalP>=.5?"P":"B";
+
+  // Importance is a confidence/consensus index, not a win probability.
+  const distances=valid.map(m=>Math.abs(m.p-.5));
+  const agreement=valid.filter(m=>(m.p>=.5)===(pick==="P")).length/valid.length;
+  const signal=Math.abs(finalP-.5)*2;
+  const sampleFactor=clamp(n/40,0,1);
+  const importance=Math.round(clamp(100*(.55*agreement+.25*signal+.20*sampleFactor),0,100));
+
+  latest={
+    pick,p:finalP,b:finalB,importance,
+    models,validCount:valid.length,
+    timestamp:Date.now()
+  };
+  renderPick();
+}
+
+function renderPick(){
+  const p=document.getElementById("pick");
+  if(!latest){
+    p.textContent="분석 대기";p.className="pick";
+    document.getElementById("pickText").textContent="결과를 더 입력해 주세요";
+    document.getElementById("importance").textContent="--";
+    document.getElementById("confidenceText").textContent="데이터 부족";
+    document.getElementById("probP").textContent="--";
+    document.getElementById("probB").textContent="--";
+    document.getElementById("dataN").textContent=pb().length;
+    document.getElementById("engineList").innerHTML="";
+    return;
   }
-  pop=next;
- }
- pop.sort((a,b)=>score(a)-score(b));
- return pop[0];
+
+  p.textContent=latest.pick==="P"?"PLAYER P":"BANKER B";
+  p.className="pick "+latest.pick;
+  document.getElementById("pickText").textContent=
+    "모델 종합 추정 · 다음 한 판 단일픽";
+  document.getElementById("importance").textContent=latest.importance+"%";
+  document.getElementById("confidenceText").textContent=
+    "모델 합의도와 데이터 신뢰도를 반영한 중요도";
+  document.getElementById("probP").textContent=(latest.p*100).toFixed(1)+"%";
+  document.getElementById("probB").textContent=(latest.b*100).toFixed(1)+"%";
+  document.getElementById("dataN").textContent=pb().length;
+
+  const summary=
+    "유효 모델 "+latest.validCount+"개 / 전체 모델 "+latest.models.length+"개. "+
+    "P/B 확률은 기준값으로 수축한 추정치이며 독립적인 실제 승률이 아닙니다.";
+  document.getElementById("modelSummary").textContent=summary;
+
+  document.getElementById("engineList").innerHTML=latest.models.map(m=>{
+    const v=m.valid?(m.p>=.5?"P":"B"):"대기";
+    const cls=v==="P"?"pp":v==="B"?"bb":"";
+    return `<div class="engine"><b>${escapeHtml(m.name)}</b>
+      <span class="${cls}">${v}</span>
+      <span class="muted"> · ${(m.p*100).toFixed(1)}%</span>
+      <span class="muted">${m.valid?" · 유효":" · 데이터 부족"}</span>
+    </div>`;
+  }).join("");
+
+  updateMoney();
 }
 
-/* 통합 엔진 */
-function integrated(seq){
- const mods=modelPredictions(seq);
- const weights=geneticWeights(seq,mods);
- const wf=walkForward(seq);
-
- const weighted=mods.reduce((s,m,i)=>s+m.p*weights[i],0);
- const base=BASE_P;
-
- /* 과도한 단기 추정값 확대 방지 */
- const shrink=clamp(seq.length/(seq.length+80),0,.35);
- const p=clamp(base+(weighted-base)*shrink,.001,.999);
-
- const side=p>=.5?'P':'B';
- const agreement=mods.filter(m=>(m.p>=.5)===(p>=.5)).length;
- const edge=Math.abs(p-.5);
- const minEdge=seq.length<20?.035:seq.length<50?.025:.018;
-
- const decision=(edge>=minEdge&&agreement>=6)?'PICK':'PASS';
-
- return {mods,weights,wf,p,side,agreement,edge,minEdge,decision};
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g,c=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[c]));
 }
 
-/* 페어 확률 전용 카드 계산 */
-function cardCounts(){
- const ranks=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
- const c={};
- ranks.forEach(r=>c[r]=32);
- for(const d of state.dealt){
-  if(c[d.rank]>0)c[d.rank]--;
- }
- return c;
+function updateMoney(){
+  const base=Math.max(0,toNum(document.getElementById("baseMoney").value));
+  const max=Math.max(0,toNum(document.getElementById("maxMoney").value));
+  const rate=toNum(document.getElementById("moneySlider").value)/100;
+  const imp=latest?latest.importance/100:0;
+  const amount=Math.min(max,base*imp*rate);
+  document.getElementById("moneyRate").textContent=Math.round(rate*100)+"%";
+  document.getElementById("suggestMoney").textContent=fmtMoney(amount);
 }
-function seededRandom(seed){
- let s=seed>>>0;
- return ()=>{
-  s=(Math.imul(s,1664525)+1013904223)>>>0;
-  return s/4294967296;
- };
-}
-function drawRank(c,rnd){
- let total=0;
- for(const k in c)total+=c[k];
- if(total<=0)return null;
- let x=rnd()*total;
- for(const k in c){
-  x-=c[k];
-  if(x<0){
-   c[k]--;
-   return k;
+
+function addResult(result){
+  const index=state.records.length;
+  if(index>=ROWS*COLS){
+    alert("80판 입력이 완료됐습니다. 새 슈를 시작해 주세요.");
+    return;
   }
- }
- return null;
-}
-function pairSimulation(n=12000){
- const base=cardCounts();
- const seed=state.dealt.reduce((s,x)=>s+x.rank.charCodeAt(0)*31,24681357)+state.shoe.length*7919;
- const rnd=seededRandom(seed);
- let p=0,b=0,both=0;
- for(let i=0;i<n;i++){
-  const c={...base};
-  const p1=drawRank(c,rnd);
-  const p2=drawRank(c,rnd);
-  const b1=drawRank(c,rnd);
-  const b2=drawRank(c,rnd);
-  const pp=p1===p2;
-  const bp=b1===b2;
-  if(pp)p++;
-  if(bp)b++;
-  if(pp&&bp)both++;
- }
- return {p:p/n,b:b/n,both:both/n};
-}
 
-/* 화면 갱신 */
-function render(){
- const seq=pb();
- const P=state.shoe.filter(x=>x==='P').length;
- const B=state.shoe.filter(x=>x==='B').length;
- const T=state.shoe.filter(x=>x==='T').length;
+  // Save the current prediction BEFORE appending the actual result.
+  const prediction=latest?{
+    pick:latest.pick,
+    importance:latest.importance,
+    p:latest.p,
+    b:latest.b,
+    models:latest.validCount
+  }:null;
 
- $('countP').textContent=P;
- $('countB').textContent=B;
- $('countT').textContent=T;
- $('shoeCount').textContent=`입력 ${state.shoe.length} / 80 · P/B 분석 표본 ${seq.length}`;
+  let verdict=null;
+  if(result==="P"||result==="B"){
+    if(prediction)verdict=prediction.pick===result?"hit":"miss";
+  }
 
- const board=$('board');
- board.innerHTML='';
- for(let i=0;i<480;i++){
-  const el=document.createElement('div');
-  const v=state.shoe[i]||'';
-  el.className='cell '+v;
-  el.textContent=v;
-  board.appendChild(el);
- }
+  state.records.push({
+    result,
+    prediction,
+    verdict,
+    time:Date.now()
+  });
 
- const a=integrated(seq);
- const names={P:'PLAYER',B:'BANKER'};
- const pick=$('mainPick');
-
- pick.textContent=a.decision==='PASS'?'PASS':names[a.side];
- pick.style.color=a.decision==='PASS'?'#f2d47b':a.side==='P'?'#78aaff':'#ff8291';
-
- $('mainSub').textContent=a.decision==='PASS'
-  ?'우세 근거 부족'
-  :'통합 모델 최종 선택';
-
- $('decisionReason').textContent=a.decision==='PASS'
-  ?`PASS · 모델 합의 ${a.agreement}/9 · 현재 표본에서 사전 설정한 우세 기준을 충족하지 못했습니다.`
-  :`${names[a.side]} · 모델 합의 ${a.agreement}/9 · 현재 통합 모델의 최종 후보입니다. 적중을 보장하지 않습니다.`;
-
- $('agree').textContent=a.agreement+'/9';
- $('sampleN').textContent=seq.length;
- $('wfN').textContent=a.wf.n;
-
- $('modelRows').innerHTML=a.mods.map((m,i)=>`
-  <div class="modelrow">
-   <span>${m.name}<br><small>${m.desc}</small></span>
-   <b>${m.p>=.5?'P 우세':'B 우세'} · 가중치 ${(a.weights[i]*100).toFixed(1)}</b>
-  </div>
- `).join('');
-
- renderScenarios(a);
- renderPairs();
- renderEngines(a);
- renderValidation(a.wf);
- renderHistory();
+  save();
+  calculate();
+  renderAll();
 }
 
-/* 페어 표시 */
-function renderPairs(){
- const mc=pairSimulation(12000);
- $('pairP').textContent=(mc.p*100).toFixed(2);
- $('pairB').textContent=(mc.b*100).toFixed(2);
- $('pairNote').textContent=
-  `실제 입력 카드 ${state.dealt.length}장 반영 · 12,000회 카드 시뮬레이션 · 두 장의 랭크가 같으면 페어로 계산합니다. 숫자는 화면에서 % 기호 없이 표시합니다.`;
- $('dealtList').textContent=state.dealt.length
-  ?`입력 카드 ${state.dealt.length}장: `+state.dealt.map(x=>x.rank+(x.side==='?'?'':`(${x.side})`)).join(' · ')
-  :'실제 카드 입력 없음';
+function undo(){
+  if(!state.records.length)return;
+  state.records.pop();
+  save();calculate();renderAll();
 }
 
-/* 64개 경로 */
-function renderScenarios(a){
- const arr=[];
- for(let i=0;i<64;i++){
-  const s=i.toString(2).padStart(6,'0')
-   .replaceAll('0','P').replaceAll('1','B');
-  let prob=1;
-  for(const x of s)prob*=x==='P'?a.p:1-a.p;
-  arr.push({s,prob});
- }
- arr.sort((x,y)=>y.prob-x.prob);
- $('scenarioList').innerHTML=arr.slice(0,16).map((x,i)=>`
-  <div class="scenario">
-   <span>${i+1}. ${x.s.split('').join(' · ')}</span>
-   <b>${x.s.split('').map(v=>v==='P'?'🔵':'🔴').join(' ')}</b>
-  </div>
- `).join('')+
- `<div class="small">64개 전체 계산 · 상위 16개 표시 · 현재 통합 확률을 일정하게 적용한 비교입니다.</div>`;
-}
-
-/* 엔진 화면 */
-function renderEngines(a){
- $('engineDetail').innerHTML=a.mods.map((m,i)=>`
-  <div class="modelrow">
-   <span><b>${m.name}</b><br><small>${m.desc}</small></span>
-   <span>${m.p>=.5?'P':'B'}<br><small>가중치 ${(a.weights[i]*100).toFixed(1)}</small></span>
-  </div>
- `).join('');
-
- const p0=BASE_P;
- $('mathDetail').innerHTML=`
-  <p>기준 P 확률: ${p0.toFixed(4)}</p>
-  <p>현재 추정 P 값: ${a.p.toFixed(4)}</p>
-  <p>이진 엔트로피: ${entropy(a.p).toFixed(4)} bit</p>
-  <p>KL 발산: ${kl(a.p,p0).toFixed(5)} nat</p>
-  <p>Jensen-Shannon 발산: ${jsd(a.p,p0).toFixed(5)} nat</p>
-  <p>모델 수: ${a.mods.length}</p>
-  <p>유전 알고리즘: 검증 표본이 20개 이상이면 24개 후보와 35세대로 가중치를 최적화합니다. 표본 부족 시 동일 가중치를 적용합니다.</p>
-  <p>주의: HMM과 칼만형 모델은 설정된 상태 모형에 따른 추정이며, 독립적인 바카라 결과에 실제 예측력이 있다는 뜻은 아닙니다. 성능은 순차 검증으로 확인해야 합니다.</p>
- `;
-}
-
-/* 검증 화면 */
-function renderValidation(w){
- $('vN').textContent=w.n;
- $('vHit').textContent=w.n?w.hits:'-';
- $('vBrier').textContent=w.brier===null?'-':w.brier.toFixed(4);
- $('vNote').textContent=w.n
-  ?`시간순 검증 ${w.n}회 · 적중 ${w.hits}회 · Brier ${w.brier.toFixed(4)} · Log Loss ${w.logloss.toFixed(4)}`
-  :'검증 가능한 예측을 만들려면 P/B 결과가 최소 9개 필요합니다.';
-}
-
-/* 결과 입력 */
-function addResult(v){
- if(state.shoe.length>=80){
-  alert('80판 입력 완료. 새 슈를 시작하세요.');
-  return;
- }
- state.shoe.push(v);
- persist();
- render();
-}
-function undoResult(){
- state.shoe.pop();
- persist();
- render();
-}
 function newShoe(){
- if(!confirm('현재 슈를 저장하고 새 슈를 시작할까요?'))return;
- saveCurrentShoe(false);
- state.shoe=[];
- state.dealt=[];
- persist();
- render();
+  if(!confirm("현재 80판 기록과 판정 결과를 지우고 새 슈를 시작할까요?"))return;
+  state.records=[];
+  save();latest=null;calculate();renderAll();
 }
 
-/* 실제 카드 입력 */
-function addDealtCard(){
- if(state.dealt.length>=300)return;
- state.dealt.push({
-  rank:$('dealRank').value,
-  side:$('dealSide').value
- });
- persist();
- render();
-}
-function undoDealtCard(){
- state.dealt.pop();
- persist();
- render();
+function renderBoard(){
+  const board=document.getElementById("board");
+  board.innerHTML="";
+  for(let i=0;i<ROWS*COLS;i++){
+    const r=state.records[i];
+    const cell=document.createElement("div");
+    cell.className="cell"+(r?" "+r.result:"");
+    if(r){
+      cell.textContent=r.result;
+      if(r.verdict){
+        const mark=document.createElement("span");
+        mark.className="mark "+r.verdict;
+        mark.textContent=r.verdict==="hit"?"O":"X";
+        cell.appendChild(mark);
+      }
+    }
+    const no=document.createElement("span");
+    no.className="cellno";
+    no.textContent=i+1;
+    cell.appendChild(no);
+    board.appendChild(cell);
+  }
 }
 
-/* 기록 관리 */
-function saveCurrentShoe(show=true){
- if(!state.shoe.length){
-  if(show)alert('저장할 결과가 없습니다.');
-  return;
- }
- state.history.unshift({
-  date:new Date().toLocaleString('ko-KR'),
-  shoe:state.shoe.slice(),
-  dealt:state.dealt.slice()
- });
- persist();
- renderHistory();
- if(show)alert('현재 슈를 저장했습니다.');
+function renderStats(){
+  const judged=state.records.filter(r=>r.verdict);
+  const hit=judged.filter(r=>r.verdict==="hit").length;
+  const miss=judged.length-hit;
+  const rate=judged.length?hit/judged.length*100:null;
+  document.getElementById("hitN").textContent=hit;
+  document.getElementById("missN").textContent=miss;
+  document.getElementById("hitRate").textContent=
+    rate===null?"--":rate.toFixed(1)+"%";
 }
-function renderHistory(){
- $('history').innerHTML=state.history.length
- ?state.history.map((h,i)=>`
-  <div class="historyrow">
-   <span>${h.date} · ${h.shoe.length}판</span>
-   <button class="tag" onclick="restoreShoe(${i})">불러오기</button>
-  </div>
- `).join('')
- :'<div class="small">저장된 기록이 없습니다.</div>';
+
+function renderRecent(){
+  const list=state.records.slice(-12).reverse();
+  document.getElementById("recent").innerHTML=list.length?
+    list.map((r,i)=>{
+      const n=state.records.length-i;
+      const resultColor=r.result==="P"?"#58a5ff":r.result==="B"?"#ff6675":"#39dca7";
+      let check="판정 없음";
+      if(r.verdict==="hit")check="<span class='good'>적중 O</span>";
+      if(r.verdict==="miss")check="<span class='bad'>미적중 X</span>";
+      const pred=r.prediction?r.prediction.pick:"없음";
+      return `${n}번 · <b style="color:${resultColor}">${r.result}</b>
+        · 예상 ${pred} · ${check}`;
+    }).join("<br>"):"아직 입력된 결과가 없습니다.";
 }
-function restoreShoe(i){
- const h=state.history[i];
- if(!h)return;
- if(!confirm('선택한 슈를 불러올까요? 현재 입력은 교체됩니다.'))return;
- state.shoe=h.shoe.slice();
- state.dealt=h.dealt||[];
- persist();
- render();
- document.querySelector('[data-tab="live"]').click();
+
+function renderAll(){
+  renderBoard();renderStats();renderRecent();
 }
+
 function exportData(){
- const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
- const a=document.createElement('a');
- a.href=URL.createObjectURL(blob);
- a.download='prosperity-tree-backup.json';
- a.click();
- setTimeout(()=>URL.revokeObjectURL(a.href),1000);
-}
-$('importFile').addEventListener('change',async e=>{
- const f=e.target.files[0];
- if(!f)return;
- try{
-  const x=JSON.parse(await f.text());
-  if(!Array.isArray(x.shoe)||!Array.isArray(x.history))throw Error();
-  state={...state,...x};
-  persist();
-  render();
-  alert('백업을 불러왔습니다.');
- }catch(err){
-  alert('올바른 백업 파일이 아닙니다.');
- }
-});
-function wipeAll(){
- if(!confirm('이 브라우저의 모든 앱 데이터를 삭제할까요?'))return;
- localStorage.removeItem(KEY);
- state={shoe:[],dealt:[],history:[]};
- render();
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;a.download="prosperity-tree-records.json";
+  a.click();URL.revokeObjectURL(url);
 }
 
-/* 탭 */
-document.querySelectorAll('.tab').forEach(btn=>{
- btn.addEventListener('click',()=>{
-  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===btn));
-  document.querySelectorAll('.view').forEach(x=>x.classList.toggle('hide',x.id!==btn.dataset.tab));
- });
+["baseMoney","maxMoney","moneySlider"].forEach(id=>{
+  document.getElementById(id).addEventListener("input",updateMoney);
 });
 
-load();
-render();
+calculate();
+renderAll();
 </script>
 </body>
 </html>
