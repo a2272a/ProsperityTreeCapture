@@ -1,134 +1,401 @@
-<!DOCTYPE html>
+
+<!doctype html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#07110e">
-<title>번영의 나무 바카라</title>
+<title>번영의 나무 바카라 FINAL</title>
 <style>
+:root{--bg:#07110e;--panel:#102019;--line:#35533f;--gold:#e7ce7c;--muted:#a9b8ad;--blue:#4385f5;--red:#e74c60;--green:#27a477}
 *{box-sizing:border-box}
-body{margin:0;background:#07110e;color:#e9f5ec;font-family:Arial,sans-serif;padding:14px}
-header{text-align:center;padding:20px 5px}
-h1{color:#d8bd65;font-size:27px;margin:5px}
-.sub{color:#9eae9f;font-size:12px}
-.panel{background:#102019;border:1px solid #31513c;border-radius:15px;padding:15px;margin-bottom:13px}
-h2{font-size:17px;color:#e4ca78;margin:0 0 13px}
-.buttons{display:flex;gap:10px}
-button{border:0;border-radius:12px;padding:15px 5px;font-weight:bold;font-size:19px;flex:1}
-.b{background:#2366dc;color:white}
-.p{background:#d83d4e;color:white}
-.t{background:#299d6c;color:white}
-.undo{background:#46554c;color:white;font-size:14px}
-.reset{background:#713b3b;color:white;font-size:14px}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.stat{background:#192d22;border-radius:10px;text-align:center;padding:12px 3px}
-.num{font-size:25px;font-weight:bold;margin-top:5px}
-.blue{color:#6da4ff}.red{color:#ff7580}.gold{color:#e8cf79}
-.boardwrap{overflow-x:auto;padding-bottom:8px}
-.board{display:grid;grid-template-rows:repeat(6,29px);grid-auto-columns:29px;grid-auto-flow:column;gap:3px;width:max-content}
-.cell{width:29px;height:29px;border:1px solid #3b5545;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:bold;color:#748477}
-.cell.B{background:#2366dc;color:white}
-.cell.P{background:#d83d4e;color:white}
-.cell.T{background:#299d6c;color:white}
-.pred{text-align:center;padding:18px}
-.pick{font-size:42px;font-weight:bold;margin:10px}
-.note{font-size:12px;color:#a8b8aa;line-height:1.6}
-.bar{height:12px;background:#26392d;border-radius:10px;overflow:hidden;display:flex;margin:12px 0}
-.barB{background:#3678ed}.barP{background:#e34c5b}
-.actions{display:flex;gap:9px;margin-top:12px}
-.actions button{font-size:13px;padding:12px}
+body{margin:0 auto;max-width:980px;padding:12px;background:var(--bg);color:#f0f5f0;font-family:system-ui,'Noto Sans KR',sans-serif}
+button,input,select{font:inherit}
+button{border:0;border-radius:11px;padding:13px 8px;font-weight:800;cursor:pointer}
+.hero{text-align:center;padding:18px 4px}
+.hero small{color:var(--gold);letter-spacing:3px}
+.hero h1{font-size:clamp(25px,6vw,36px);color:var(--gold);margin:8px 0}
+.hero p,.muted,.note{color:var(--muted);font-size:12px;line-height:1.6}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px}
+.tabs button{background:#203529;color:#e8eee9;font-size:12px;padding:13px 2px}
+.tabs button.active{background:var(--gold);color:#172016}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
+.panel h2{font-size:17px;color:var(--gold);margin:0 0 13px}
+.entry{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.entry button{color:white;font-size:clamp(15px,4vw,19px);padding:18px 2px}
+.B{background:var(--blue)}.P{background:var(--red)}.T{background:var(--green)}
+.actions{display:flex;gap:8px;margin-top:9px}
+.actions button{flex:1;background:#405449;color:white;font-size:13px}
+.actions .danger{background:#743e43}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.stat{background:#192d22;border-radius:10px;text-align:center;padding:10px 2px;font-size:12px}
+.stat strong{display:block;font-size:24px;margin-top:5px}
+.blue{color:#82b0ff}.red{color:#ff8997}.gold{color:var(--gold)}.green{color:#5bd4a6}
+.twocol{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pick{background:#192d22;border:1px solid var(--line);border-radius:12px;text-align:center;padding:13px}
+.pick strong{display:block;font-size:clamp(22px,6vw,30px);margin:7px 0}
+.meter{height:11px;border-radius:8px;overflow:hidden;display:flex;background:#26392d;margin:12px 0}
+.meter i{height:100%}
+.boardwrap{overflow:auto;max-height:330px}
+.board{display:grid;grid-template-rows:repeat(6,36px);grid-auto-columns:36px;grid-auto-flow:column;gap:3px;width:max-content}
+.cell{border:1px solid #405747;border-radius:6px;display:grid;place-items:center;font-weight:900;color:#63776a}
+.cell.B{background:var(--blue);color:white}
+.cell.P{background:var(--red);color:white}
+.cell.T{background:var(--green);color:white}
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:8px}
+.field label{font-size:12px;color:var(--muted)}
+input,select{width:100%;min-width:0;background:#08140e;color:white;border:1px solid #496451;border-radius:8px;padding:11px}
+.hide{display:none!important}
+.line{display:flex;justify-content:space-between;gap:8px;padding:9px 2px;border-bottom:1px solid #304437;font-size:13px}
+.line button{padding:6px 10px;background:#405449;color:white;font-size:11px}
+.wide{width:100%;background:var(--gold);color:#172016;margin-top:8px}
+.scenario-list{max-height:650px;overflow:auto}
+.notice{padding:10px;border-left:3px solid var(--gold);background:#19271f;border-radius:6px;color:#c5d1c8;font-size:12px;line-height:1.6}
+.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.card{background:#192d22;border:1px solid var(--line);padding:9px;border-radius:10px}
+.card b{color:var(--gold);font-size:13px}
+.footer{text-align:center;color:#718477;font-size:11px;padding:12px}
+@media(min-width:650px){body{padding:20px}.board{grid-template-rows:repeat(6,42px);grid-auto-columns:42px}}
 </style>
 </head>
 <body>
-<header>
-<div class="gold">✦ PROSPERITY TREE ✦</div>
+
+<header class="hero">
+<small>✦ PROSPERITY TREE ✦</small>
 <h1>번영의 나무 바카라</h1>
-<div class="sub">REAL-TIME PROBABILITY ANALYSIS</div>
+<p>FINAL 통합 분석 · 모바일 최적화</p>
 </header>
 
-<section class="panel">
+<nav class="tabs">
+<button class="active" data-view="live">실시간 분석</button>
+<button data-view="scenario">64 시나리오</button>
+<button data-view="cards">카드 관리</button>
+<button data-view="records">기록 관리</button>
+</nav>
+
+<section id="live" class="view">
+<div class="panel">
 <h2>① 결과 입력</h2>
-<div class="buttons">
-<button class="b" onclick="add('B')">BANKER</button>
-<button class="p" onclick="add('P')">PLAYER</button>
-<button class="t" onclick="add('T')">TIE</button>
+<div class="entry">
+<button class="B" onclick="addResult('B')">BANKER</button>
+<button class="P" onclick="addResult('P')">PLAYER</button>
+<button class="T" onclick="addResult('T')">TIE</button>
 </div>
 <div class="actions">
-<button class="undo" onclick="undo()">↶ 되돌리기</button>
-<button class="reset" onclick="resetAll()">초기화</button>
+<button onclick="undoResult()">↶ 되돌리기</button>
+<button class="danger" onclick="newShoe()">새 슈 시작</button>
 </div>
-</section>
+</div>
 
-<section class="panel">
+<div class="panel">
 <h2>② 현재 슈 통계</h2>
 <div class="stats">
-<div class="stat">BANKER<div id="bc" class="num blue">0</div></div>
-<div class="stat">PLAYER<div id="pc" class="num red">0</div></div>
-<div class="stat">TIE<div id="tc" class="num gold">0</div></div>
+<div class="stat">BANKER<strong class="blue" id="countB">0</strong></div>
+<div class="stat">PLAYER<strong class="red" id="countP">0</strong></div>
+<div class="stat">TIE<strong class="gold" id="countT">0</strong></div>
 </div>
-<p id="total" class="note">입력: 0 / 80</p>
-</section>
+<p class="note" id="shoeCount">입력 0 / 80판</p>
+</div>
 
-<section class="panel">
-<h2>③ 6행 × 80열 결과판</h2>
+<div class="panel">
+<h2>③ 다음 판 확률 분석</h2>
+<div class="twocol">
+<div class="pick"><small>확률 1위</small><strong id="mainPick">대기</strong><span id="mainPct">--</span></div>
+<div class="pick"><small>반전 선택</small><strong id="reversePick">대기</strong><span id="reversePct">--</span></div>
+</div>
+<div class="meter">
+<i id="meterB" style="width:45.86%;background:#4385f5"></i>
+<i id="meterP" style="width:44.62%;background:#e74c60"></i>
+<i id="meterT" style="width:9.52%;background:#27a477"></i>
+</div>
+<div class="stats">
+<div class="stat">BANKER<strong class="blue" id="probB">45.86%</strong></div>
+<div class="stat">PLAYER<strong class="red" id="probP">44.62%</strong></div>
+<div class="stat">TIE<strong class="green" id="probT">9.52%</strong></div>
+</div>
+<p class="note" id="methodText">표준 8덱 바카라 이론 확률 기준입니다.</p>
+<div class="notice">결과 입력만으로 다음 판의 확률이 높아지는 것은 아닙니다. 실제 카드 정보를 입력하면 남은 카드 구성에 따른 확률을 추정합니다.</div>
+</div>
+
+<div class="panel">
+<h2>④ 6행 × 80열 결과판</h2>
 <div class="boardwrap"><div class="board" id="board"></div></div>
-<div class="note">결과는 위에서 아래로 6개씩 입력됩니다. 오른쪽으로 이동하면 다음 열입니다.</div>
-</section>
+<p class="note">각 열은 아래로 6칸씩 채워집니다. 좌우로 밀어 전체 80열을 확인하세요.</p>
+</div>
 
-<section class="panel">
-<h2>④ 다음 결과 확률 기준</h2>
-<div class="pred">
-<div class="sub">기본 이론 확률 (타이 제외 기준)</div>
-<div class="pick gold">BANKER 우세</div>
-<div id="prob" style="font-size:17px">B 50.68% / P 49.32%</div>
-<div class="bar"><div class="barB" id="barB" style="width:50.68%"></div><div class="barP" id="barP" style="width:49.32%"></div></div>
-<div class="note">바카라의 기본 확률 기준입니다. 개별 다음 판의 결과를 보장하거나 예측하는 수치는 아닙니다.</div>
+<div class="panel">
+<h2>⑤ 실제 딜링 카드 입력</h2>
+<div class="twocol">
+<div class="field"><label>카드 숫자</label>
+<select id="dealRank">
+<option>A</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>J</option><option>Q</option><option>K</option>
+</select></div>
+<div class="field"><label>카드 구분</label>
+<select id="dealSide"><option value="B">BANKER</option><option value="P">PLAYER</option><option value="?">미지정</option></select></div>
+</div>
+<div class="actions"><button onclick="addDealtCard()">카드 추가</button><button onclick="undoDealtCard()">카드 삭제</button></div>
+<p class="note" id="dealtList">입력된 실제 카드 없음</p>
 </div>
 </section>
 
-<section class="panel">
-<h2>⑤ 실시간 분석 상태</h2>
-<div id="status" class="gold" style="font-size:20px;font-weight:bold">대기 중</div>
-<p id="detail" class="note">결과를 입력하면 현재 슈의 통계가 자동 갱신됩니다.</p>
+<section id="scenario" class="view hide">
+<div class="panel">
+<h2>64개 시나리오 분석</h2>
+<div class="notice">다음 6판의 P/B 조합 64개를 현재 추정 확률 기준으로 계산합니다. 각 결과가 독립적이라고 가정한 참고 순위입니다.</div>
+<div class="stats" style="margin:12px 0">
+<div class="stat">전체 조합<strong>64</strong></div>
+<div class="stat">BANKER 우세<strong id="scenarioB">0</strong></div>
+<div class="stat">PLAYER 우세<strong id="scenarioP">0</strong></div>
+</div>
+<div id="scenarioList" class="scenario-list"></div>
+</div>
 </section>
+
+<section id="cards" class="view hide">
+<div class="panel">
+<h2>번영 카드 8장 입력</h2>
+<div class="notice">카드 8장의 숫자, 무늬, 표시 효과를 직접 입력합니다. OCR 결과는 확인 후 직접 수정해야 합니다.</div>
+<div class="cards" id="prosperityCards"></div>
+<button class="wide" onclick="saveProsperity()">8장 기록 저장</button>
+</div>
+<div class="panel">
+<h2>카드 이미지 OCR 보조</h2>
+<input type="file" id="ocrFile" accept="image/*">
+<button class="wide" onclick="runOCR()">사진 문자 인식</button>
+<p class="note" id="ocrStatus">인터넷 연결이 필요합니다.</p>
+<textarea id="ocrOutput" rows="5" style="width:100%;background:#08140e;color:white;border:1px solid #496451;border-radius:8px;padding:10px" placeholder="인식 결과"></textarea>
+</div>
+</section>
+
+<section id="records" class="view hide">
+<div class="panel">
+<h2>슈 기록 관리</h2>
+<div class="actions"><button onclick="saveShoe()">현재 슈 저장</button><button onclick="exportJSON()">JSON 백업</button></div>
+<div id="history"></div>
+</div>
+<div class="panel">
+<h2>백업 복원</h2>
+<input type="file" id="importFile" accept=".json,application/json">
+<button class="wide" onclick="importJSON()">백업 불러오기</button>
+</div>
+<div class="panel">
+<h2>데이터 초기화</h2>
+<button class="wide" style="background:#743e43;color:white" onclick="wipeAll()">전체 데이터 삭제</button>
+</div>
+</section>
+
+<footer class="footer">번영의 나무 바카라 · 확률 참고 도구 · 결과 보장 기능 아님</footer>
 
 <script>
-let data=[];
-function add(v){
- if(data.length>=480){alert('입력판이 가득 찼습니다.');return;}
- data.push(v);render();
+const KEY='prosperity_tree_final_v1';
+let S={
+shoe:[],cards:[],history:[],
+prosperity:Array.from({length:8},()=>({rank:'',suit:'',note:''}))
+};
+const $=id=>document.getElementById(id);
+
+function persist(){
+try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
 }
-function undo(){data.pop();render();}
-function resetAll(){
- if(confirm('현재 입력 결과를 모두 삭제할까요?')){
- data=[];render();
- }
+function load(){
+try{
+let x=JSON.parse(localStorage.getItem(KEY));
+if(x)S={...S,...x};
+}catch(e){}
 }
+function esc(s){
+return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function showView(id,btn){
+document.querySelectorAll('.view').forEach(x=>x.classList.add('hide'));
+$(id).classList.remove('hide');
+document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));
+btn.classList.add('active');
+}
+document.querySelectorAll('[data-view]').forEach(btn=>btn.addEventListener('click',()=>showView(btn.dataset.view,btn)));
+
+function valueOf(r){
+if(r==='A')return 1;
+if(['10','J','Q','K'].includes(String(r)))return 0;
+return Number(r);
+}
+function remainingCards(){
+let c=Array(10).fill(32);
+c[0]=128;
+S.cards.forEach(d=>{
+let v=valueOf(d.rank);
+if(c[v]>0)c[v]--;
+});
+return c;
+}
+function draw(c){
+let total=c.reduce((a,b)=>a+b,0),r=Math.random()*total;
+for(let i=0;i<c.length;i++){
+r-=c[i];
+if(r<0){c[i]--;return i;}
+}
+return 0;
+}
+function baccaratHand(c){
+let p=[draw(c),draw(c)],b=[draw(c),draw(c)];
+let sum=a=>a.reduce((x,y)=>x+y,0)%10;
+let ps=sum(p),bs=sum(b),pt=null;
+if(ps<8&&bs<8){
+if(ps<=5){pt=draw(c);p.push(pt);ps=sum(p);}
+if(bs<=5){
+if(pt===null)b.push(draw(c));
+else if(bs<=2)b.push(draw(c));
+else if(bs===3&&pt!==8)b.push(draw(c));
+else if(bs===4&&pt>=2&&pt<=7)b.push(draw(c));
+else if(bs===5&&pt>=4&&pt<=7)b.push(draw(c));
+else if(bs===6&&(pt===6||pt===7))b.push(draw(c));
+bs=sum(b);
+}
+}
+return bs>ps?'B':ps>bs?'P':'T';
+}
+function probabilities(){
+if(!S.cards.length)return {B:.4586,P:.4462,T:.0952,method:'표준 8덱 바카라 이론 확률'};
+let c=remainingCards();
+if(c.reduce((a,b)=>a+b,0)<12)return {B:.4586,P:.4462,T:.0952,method:'남은 카드 부족 · 기본 이론 확률'};
+let n=18000,res={B:0,P:0,T:0};
+for(let i=0;i<n;i++){let cc=c.slice();res[baccaratHand(cc)]++;}
+return {B:res.B/n,P:res.P/n,T:res.T/n,method:'실제 입력 카드 '+S.cards.length+'장 반영 · 18,000회 모의 추정'};
+}
+function addResult(v){
+if(S.shoe.length>=80)return alert('80판 입력 완료. 새 슈를 시작하세요.');
+S.shoe.push(v);persist();render();
+}
+function undoResult(){S.shoe.pop();persist();render();}
+function newShoe(){
+if(!confirm('현재 슈를 저장하고 새 슈를 시작할까요?'))return;
+saveShoe(false);S.shoe=[];S.cards=[];
+persist();render();
+}
+function addDealtCard(){
+S.cards.push({rank:$('dealRank').value,side:$('dealSide').value});
+persist();render();
+}
+function undoDealtCard(){S.cards.pop();persist();render();}
+
 function render(){
- let b=data.filter(x=>x==='B').length;
- let p=data.filter(x=>x==='P').length;
- let t=data.filter(x=>x==='T').length;
- document.getElementById('bc').textContent=b;
- document.getElementById('pc').textContent=p;
- document.getElementById('tc').textContent=t;
- document.getElementById('total').textContent='입력: '+data.length+' / 480';
- let board=document.getElementById('board');
- board.innerHTML='';
- for(let i=0;i<480;i++){
-  let c=document.createElement('div');
-  c.className='cell '+(data[i]||'');
-  c.textContent=data[i]||'';
-  board.appendChild(c);
- }
- let pctB=data.length?((b/(b+p||1))*100).toFixed(1):0;
- let pctP=data.length?((p/(b+p||1))*100).toFixed(1):0;
- document.getElementById('status').textContent=
- data.length===0?'대기 중':data.length+'개 결과 입력 완료';
- document.getElementById('detail').textContent=
- '현재 슈 누적 통계: 뱅커 '+b+'회, 플레이어 '+p+'회, 타이 '+t+'회. '+ 
- (data.length?'승패 결과의 빈도를 관찰하는 용도이며 다음 판 확률과는 별개입니다.':'결과를 입력해 주세요.');
+let b=S.shoe.filter(x=>x==='B').length;
+let p=S.shoe.filter(x=>x==='P').length;
+let t=S.shoe.filter(x=>x==='T').length;
+$('countB').textContent=b;$('countP').textContent=p;$('countT').textContent=t;
+$('shoeCount').textContent='입력 '+S.shoe.length+' / 80판';
+
+let board=$('board');board.innerHTML='';
+for(let i=0;i<480;i++){
+let v=S.shoe[i]||'',el=document.createElement('div');
+el.className='cell '+v;el.textContent=v;board.appendChild(el);
 }
+let q=probabilities();
+let first=q.B>=q.P?'B':'P',second=first==='B'?'P':'B';
+let names={B:'BANKER',P:'PLAYER'};
+$('mainPick').textContent=names[first];
+$('mainPick').style.color=first==='B'?'#82b0ff':'#ff8997';
+$('mainPct').textContent=(q[first]*100).toFixed(2)+'%';
+$('reversePick').textContent=names[second];
+$('reversePick').style.color=second==='B'?'#82b0ff':'#ff8997';
+$('reversePct').textContent=(q[second]*100).toFixed(2)+'%';
+$('probB').textContent=(q.B*100).toFixed(2)+'%';
+$('probP').textContent=(q.P*100).toFixed(2)+'%';
+$('probT').textContent=(q.T*100).toFixed(2)+'%';
+$('meterB').style.width=q.B*100+'%';
+$('meterP').style.width=q.P*100+'%';
+$('meterT').style.width=q.T*100+'%';
+$('methodText').textContent=q.method;
+$('dealtList').textContent=S.cards.length?'실제 카드 '+S.cards.length+'장: '+S.cards.map(x=>x.rank).join(' · '):'입력된 실제 카드 없음';
+renderScenarios(q);renderCards();renderHistory();
+}
+function renderScenarios(q){
+let pb=q.B/(q.B+q.P),pp=1-pb,arr=[];
+for(let i=0;i<64;i++){
+let seq=i.toString(2).padStart(6,'0').replaceAll('0','P').replaceAll('1','B'),prob=1;
+for(let x of seq)prob*=x==='B'?pb:pp;
+arr.push({seq,prob,b:(seq.match(/B/g)||[]).length});
+}
+arr.sort((x,y)=>y.prob-x.prob);
+$('scenarioB').textContent=arr.filter(x=>x.b>=4).length;
+$('scenarioP').textContent=arr.filter(x=>x.b<=2).length;
+$('scenarioList').innerHTML=arr.map((x,i)=>`<div class="line"><span>${String(i+1).padStart(2,'0')} · ${x.seq.split('').join(' ')}</span><b>${(x.prob*100).toFixed(3)}%</b></div>`).join('');
+}
+function renderCards(){
+let box=$('prosperityCards');if(!box)return;
+box.innerHTML='';
+S.prosperity.forEach((c,i)=>{
+let d=document.createElement('div');d.className='card';
+d.innerHTML=`<b>번영 카드 ${i+1}</b>
+<div class="field"><label>숫자/랭크</label><input data-i="${i}" data-k="rank" value="${esc(c.rank)}" placeholder="카드 숫자"></div>
+<div class="field"><label>무늬</label><input data-i="${i}" data-k="suit" value="${esc(c.suit)}" placeholder="무늬"></div>
+<div class="field"><label>배수/효과</label><input data-i="${i}" data-k="note" value="${esc(c.note)}" placeholder="표시 효과"></div>`;
+box.appendChild(d);
+});
+box.querySelectorAll('input').forEach(el=>el.onchange=()=>{
+S.prosperity[+el.dataset.i][el.dataset.k]=el.value;persist();
+});
+}
+function saveProsperity(){persist();alert('번영 카드 8장 기록 저장 완료');}
+
+async function runOCR(){
+let f=$('ocrFile').files[0];if(!f)return alert('먼저 사진을 선택하세요.');
+$('ocrStatus').textContent='OCR 엔진을 불러오는 중입니다. 인터넷 연결이 필요합니다.';
+try{
+if(!window.Tesseract){
+await new Promise((ok,no)=>{
+let s=document.createElement('script');
+s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+s.onload=ok;s.onerror=no;document.head.appendChild(s);
+});
+}
+let r=await Tesseract.recognize(f,'kor+eng',{logger:m=>{
+if(m.status)$('ocrStatus').textContent=m.status+' '+Math.round((m.progress||0)*100)+'%';
+}});
+$('ocrOutput').value=r.data.text;
+$('ocrStatus').textContent='인식 완료. 결과를 확인하고 카드 8장 입력란에 반영하세요.';
+}catch(e){$('ocrStatus').textContent='OCR 실패. 인터넷 연결을 확인하세요.';}
+}
+function saveShoe(show=true){
+if(!S.shoe.length){if(show)alert('저장할 결과가 없습니다.');return;}
+S.history.unshift({date:new Date().toLocaleString('ko-KR'),shoe:S.shoe.slice(),cards:S.cards.slice()});
+persist();renderHistory();if(show)alert('현재 슈 저장 완료');
+}
+function renderHistory(){
+let el=$('history');if(!el)return;
+el.innerHTML=S.history.length?S.history.map((h,i)=>
+`<div class="line"><span>${esc(h.date)} · ${h.shoe.length}판</span><button onclick="restoreShoe(${i})">불러오기</button></div>`
+).join(''):'<p class="note">저장된 슈가 없습니다.</p>';
+}
+function restoreShoe(i){
+if(!confirm('이 기록을 불러올까요?'))return;
+S.shoe=S.history[i].shoe.slice();S.cards=(S.history[i].cards||[]).slice();
+persist();render();document.querySelector('[data-view="live"]').click();
+}
+function exportJSON(){
+let blob=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});
+let url=URL.createObjectURL(blob),a=document.createElement('a');
+a.href=url;a.download='prosperity-tree-backup.json';a.click();URL.revokeObjectURL(url);
+}
+function importJSON(){
+let f=$('importFile').files[0];if(!f)return alert('백업 파일을 선택하세요.');
+let r=new FileReader();
+r.onload=()=>{
+try{
+let x=JSON.parse(r.result);
+if(!Array.isArray(x.shoe)||!Array.isArray(x.history))throw Error();
+S={...S,...x};persist();render();alert('백업 복원 완료');
+}catch(e){alert('올바른 백업 파일이 아닙니다.');}
+};
+r.readAsText(f);
+}
+function wipeAll(){
+if(!confirm('현재 기기의 모든 데이터를 삭제할까요?'))return;
+localStorage.removeItem(KEY);
+S={shoe:[],cards:[],history:[],prosperity:Array.from({length:8},()=>({rank:'',suit:'',note:''}))};
 render();
+}
+load();render();
 </script>
 </body>
 </html>
