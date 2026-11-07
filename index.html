@@ -3,640 +3,804 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="theme-color" content="#07110d">
-<title>번영의 나무 MAX ULTIMATE</title>
+<meta name="theme-color" content="#07111d">
+<title>번영의 나무 AI 분석기</title>
 <style>
-:root{--bg:#07110d;--panel:#102019;--panel2:#172b21;--line:#34513d;--gold:#e7ce7c;--muted:#a6b5a9;--blue:#4385f5;--red:#e74c60;--green:#27a477}
+:root{
+ --bg:#07111d;--panel:#101e30;--panel2:#17283d;--line:#30445c;
+ --gold:#f2d47b;--muted:#aab9ca;--blue:#287cff;--red:#ed4054;
+ --green:#159e70;--white:#f4f7fc
+}
 *{box-sizing:border-box}
-html{font-size:17px}
-body{margin:0;background:var(--bg);color:#edf4ee;font-family:system-ui,"Noto Sans KR",sans-serif;padding:env(safe-area-inset-top) 12px 25px;max-width:900px;margin:auto}
+html{font-size:18px}
+body{
+ margin:0;background:var(--bg);color:var(--white);
+ font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif;
+ padding:env(safe-area-inset-top) 10px calc(25px + env(safe-area-inset-bottom));
+ max-width:950px;margin:auto
+}
 button,input,select{font:inherit}
 button{cursor:pointer;border:0}
-.hero{text-align:center;padding:20px 5px}
-.hero h1{font-size:clamp(25px,6vw,38px);color:var(--gold);margin:7px}
-.hero p{font-size:13px;color:var(--muted)}
-.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px}
-.tab{padding:13px 2px;border-radius:10px;background:#1b2b22;color:#bdc9bf;font-weight:900;font-size:13px}
-.tab.active{background:var(--gold);color:#172016}
-.panel{background:linear-gradient(145deg,#102019,#0d1a13);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
+.hero{text-align:center;padding:18px 4px}
+.eyebrow{font-size:12px;color:var(--gold);font-weight:900;letter-spacing:2px}
+.hero h1{font-size:clamp(25px,6vw,36px);color:var(--gold);margin:8px 0}
+.hero p{font-size:13px;color:var(--muted);margin:0}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;position:sticky;top:0;z-index:5;background:var(--bg);padding:5px 0 10px}
+.tab{padding:14px 3px;border-radius:10px;background:#1b2b40;color:#dce5f1;font-weight:900;font-size:14px}
+.tab.active{background:var(--gold);color:#172033}
+.panel{background:linear-gradient(145deg,#122239,#0e1a2b);border:1px solid var(--line);border-radius:15px;padding:14px;margin-bottom:12px}
 .panel h2{font-size:18px;color:var(--gold);margin:0 0 12px}
-.small{font-size:12px;color:var(--muted);line-height:1.6}
+.small{font-size:13px;color:var(--muted);line-height:1.6}
 .entry{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
-.entry button{padding:18px 2px;border-radius:13px;color:white;font-size:19px;font-weight:900}
-.bank{background:var(--blue)}.player{background:var(--red)}.tie{background:var(--green)}
-.actions{display:flex;gap:8px;margin-top:10px}
-.actions button,.secondary{flex:1;padding:13px 5px;border-radius:10px;background:#405248;color:#fff;font-size:14px;font-weight:800}
-.danger{background:#713d40!important}
+.entry button{padding:20px 3px;border-radius:13px;color:white;font-size:clamp(17px,4vw,22px);font-weight:950}
+.player{background:var(--blue)}
+.banker{background:var(--red)}
+.tie{background:var(--green)}
+.actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.actions button,.secondary{flex:1;min-width:100px;padding:13px 7px;border-radius:10px;background:#40536b;color:white;font-size:14px;font-weight:850}
+.danger{background:#713d46!important}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
-.stat{background:var(--panel2);border-radius:11px;padding:11px 4px;text-align:center;font-size:12px}
-.stat strong{display:block;font-size:24px;margin-top:4px}
-.btxt{color:#78aaff}.ptxt{color:#ff8593}.ttxt{color:var(--gold)}
-.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-.pick-card{background:#172a20;border:1px solid var(--line);border-radius:13px;padding:14px;text-align:center}
-.pick-card .label{font-size:12px;color:var(--muted)}
-.pick-card .pick{font-size:30px;font-weight:1000;margin:6px 0}
-.pick-card .pct{font-size:16px;color:var(--gold)}
-.meter{height:12px;background:#26382d;border-radius:9px;overflow:hidden;display:flex;margin:10px 0}
-.meter span{display:block;height:100%}
-.bfill{background:var(--blue)}.pfill{background:var(--red)}.tfill{background:var(--green)}
-.board-scroll{overflow:auto;max-height:330px}
-.board{display:grid;grid-template-rows:repeat(6,39px);grid-auto-columns:39px;grid-auto-flow:column;gap:4px;width:max-content}
-.cell{border:1px solid #365141;border-radius:7px;display:grid;place-items:center;color:#52675a;font-size:18px;font-weight:900}
-.cell.B{background:var(--blue);color:white}.cell.P{background:var(--red);color:white}.cell.T{background:var(--green);color:white}
+.stat{background:var(--panel2);border-radius:11px;padding:12px 4px;text-align:center;color:#d6e0eb;font-size:13px}
+.stat strong{display:block;font-size:25px;margin-top:4px}
+.blueText{color:#78aaff}.redText{color:#ff8291}.greenText{color:#54d6a5}
+.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pick-card{background:var(--panel2);border:1px solid var(--line);border-radius:13px;padding:14px;text-align:center}
+.pick-card .label{font-size:13px;color:var(--muted)}
+.pick-card .pick{font-size:38px;font-weight:1000;margin:6px 0}
+.pick-card .sub{font-size:13px;color:var(--gold)}
+.notice{background:#1a2b40;border-left:4px solid var(--gold);padding:12px;border-radius:7px;color:#d2deec;font-size:13px;line-height:1.6}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.board-scroll{overflow:auto;max-height:370px;padding-bottom:5px}
+.board{display:grid;grid-template-rows:repeat(6,43px);grid-auto-columns:43px;grid-auto-flow:column;gap:4px;width:max-content}
+.cell{border:1px solid #34485e;border-radius:8px;display:grid;place-items:center;color:#65788c;font-size:20px;font-weight:950;background:#101e30}
+.cell.P{background:var(--blue);color:white;border-color:#6aa4ff}
+.cell.B{background:var(--red);color:white;border-color:#ff8490}
+.cell.T{background:var(--green);color:white;border-color:#60ddb0}
+.modelrow{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:11px 2px;border-bottom:1px solid #30445c;font-size:13px}
+.modelrow b{white-space:nowrap;color:var(--gold)}
+.tag{border-radius:20px;padding:5px 9px;background:#30445c;color:var(--gold);font-size:12px}
 .field{display:flex;flex-direction:column;gap:5px}
-.field label{font-size:12px;color:var(--muted)}
-input,select{width:100%;min-width:0;background:#09150f;color:#f3f7f3;border:1px solid #496451;border-radius:9px;padding:11px}
-.notice{background:#19271f;border-left:3px solid var(--gold);padding:10px;border-radius:6px;color:#c3d0c6;font-size:12px;line-height:1.6}
+.field label{font-size:13px;color:var(--muted)}
+input,select{width:100%;min-width:0;background:#091525;color:white;border:1px solid #49617c;border-radius:9px;padding:12px}
+.wide{width:100%;padding:14px;border-radius:11px;background:var(--gold);color:#172033;font-weight:950}
+.history{max-height:260px;overflow:auto}
+.historyrow{display:flex;justify-content:space-between;gap:8px;padding:10px 0;border-bottom:1px solid #30445c;font-size:13px}
+.scenario{display:flex;justify-content:space-between;padding:9px 2px;border-bottom:1px solid #30445c;font-size:13px}
 .hide{display:none!important}
-.wide{width:100%;padding:14px;border-radius:11px;background:var(--gold);color:#172016;font-weight:900}
-.metric{display:flex;justify-content:space-between;gap:8px;padding:9px 2px;border-bottom:1px solid #263b2d;font-size:13px}
-.metric strong{color:var(--gold)}
-.scenario{display:flex;justify-content:space-between;padding:9px 2px;border-bottom:1px solid #263b2d;font-size:13px}
-.history{max-height:220px;overflow:auto}
-.historyrow{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #263b2d;font-size:12px}
-.foot{text-align:center;color:#728579;font-size:11px;padding:8px}
-@media(min-width:650px){.board{grid-template-rows:repeat(6,45px);grid-auto-columns:45px}.cell{font-size:20px}}
+.foot{text-align:center;color:#8192a6;font-size:12px;padding:12px}
+@media(min-width:650px){
+ body{padding-left:22px;padding-right:22px}
+ .board{grid-template-rows:repeat(6,48px);grid-auto-columns:48px}
+ .cell{font-size:22px}
+}
 </style>
 </head>
 <body>
+
 <header class="hero">
-<div style="color:var(--gold);letter-spacing:3px;font-weight:900">✦ PROSPERITY TREE ✦</div>
-<h1>번영의 나무 MAX ULTIMATE</h1>
-<p>실시간 확률 추론 · 수학 모델 · 시나리오 탐색</p>
+ <div class="eyebrow">✦ PROSPERITY TREE · AI ENGINE ✦</div>
+ <h1>번영의 나무 AI 분석기</h1>
+ <p>확률 추론 · 적응형 모델 · 순차 검증 · 경로 탐색</p>
 </header>
 
 <nav class="tabs">
-<button class="tab active" data-tab="live">실시간 분석</button>
-<button class="tab" data-tab="engine">AI 엔진</button>
-<button class="tab" data-tab="scenarios">시나리오</button>
-<button class="tab" data-tab="records">기록 관리</button>
+ <button class="tab active" data-tab="live">실시간 분석</button>
+ <button class="tab" data-tab="models">엔진 분석</button>
+ <button class="tab" data-tab="records">기록 관리</button>
 </nav>
 
 <main>
 <section id="live" class="view">
-<div class="panel">
-<h2>① 결과 입력</h2>
-<div class="entry">
-<button class="bank" onclick="addResult('B')">BANKER</button>
-<button class="player" onclick="addResult('P')">PLAYER</button>
-<button class="tie" onclick="addResult('T')">TIE</button>
-</div>
-<div class="actions">
-<button onclick="undoResult()">↶ 되돌리기</button>
-<button class="danger" onclick="newShoe()">새 슈 시작</button>
-</div>
-<div class="small" style="margin-top:10px">입력 즉시 다음 확률과 픽을 다시 계산합니다. 타이는 기록하지만 P/B 전이 분석에서는 제외합니다.</div>
-</div>
 
-<div class="panel">
-<h2>② 현재 슈 통계</h2>
-<div class="stats">
-<div class="stat">BANKER<strong class="btxt" id="countB">0</strong></div>
-<div class="stat">PLAYER<strong class="ptxt" id="countP">0</strong></div>
-<div class="stat">TIE<strong class="ttxt" id="countT">0</strong></div>
-</div>
-<div class="small" id="shoeCount" style="margin-top:10px">입력 0 / 80판</div>
-</div>
+ <div class="panel">
+  <h2>① 결과 입력</h2>
+  <div class="entry">
+   <button class="player" onclick="addResult('P')">🔵 PLAYER</button>
+   <button class="banker" onclick="addResult('B')">🔴 BANKER</button>
+   <button class="tie" onclick="addResult('T')">🟢 TIE</button>
+  </div>
+  <div class="actions">
+   <button onclick="undoResult()">↶ 되돌리기</button>
+   <button class="danger" onclick="newShoe()">새 슈 시작</button>
+  </div>
+  <div class="small" style="margin-top:9px">
+   타이는 기록하지만 P/B 통계와 전이 분석에서는 제외합니다.
+   입력 즉시 모든 모델과 다음 픽을 다시 계산합니다.
+  </div>
+ </div>
 
-<div class="panel">
-<h2>③ 다음 판 통합 예상픽</h2>
-<div class="result-grid">
-<div class="pick-card">
-<div class="label">최종 예상픽</div>
-<div class="pick" id="mainPick">대기</div>
-<div class="pct" id="mainPct">--</div>
-</div>
-<div class="pick-card">
-<div class="label">반대 선택</div>
-<div class="pick" id="reversePick">대기</div>
-<div class="pct" id="reversePct">--</div>
-</div>
-</div>
-<div class="meter">
-<span id="meterB" class="bfill"></span>
-<span id="meterP" class="pfill"></span>
-<span id="meterT" class="tfill"></span>
-</div>
-<div class="stats">
-<div class="stat">BANKER<strong id="probB" class="btxt">45.86%</strong></div>
-<div class="stat">PLAYER<strong id="probP" class="ptxt">44.62%</strong></div>
-<div class="stat">TIE<strong id="probT" class="ttxt">9.52%</strong></div>
-</div>
-<div class="notice" id="decisionReason" style="margin-top:12px">결과를 입력하면 분석을 시작합니다.</div>
-</div>
+ <div class="panel">
+  <h2>② 다음 판 최종 예상픽</h2>
+  <div class="pick-card">
+   <div class="label">통합 AI 예상</div>
+   <div class="pick" id="mainPick">대기</div>
+   <div class="sub" id="mainSub">결과 입력 대기</div>
+  </div>
+  <div class="notice" id="decisionReason" style="margin-top:10px">
+   결과를 입력하면 분석을 시작합니다.
+  </div>
+  <div class="stats" style="margin-top:10px">
+   <div class="stat">모델 합의<strong id="agree">-</strong></div>
+   <div class="stat">분석 표본<strong id="sampleN">0</strong></div>
+   <div class="stat">검증 예측<strong id="wfN">0</strong></div>
+  </div>
+ </div>
 
-<div class="panel">
-<h2>④ 페어 별도 확률</h2>
-<div class="stats">
-<div class="stat">플레이어 페어<strong id="pairP">--</strong></div>
-<div class="stat">뱅커 페어<strong id="pairB">--</strong></div>
-<div class="stat">페어 통합 신호<strong id="pairSignal">대기</strong></div>
-</div>
-<div class="small" style="margin-top:9px">표준 8덱 카드 구성의 초기 근사치입니다. 실제 페어 배팅은 게임의 페어 판정 규칙과 배당에 따라 기대값이 달라집니다.</div>
-</div>
+ <div class="panel">
+  <h2>③ 플레이어 · 뱅커 페어</h2>
+  <div class="result-grid">
+   <div class="pick-card">
+    <div class="label">🔵 PLAYER PAIR</div>
+    <div class="pick blueText" id="pairP">대기</div>
+    <div class="sub">첫 두 장 동일 랭크</div>
+   </div>
+   <div class="pick-card">
+    <div class="label">🔴 BANKER PAIR</div>
+    <div class="pick redText" id="pairB">대기</div>
+    <div class="sub">첫 두 장 동일 랭크</div>
+   </div>
+  </div>
+  <div class="small" id="pairNote" style="margin-top:10px">
+   표준 8덱 카드 구성 기준 시뮬레이션
+  </div>
+ </div>
 
-<div class="panel">
-<h2>⑤ 6행 × 80열 결과판</h2>
-<div class="board-scroll"><div class="board" id="board"></div></div>
-</div>
+ <div class="panel">
+  <h2>④ 모델별 계산 기여도</h2>
+  <div id="modelRows" class="small">분석 대기</div>
+ </div>
 
-<div class="panel">
-<h2>⑥ 예측 검증</h2>
-<div class="stats">
-<div class="stat">예측 기록<strong id="predCount">0</strong></div>
-<div class="stat">적중률<strong id="hitRate">--</strong></div>
-<div class="stat">Brier Score<strong id="brier">--</strong></div>
-</div>
-<div class="small" style="margin-top:9px">입력 시점의 예측을 저장하고 다음 결과로 검증합니다. 과거에 입력한 기록은 실제 당시 예측이 아니므로 실시간 성능과 구분해야 합니다.</div>
-</div>
+ <div class="panel">
+  <h2>⑤ 미래 6판 경로 탐색</h2>
+  <div class="small">
+   현재 통합 추정값을 사용한 64개 경로 비교입니다.
+   실제 미래 결과를 보장하는 예측은 아닙니다.
+  </div>
+  <div id="scenarioList"></div>
+ </div>
+
+ <div class="panel">
+  <h2>⑥ 6행 × 80열 결과판</h2>
+  <div class="stats" style="margin-bottom:10px">
+   <div class="stat">🔵 PLAYER<strong id="countP" class="blueText">0</strong></div>
+   <div class="stat">🔴 BANKER<strong id="countB" class="redText">0</strong></div>
+   <div class="stat">🟢 TIE<strong id="countT" class="greenText">0</strong></div>
+  </div>
+  <div class="small" id="shoeCount">입력 0 / 80</div>
+  <div class="board-scroll">
+   <div class="board" id="board"></div>
+  </div>
+ </div>
+
+ <div class="panel">
+  <h2>⑦ 실제 카드 구성 입력 (선택)</h2>
+  <div class="grid2">
+   <div class="field">
+    <label>카드 랭크</label>
+    <select id="dealRank">
+     <option>A</option><option>2</option><option>3</option>
+     <option>4</option><option>5</option><option>6</option>
+     <option>7</option><option>8</option><option>9</option>
+     <option>10</option><option>J</option><option>Q</option><option>K</option>
+    </select>
+   </div>
+   <div class="field">
+    <label>카드 위치</label>
+    <select id="dealSide">
+     <option value="P">PLAYER</option>
+     <option value="B">BANKER</option>
+     <option value="?">미지정</option>
+    </select>
+   </div>
+  </div>
+  <div class="actions">
+   <button onclick="addDealtCard()">카드 추가</button>
+   <button onclick="undoDealtCard()">마지막 카드 삭제</button>
+  </div>
+  <div class="small" id="dealtList" style="margin-top:9px">실제 카드 입력 없음</div>
+ </div>
+
 </section>
 
-<section id="engine" class="view hide">
-<div class="panel">
-<h2>AI 엔진 작동 상태</h2>
-<div class="notice">모든 수치는 현재 입력 결과에서 실제 계산한 값입니다. 알고리즘이 존재한다고 해서 다음 결과를 확실히 맞히는 것은 아닙니다.</div>
-<div id="engineList"></div>
-</div>
-<div class="panel">
-<h2>고급 수학 지표</h2>
-<div id="mathMetrics"></div>
-</div>
-<div class="panel">
-<h2>모델 검증 및 최적화</h2>
-<div class="metric"><span>워크포워드 예측 수</span><strong id="wfN">0</strong></div>
-<div class="metric"><span>워크포워드 적중률</span><strong id="wfHit">--</strong></div>
-<div class="metric"><span>로그 손실</span><strong id="logLoss">--</strong></div>
-<div class="metric"><span>모델 가중치 최적화</span><strong id="optStatus">대기</strong></div>
-<button class="wide" style="margin-top:10px" onclick="optimizeWeights()">유전 알고리즘 최적화 실행</button>
-</div>
-</section>
+<section id="models" class="view hide">
+ <div class="panel">
+  <h2>활성 분석 엔진</h2>
+  <div class="notice">
+   각 엔진은 별도의 계산값을 산출합니다.
+   검증 표본이 충분하면 과거 순차 예측 성능으로 가중치를 최적화합니다.
+   표본이 부족하면 동일 가중치로 시작합니다.
+  </div>
+  <div id="engineDetail"></div>
+ </div>
 
-<section id="scenarios" class="view hide">
-<div class="panel">
-<h2>다음 6판 경로 탐색</h2>
-<div class="stats">
-<div class="stat">탐색 경로<strong>64</strong></div>
-<div class="stat">P 우세 경로<strong id="scenarioP">0</strong></div>
-<div class="stat">B 우세 경로<strong id="scenarioB">0</strong></div>
-</div>
-<div id="scenarioList"></div>
-</div>
-<div class="panel">
-<h2>몬테카를로 시뮬레이션</h2>
-<div class="metric"><span>실행 횟수</span><strong id="mcCount">0</strong></div>
-<div class="metric"><span>6판 평균 P 개수</span><strong id="mcP">--</strong></div>
-<div class="metric"><span>6판 평균 B 개수</span><strong id="mcB">--</strong></div>
-<div class="metric"><span>최빈 경로</span><strong id="mcPath">--</strong></div>
-</div>
+ <div class="panel">
+  <h2>워크포워드 검증</h2>
+  <div class="stats">
+   <div class="stat">검증 수<strong id="vN">0</strong></div>
+   <div class="stat">적중 수<strong id="vHit">-</strong></div>
+   <div class="stat">Brier<strong id="vBrier">-</strong></div>
+  </div>
+  <div class="small" id="vNote" style="margin-top:10px">
+   이전 결과만으로 다음 결과를 예측한 뒤 실제 결과와 비교합니다.
+  </div>
+ </div>
+
+ <div class="panel">
+  <h2>수학적 진단</h2>
+  <div id="mathDetail" class="small"></div>
+ </div>
 </section>
 
 <section id="records" class="view hide">
-<div class="panel">
-<h2>슈 기록 및 백업</h2>
-<div class="actions">
-<button onclick="saveCurrentShoe()">현재 슈 저장</button>
-<button onclick="exportData()">JSON 백업</button>
-</div>
-<label class="wide" style="display:block;text-align:center;margin-top:10px">백업 불러오기<input type="file" id="importFile" accept="application/json" style="display:none"></label>
-<div class="history" id="history" style="margin-top:12px"></div>
-</div>
-<div class="panel">
-<h2>데이터 초기화</h2>
-<button class="wide danger" onclick="wipeAll()">전체 데이터 삭제</button>
-</div>
+ <div class="panel">
+  <h2>슈 기록 및 백업</h2>
+  <div class="actions">
+   <button onclick="saveCurrentShoe()">현재 슈 저장</button>
+   <button onclick="exportData()">JSON 백업</button>
+  </div>
+  <label class="wide" style="display:block;text-align:center;margin-top:10px">
+   백업 불러오기
+   <input type="file" id="importFile" accept="application/json" style="display:none">
+  </label>
+  <div class="history" id="history" style="margin-top:12px"></div>
+ </div>
+ <div class="panel">
+  <h2>전체 데이터 초기화</h2>
+  <button class="wide danger" onclick="wipeAll()">전체 데이터 삭제</button>
+ </div>
 </section>
 </main>
 
-<footer class="foot">번영의 나무 MAX ULTIMATE · 확률 분석 참고 도구</footer>
+<footer class="foot">
+ 번영의 나무 · 통계 분석 참고 도구 · 적중 및 수익 보장 기능 아님
+</footer>
 
 <script>
-"use strict";
+'use strict';
 
-const KEY="prosperity_tree_max_ultimate_v1";
-const BASE={B:.4586,P:.4462,T:.0952};
-const MODEL_NAMES=[
-"베이지안 추론","1차 마르코프","2차 마르코프","3차 마르코프",
-"HMM 상태 추정","칼만형 확률 필터","입자 필터","최근 가중 EWMA",
-"CUSUM 변화 감지","엔트로피 기반 보정","KL 발산","Jensen-Shannon 발산",
-"전이행렬 수축 모델","빈도 기반 수축 모델"
-];
+const KEY='prosperity_tree_engine_v2';
+const BASE_P=.4932;
+const BASE_B=.5068;
+const TIE=.0952;
+const MODEL_COUNT=9;
 
 let state={
- shoe:[],history:[],predictions:[],
- weights:Array(14).fill(1/14),
- pair:{P:null,B:null}
+ shoe:[],
+ dealt:[],
+ history:[]
 };
 
 const $=id=>document.getElementById(id);
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const mean=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:0;
-const sigmoid=x=>1/(1+Math.exp(-x));
-const logit=p=>Math.log(clamp(p,.00001,.99999)/(1-clamp(p,.00001,.99999)));
-const norm=(b,p,t)=>{
- let s=b+p+t;
- return {B:b/s,P:p/s,T:t/s};
-};
+const pb=()=>state.shoe.filter(x=>x==='P'||x==='B');
 
-function save(){
+function persist(){
  try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}
 }
 function load(){
  try{
-  let x=JSON.parse(localStorage.getItem(KEY));
-  if(x)state={...state,...x};
+  const x=JSON.parse(localStorage.getItem(KEY)||'null');
+  if(x&&Array.isArray(x.shoe))state={...state,...x};
  }catch(e){}
- if(!Array.isArray(state.weights)||state.weights.length!==14)state.weights=Array(14).fill(1/14);
 }
-
-function outcomes(){
- return state.shoe.filter(x=>x==="B"||x==="P");
+function logit(p){
+ p=clamp(p,.000001,.999999);
+ return Math.log(p/(1-p));
 }
-function last(arr,n){return arr.slice(Math.max(0,arr.length-n))}
-function counts(arr){
- return {B:arr.filter(x=>x==="B").length,P:arr.filter(x=>x==="P").length};
-}
-function betaModel(arr){
- let c=counts(arr);
- let aB=1+c.B,aP=1+c.P;
- return aB/(aB+aP);
-}
-function markovModel(arr,order){
- if(arr.length<=order)return .5;
- let key=arr.slice(-order).join("");
- let b=0,p=0;
- for(let i=order;i<arr.length;i++){
-  if(arr.slice(i-order,i).join("")===key){
-   if(arr[i]==="B")b++;else p++;
-  }
- }
- return (b+2)/(b+p+4);
-}
-function frequencyModel(arr){
- let c=counts(arr);
- return (c.B+10)/(c.B+c.P+20);
-}
-function ewmaModel(arr){
- if(!arr.length)return .5;
- let v=.5,alpha=.22;
- for(let x of arr)v=(1-alpha)*v+alpha*(x==="B"?1:0);
- return clamp(.5+(v-.5)*.22,.35,.65);
-}
-function hmmModel(arr){
- let states=[.32,.5,.68],trans=[[.82,.14,.04],[.12,.76,.12],[.04,.14,.82]];
- let prior=[1/3,1/3,1/3];
- for(let x of arr){
-  let next=[0,0,0];
-  for(let j=0;j<3;j++)for(let i=0;i<3;i++)next[j]+=prior[i]*trans[i][j];
-  let obs=x==="B"?1:0;
-  for(let j=0;j<3;j++)next[j]*=obs?states[j]:1-states[j];
-  let s=next.reduce((a,b)=>a+b,0);
-  prior=next.map(v=>v/(s||1));
- }
- return prior.reduce((s,v,i)=>s+v*states[i],0);
-}
-function kalmanModel(arr){
- let x=.5,p=.08,q=.004,r=.18;
- for(let v of arr){
-  p+=q;
-  let z=v==="B"?1:0;
-  let k=p/(p+r);
-  x=x+k*(z-x);
-  p=(1-k)*p;
- }
- return clamp(.5+(x-.5)*.2,.35,.65);
-}
-function particleModel(arr){
- const N=500,particles=Array(N).fill(.5),weights=Array(N).fill(1/N);
- let ps=particles.slice(),ws=weights.slice();
- for(let v of arr){
-  let obs=v==="B"?1:0;
-  let total=0;
-  for(let i=0;i<N;i++){
-   ps[i]=clamp(ps[i]+(Math.random()-.5)*.025,.05,.95);
-   ws[i]*=obs?ps[i]:1-ps[i];
-   total+=ws[i];
-  }
-  if(total===0)ws.fill(1/N);
-  else ws=ws.map(w=>w/total);
-  let cdf=[],s=0;
-  for(let w of ws){s+=w;cdf.push(s)}
-  let newP=[];
-  for(let i=0;i<N;i++){
-   let r=Math.random(),j=cdf.findIndex(v=>v>=r);
-   newP.push(ps[Math.max(0,j)]);
-  }
-  ps=newP;ws=Array(N).fill(1/N);
- }
- return mean(ps);
-}
-function cusum(arr){
- let pos=0,neg=0,max=0;
- for(let x of arr){
-  let v=(x==="B"?1:0)-.5;
-  pos=Math.max(0,pos+v-.08);
-  neg=Math.max(0,neg-v-.08);
-  max=Math.max(max,pos,neg);
- }
- return max;
+function sigmoid(x){
+ return 1/(1+Math.exp(-clamp(x,-20,20)));
 }
 function entropy(p){
  p=clamp(p,.000001,.999999);
- return -p*Math.log2(p)-(1-p)*Math.log2(1-p);
+ return -(p*Math.log2(p)+(1-p)*Math.log2(1-p));
 }
 function kl(p,q){
- p=clamp(p,.000001,.999999);q=clamp(q,.000001,.999999);
+ p=clamp(p,.000001,.999999);
+ q=clamp(q,.000001,.999999);
  return p*Math.log(p/q)+(1-p)*Math.log((1-p)/(1-q));
 }
 function jsd(p,q){
  return .5*kl(p,(p+q)/2)+.5*kl(q,(p+q)/2);
 }
-function transitionModel(arr){
- if(arr.length<2)return .5;
- let prev=arr[arr.length-1],b=0,p=0;
- for(let i=1;i<arr.length;i++)if(arr[i-1]===prev){
-  if(arr[i]==="B")b++;else p++;
- }
- return (b+2)/(b+p+4);
-}
-function modelPredictions(arr){
- let recent=last(arr,18);
- let all=arr;
- let f=[
-  betaModel(all),
-  transitionModel(all),
-  markovModel(all,2),
-  markovModel(all,3),
-  hmmModel(recent),
-  kalmanModel(recent),
-  particleModel(recent),
-  ewmaModel(recent),
-  clamp(.5+(ewmaModel(recent)-.5)*(1+Math.min(1,cusum(recent)/3)*.3),.35,.65),
-  clamp(.5+(frequencyModel(recent)-.5)*(1+(1-entropy(frequencyModel(recent)))*.3),.35,.65),
-  clamp(.5+(frequencyModel(recent)-.5)*(1+Math.min(1,kl(frequencyModel(recent),.5))),.35,.65),
-  clamp(.5+(frequencyModel(recent)-.5)*(1+Math.min(1,jsd(frequencyModel(recent),.5))),.35,.65),
-  clamp(.5+(markovModel(all,2)-.5)*.65,.35,.65),
-  frequencyModel(recent)
- ];
- return f;
+function smoothRate(seq,a=1,b=1){
+ return (seq.filter(x=>x==='P').length+a)/(seq.length+a+b);
 }
 
-function weightedProbability(preds,weights){
- let s=0,w=0;
- preds.forEach((p,i)=>{let wi=weights[i]||0;s+=p*wi;w+=wi});
- return w?s/w:.5;
-}
-function ensemble(arr){
- let preds=modelPredictions(arr);
- let p=weightedProbability(preds,state.weights);
- return {preds,p,weights:state.weights.slice()};
-}
-function probability(arr){
- let e=ensemble(arr);
- let pB=.4932+(e.p-.5)*.28;
- pB=clamp(pB,.42,.56);
- let tie=.0952;
- return norm(pB*(1-tie), (1-pB)*(1-tie),tie);
-}
+/* 1. 베이지안 */
+function modelPredictions(seq){
+ const n=seq.length;
+ const p0=BASE_P;
 
-function brier(pred,actual){
- let y=actual==="B"?1:0;
- return (pred-y)*(pred-y);
-}
-function logloss(pred,actual){
- let y=actual==="B"?1:0;
- return -(y*Math.log(clamp(pred,.00001,.99999))+(1-y)*Math.log(clamp(1-pred,.00001,.99999)));
-}
+ const recent=seq.slice(-12);
+ const short=seq.slice(-6);
 
-function walkForward(arr){
- if(arr.length<8)return {n:0,hit:null,brier:null,log:null};
- let hit=0,total=0,bs=0,ll=0;
- for(let i=5;i<arr.length;i++){
-  let hist=arr.slice(0,i);
-  let p=ensemble(hist).p;
-  let y=arr[i];
-  if((p>=.5)===(y==="B"))hit++;
-  bs+=brier(p,y);ll+=logloss(p,y);total++;
- }
- return {n:total,hit:total?hit/total:null,brier:total?bs/total:null,log:total?ll/total:null};
-}
+ const priorA=p0*30;
+ const priorB=(1-p0)*30;
+ const bayes=(seq.filter(x=>x==='P').length+priorA)/(n+priorA+priorB);
 
-function geneticOptimize(){
- let arr=outcomes();
- if(arr.length<12){$("optStatus").textContent="최소 12개 P/B 결과 필요";return}
- let pop=[];
- for(let k=0;k<30;k++){
-  let w=Array.from({length:14},()=>Math.random());
-  let s=w.reduce((a,b)=>a+b,0);
-  pop.push(w.map(x=>x/s));
- }
- function score(w){
-  let loss=0,n=0;
-  for(let i=5;i<arr.length;i++){
-   let ps=modelPredictions(arr.slice(0,i));
-   let p=weightedProbability(ps,w);
-   loss+=logloss(p,arr[i]);n++;
+ /* 2. 마르코프 1차 */
+ let markov=p0;
+ if(n>=2){
+  const last=seq[n-1];
+  const arr=[];
+  for(let i=1;i<n;i++){
+   if(seq[i-1]===last)arr.push(seq[i]);
   }
-  return loss/(n||1);
+  markov=(arr.filter(x=>x==='P').length+3*p0)/(arr.length+3);
  }
- for(let g=0;g<18;g++){
+
+ /* 3. 마르코프 2차 */
+ let high=markov;
+ if(n>=3){
+  const key=seq.slice(-2).join('');
+  const arr=[];
+  for(let i=2;i<n;i++){
+   if(seq.slice(i-2,i).join('')===key)arr.push(seq[i]);
+  }
+  const raw=(arr.filter(x=>x==='P').length+3*markov)/(arr.length+3);
+  high=(arr.length/(arr.length+10))*raw+(10/(arr.length+10))*markov;
+ }
+
+ /* 4. EWMA */
+ let num=0,den=0;
+ seq.forEach((x,i)=>{
+  const w=Math.pow(.86,n-1-i);
+  num+=w*(x==='P'?1:0);
+  den+=w;
+ });
+ const ewma=(num+4*p0)/(den+4);
+
+ /* 5. 2상태 HMM */
+ let states=[.5,.5];
+ const emission=[.57,.43];
+ const trans=[[.88,.12],[.12,.88]];
+ for(const y of seq){
+  const obs=y==='P';
+  const next=[0,0];
+  for(let j=0;j<2;j++){
+   for(let i=0;i<2;i++){
+    next[j]+=states[i]*trans[i][j]*(obs?emission[j]:1-emission[j]);
+   }
+  }
+  const z=next[0]+next[1]||1;
+  states=next.map(v=>v/z);
+ }
+ const hmm=states[0]*emission[0]+states[1]*emission[1];
+
+ /* 6. 칼만형 잠재 상태 추정 */
+ let x=logit(p0),v=.18;
+ for(const y of seq){
+  v+=.035;
+  const obs=logit(y==='P'?.82:.18);
+  const R=.85;
+  const K=v/(v+R);
+  x+=K*(obs-x);
+  v=(1-K)*v;
+ }
+ const kalman=sigmoid(x);
+
+ /* 7. CUSUM 변화 감지 */
+ let pos=0,neg=0;
+ for(const y of seq){
+  const d=(y==='P'?1:0)-p0;
+  pos=Math.max(0,pos+d-.12);
+  neg=Math.max(0,neg-d-.12);
+ }
+ const cusum=clamp(p0+(pos-neg)*.012,.35,.65);
+
+ /* 8. 블록 부트스트랩형 진단 */
+ let boot=p0;
+ if(n>=4){
+  const vals=[];
+  for(let i=0;i<=n-4;i++){
+   const block=seq.slice(i,i+4);
+   vals.push((block.filter(x=>x==='P').length+.5)/5);
+  }
+  boot=.7*mean(vals)+.3*p0;
+ }
+
+ /* 9. 엔트로피 기반 수축 */
+ const recentRate=smoothRate(recent);
+ const ent=entropy(recentRate);
+ const entropyModel=p0+(recentRate-p0)*clamp(1-ent*.55,.25,.65);
+
+ return [
+  {id:'bayes',name:'베이지안 베타-이항',p:bayes,desc:'사후확률 갱신'},
+  {id:'markov',name:'마르코프 1차',p:markov,desc:'직전 결과 조건부 전이'},
+  {id:'high',name:'마르코프 2차',p:high,desc:'최근 두 결과 조건부 전이'},
+  {id:'ewma',name:'EWMA',p:ewma,desc:'최근 관측 가중 추정'},
+  {id:'hmm',name:'2상태 HMM',p:hmm,desc:'잠재 상태 필터링'},
+  {id:'kalman',name:'칼만형 추정',p:kalman,desc:'잠재 로그오즈 필터'},
+  {id:'cusum',name:'CUSUM',p:cusum,desc:'누적 변화 진단'},
+  {id:'bootstrap',name:'블록 재표본 진단',p:boot,desc:'4개 블록 재표본'},
+  {id:'entropy',name:'엔트로피 수축',p:entropyModel,desc:'불확실성 기반 수축'}
+ ];
+}
+
+/* 순차 검증 */
+function brier(p,y){
+ return (p-(y==='P'?1:0))**2;
+}
+function logloss(p,y){
+ const z=y==='P'?p:1-p;
+ return -Math.log(clamp(z,.000001,1));
+}
+function walkForward(seq){
+ const rows=[];
+ for(let i=8;i<seq.length;i++){
+  const hist=seq.slice(0,i);
+  const mods=modelPredictions(hist);
+  const pred=mean(mods.map(m=>m.p));
+  rows.push({p:pred,y:seq[i]});
+ }
+ const hits=rows.filter(r=>(r.p>=.5?'P':'B')===r.y).length;
+ return {
+  n:rows.length,
+  hits,
+  hit:rows.length?hits/rows.length:null,
+  brier:rows.length?mean(rows.map(r=>brier(r.p,r.y))):null,
+  logloss:rows.length?mean(rows.map(r=>logloss(r.p,r.y))):null
+ };
+}
+
+/* 결정론적 유전 알고리즘 가중치 최적화 */
+function geneticWeights(seq,mods){
+ const training=[];
+ for(let i=8;i<seq.length;i++){
+  training.push({
+   m:modelPredictions(seq.slice(0,i)),
+   y:seq[i]
+  });
+ }
+ const k=mods.length;
+ if(training.length<20)return Array(k).fill(1/k);
+
+ let seed=2166136261;
+ for(const ch of seq){
+  seed=Math.imul(seed^ch.charCodeAt(0),16777619);
+ }
+ const rnd=()=>{
+  seed=(Math.imul(seed,1664525)+1013904223)>>>0;
+  return seed/4294967296;
+ };
+ const normalize=a=>{
+  const s=a.reduce((x,y)=>x+y,0);
+  return a.map(x=>x/s);
+ };
+ let pop=Array.from({length:24},()=>normalize(
+  Array.from({length:k},()=>rnd()+.05)
+ ));
+ function score(w){
+  return mean(training.map(r=>{
+   const p=clamp(r.m.reduce((s,m,i)=>s+w[i]*m.p,0),.001,.999);
+   return logloss(p,r.y);
+  }));
+ }
+ for(let g=0;g<35;g++){
   pop.sort((a,b)=>score(a)-score(b));
-  let next=pop.slice(0,6).map(x=>x.slice());
-  while(next.length<30){
-   let a=pop[Math.floor(Math.random()*10)];
-   let b=pop[Math.floor(Math.random()*10)];
-   let child=a.map((v,i)=>Math.max(.001,(Math.random()<.5?v:b[i])*(.8+Math.random()*.4)));
-   let sum=child.reduce((x,y)=>x+y,0);
-   next.push(child.map(x=>x/sum));
+  const next=pop.slice(0,6).map(x=>x.slice());
+  while(next.length<24){
+   const a=pop[Math.floor(rnd()*8)];
+   const b=pop[Math.floor(rnd()*8)];
+   const c=a.map((v,i)=>Math.max(.001,
+    (rnd()<.5?v:b[i])+(rnd()-.5)*.08
+   ));
+   next.push(normalize(c));
   }
   pop=next;
  }
  pop.sort((a,b)=>score(a)-score(b));
- state.weights=pop[0];
- save();
- $("optStatus").textContent="최적화 실행 완료 · 검증 손실 "+score(pop[0]).toFixed(4);
- render();
+ return pop[0];
 }
 
-function monteCarlo(p,n=3000,depth=6){
- let paths={};let totalP=0,totalB=0;
- for(let i=0;i<n;i++){
-  let s="",pc=0,bc=0;
-  for(let j=0;j<depth;j++){
-   let b=Math.random()<p;
-   s+=b?"B":"P";
-   if(b)bc++;else pc++;
+/* 통합 엔진 */
+function integrated(seq){
+ const mods=modelPredictions(seq);
+ const weights=geneticWeights(seq,mods);
+ const wf=walkForward(seq);
+
+ const weighted=mods.reduce((s,m,i)=>s+m.p*weights[i],0);
+ const base=BASE_P;
+
+ /* 과도한 단기 추정값 확대 방지 */
+ const shrink=clamp(seq.length/(seq.length+80),0,.35);
+ const p=clamp(base+(weighted-base)*shrink,.001,.999);
+
+ const side=p>=.5?'P':'B';
+ const agreement=mods.filter(m=>(m.p>=.5)===(p>=.5)).length;
+ const edge=Math.abs(p-.5);
+ const minEdge=seq.length<20?.035:seq.length<50?.025:.018;
+
+ const decision=(edge>=minEdge&&agreement>=6)?'PICK':'PASS';
+
+ return {mods,weights,wf,p,side,agreement,edge,minEdge,decision};
+}
+
+/* 페어 확률 전용 카드 계산 */
+function cardCounts(){
+ const ranks=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+ const c={};
+ ranks.forEach(r=>c[r]=32);
+ for(const d of state.dealt){
+  if(c[d.rank]>0)c[d.rank]--;
+ }
+ return c;
+}
+function seededRandom(seed){
+ let s=seed>>>0;
+ return ()=>{
+  s=(Math.imul(s,1664525)+1013904223)>>>0;
+  return s/4294967296;
+ };
+}
+function drawRank(c,rnd){
+ let total=0;
+ for(const k in c)total+=c[k];
+ if(total<=0)return null;
+ let x=rnd()*total;
+ for(const k in c){
+  x-=c[k];
+  if(x<0){
+   c[k]--;
+   return k;
   }
-  paths[s]=(paths[s]||0)+1;
-  totalP+=pc;totalB+=bc;
  }
- let best=Object.entries(paths).sort((a,b)=>b[1]-a[1])[0];
- return {paths,totalP:totalP/n,totalB:totalB/n,best:best?best[0]:"--"};
+ return null;
 }
-
-function scenarios(p){
- let a=[];
- for(let i=0;i<64;i++){
-  let s=i.toString(2).padStart(6,"0").replaceAll("0","P").replaceAll("1","B");
-  let pr=1;
-  for(let c of s)pr*=c==="B"?p:1-p;
-  a.push({s,pr,b:(s.match(/B/g)||[]).length});
+function pairSimulation(n=12000){
+ const base=cardCounts();
+ const seed=state.dealt.reduce((s,x)=>s+x.rank.charCodeAt(0)*31,24681357)+state.shoe.length*7919;
+ const rnd=seededRandom(seed);
+ let p=0,b=0,both=0;
+ for(let i=0;i<n;i++){
+  const c={...base};
+  const p1=drawRank(c,rnd);
+  const p2=drawRank(c,rnd);
+  const b1=drawRank(c,rnd);
+  const b2=drawRank(c,rnd);
+  const pp=p1===p2;
+  const bp=b1===b2;
+  if(pp)p++;
+  if(bp)b++;
+  if(pp&&bp)both++;
  }
- return a.sort((x,y)=>y.pr-x.pr);
+ return {p:p/n,b:b/n,both:both/n};
 }
 
-function updatePrediction(){
- let arr=outcomes();
- let pr=probability(arr);
- let side=pr.B>=pr.P?"B":"P";
- let reverse=side==="B"?"P":"B";
- $("mainPick").textContent=side==="B"?"BANKER":"PLAYER";
- $("mainPick").style.color=side==="B"?"#78aaff":"#ff8593";
- $("mainPct").textContent=(pr[side]*100).toFixed(2)+"%";
- $("reversePick").textContent=reverse==="B"?"BANKER":"PLAYER";
- $("reversePct").textContent=(pr[reverse]*100).toFixed(2)+"%";
- $("probB").textContent=(pr.B*100).toFixed(2)+"%";
- $("probP").textContent=(pr.P*100).toFixed(2)+"%";
- $("probT").textContent=(pr.T*100).toFixed(2)+"%";
- $("meterB").style.width=(pr.B*100)+"%";
- $("meterP").style.width=(pr.P*100)+"%";
- $("meterT").style.width=(pr.T*100)+"%";
+/* 화면 갱신 */
+function render(){
+ const seq=pb();
+ const P=state.shoe.filter(x=>x==='P').length;
+ const B=state.shoe.filter(x=>x==='B').length;
+ const T=state.shoe.filter(x=>x==='T').length;
 
- let e=ensemble(arr);
- let edge=Math.abs(e.p-.5);
- let agree=e.p>=.5?e.preds.filter(x=>x>=.5).length:e.preds.filter(x=>x<.5).length;
- let enough=arr.length>=10;
- let pick=enough&&edge>=.012&&agree>=8;
- $("decisionReason").textContent=
-  (pick?"예상픽 "+(e.p>=.5?"BANKER":"PLAYER"):"PASS")+
-  " · 엔진 합의 "+agree+"/14 · 확률 편차 "+(edge*100).toFixed(2)+
-  "% · "+(enough?"최소 데이터 조건 충족":"데이터 부족: 10개 이상 필요");
+ $('countP').textContent=P;
+ $('countB').textContent=B;
+ $('countT').textContent=T;
+ $('shoeCount').textContent=`입력 ${state.shoe.length} / 80 · P/B 분석 표본 ${seq.length}`;
 
- let wf=walkForward(arr);
- $("predCount").textContent=wf.n;
- $("hitRate").textContent=wf.hit===null?"--":(wf.hit*100).toFixed(1)+"%";
- $("brier").textContent=wf.brier===null?"--":wf.brier.toFixed(4);
- $("wfN").textContent=wf.n;
- $("wfHit").textContent=wf.hit===null?"--":(wf.hit*100).toFixed(1)+"%";
- $("logLoss").textContent=wf.log===null?"--":wf.log.toFixed(4);
-
- let c=counts(arr);
- let pP=1/(1+Math.exp(-2.2));
- $("pairP").textContent=(pP*100).toFixed(2)+"%";
- $("pairB").textContent=(pP*100).toFixed(2)+"%";
- $("pairSignal").textContent="별도 계산 필요";
-
- let ent=entropy(e.p);
- let recent=last(arr,12);
- let change=kl(frequencyModel(recent),.5);
- $("mathMetrics").innerHTML=
- `<div class="metric"><span>예측 엔트로피</span><strong>${ent.toFixed(4)} bit</strong></div>
- <div class="metric"><span>최근 분포 KL 발산</span><strong>${change.toFixed(5)}</strong></div>
- <div class="metric"><span>Jensen-Shannon 발산</span><strong>${jsd(frequencyModel(recent),.5).toFixed(5)}</strong></div>
- <div class="metric"><span>CUSUM 변화량</span><strong>${cusum(recent).toFixed(4)}</strong></div>
- <div class="metric"><span>앙상블 확률 P(B)</span><strong>${(e.p*100).toFixed(2)}%</strong></div>
- <div class="metric"><span>모델 수</span><strong>${e.preds.length}</strong></div>`;
-
- $("engineList").innerHTML=MODEL_NAMES.map((name,i)=>
- `<div class="metric"><span>${name}</span><strong>${(e.preds[i]*100).toFixed(2)}% B</strong></div>`).join("");
-
- renderScenarios(e.p);
- renderBoard();
-}
-
-function renderBoard(){
- let b=state.shoe.filter(x=>x==="B").length;
- let p=state.shoe.filter(x=>x==="P").length;
- let t=state.shoe.filter(x=>x==="T").length;
- $("countB").textContent=b;$("countP").textContent=p;$("countT").textContent=t;
- $("shoeCount").textContent=`입력 ${state.shoe.length} / 80판 · 타이 포함`;
- let board=$("board");board.innerHTML="";
+ const board=$('board');
+ board.innerHTML='';
  for(let i=0;i<480;i++){
-  let el=document.createElement("div");
-  let v=state.shoe[i]||"";
-  el.className="cell "+v;
+  const el=document.createElement('div');
+  const v=state.shoe[i]||'';
+  el.className='cell '+v;
   el.textContent=v;
   board.appendChild(el);
  }
+
+ const a=integrated(seq);
+ const names={P:'PLAYER',B:'BANKER'};
+ const pick=$('mainPick');
+
+ pick.textContent=a.decision==='PASS'?'PASS':names[a.side];
+ pick.style.color=a.decision==='PASS'?'#f2d47b':a.side==='P'?'#78aaff':'#ff8291';
+
+ $('mainSub').textContent=a.decision==='PASS'
+  ?'우세 근거 부족'
+  :'통합 모델 최종 선택';
+
+ $('decisionReason').textContent=a.decision==='PASS'
+  ?`PASS · 모델 합의 ${a.agreement}/9 · 현재 표본에서 사전 설정한 우세 기준을 충족하지 못했습니다.`
+  :`${names[a.side]} · 모델 합의 ${a.agreement}/9 · 현재 통합 모델의 최종 후보입니다. 적중을 보장하지 않습니다.`;
+
+ $('agree').textContent=a.agreement+'/9';
+ $('sampleN').textContent=seq.length;
+ $('wfN').textContent=a.wf.n;
+
+ $('modelRows').innerHTML=a.mods.map((m,i)=>`
+  <div class="modelrow">
+   <span>${m.name}<br><small>${m.desc}</small></span>
+   <b>${m.p>=.5?'P 우세':'B 우세'} · 가중치 ${(a.weights[i]*100).toFixed(1)}</b>
+  </div>
+ `).join('');
+
+ renderScenarios(a);
+ renderPairs();
+ renderEngines(a);
+ renderValidation(a.wf);
+ renderHistory();
 }
-function renderScenarios(p){
- let a=scenarios(p);
- $("scenarioP").textContent=a.filter(x=>x.b<=2).length;
- $("scenarioB").textContent=a.filter(x=>x.b>=4).length;
- $("scenarioList").innerHTML=a.map((x,i)=>
- `<div class="scenario"><span>${String(i+1).padStart(2,"0")} · ${x.s.split("").join(" ")}</span><strong>${(x.pr*100).toFixed(3)}%</strong></div>`).join("");
- let mc=monteCarlo(p,3000,6);
- $("mcCount").textContent="3,000";
- $("mcP").textContent=mc.totalP.toFixed(2);
- $("mcB").textContent=mc.totalB.toFixed(2);
- $("mcPath").textContent=mc.best;
+
+/* 페어 표시 */
+function renderPairs(){
+ const mc=pairSimulation(12000);
+ $('pairP').textContent=(mc.p*100).toFixed(2);
+ $('pairB').textContent=(mc.b*100).toFixed(2);
+ $('pairNote').textContent=
+  `실제 입력 카드 ${state.dealt.length}장 반영 · 12,000회 카드 시뮬레이션 · 두 장의 랭크가 같으면 페어로 계산합니다. 숫자는 화면에서 % 기호 없이 표시합니다.`;
+ $('dealtList').textContent=state.dealt.length
+  ?`입력 카드 ${state.dealt.length}장: `+state.dealt.map(x=>x.rank+(x.side==='?'?'':`(${x.side})`)).join(' · ')
+  :'실제 카드 입력 없음';
 }
+
+/* 64개 경로 */
+function renderScenarios(a){
+ const arr=[];
+ for(let i=0;i<64;i++){
+  const s=i.toString(2).padStart(6,'0')
+   .replaceAll('0','P').replaceAll('1','B');
+  let prob=1;
+  for(const x of s)prob*=x==='P'?a.p:1-a.p;
+  arr.push({s,prob});
+ }
+ arr.sort((x,y)=>y.prob-x.prob);
+ $('scenarioList').innerHTML=arr.slice(0,16).map((x,i)=>`
+  <div class="scenario">
+   <span>${i+1}. ${x.s.split('').join(' · ')}</span>
+   <b>${x.s.split('').map(v=>v==='P'?'🔵':'🔴').join(' ')}</b>
+  </div>
+ `).join('')+
+ `<div class="small">64개 전체 계산 · 상위 16개 표시 · 현재 통합 확률을 일정하게 적용한 비교입니다.</div>`;
+}
+
+/* 엔진 화면 */
+function renderEngines(a){
+ $('engineDetail').innerHTML=a.mods.map((m,i)=>`
+  <div class="modelrow">
+   <span><b>${m.name}</b><br><small>${m.desc}</small></span>
+   <span>${m.p>=.5?'P':'B'}<br><small>가중치 ${(a.weights[i]*100).toFixed(1)}</small></span>
+  </div>
+ `).join('');
+
+ const p0=BASE_P;
+ $('mathDetail').innerHTML=`
+  <p>기준 P 확률: ${p0.toFixed(4)}</p>
+  <p>현재 추정 P 값: ${a.p.toFixed(4)}</p>
+  <p>이진 엔트로피: ${entropy(a.p).toFixed(4)} bit</p>
+  <p>KL 발산: ${kl(a.p,p0).toFixed(5)} nat</p>
+  <p>Jensen-Shannon 발산: ${jsd(a.p,p0).toFixed(5)} nat</p>
+  <p>모델 수: ${a.mods.length}</p>
+  <p>유전 알고리즘: 검증 표본이 20개 이상이면 24개 후보와 35세대로 가중치를 최적화합니다. 표본 부족 시 동일 가중치를 적용합니다.</p>
+  <p>주의: HMM과 칼만형 모델은 설정된 상태 모형에 따른 추정이며, 독립적인 바카라 결과에 실제 예측력이 있다는 뜻은 아닙니다. 성능은 순차 검증으로 확인해야 합니다.</p>
+ `;
+}
+
+/* 검증 화면 */
+function renderValidation(w){
+ $('vN').textContent=w.n;
+ $('vHit').textContent=w.n?w.hits:'-';
+ $('vBrier').textContent=w.brier===null?'-':w.brier.toFixed(4);
+ $('vNote').textContent=w.n
+  ?`시간순 검증 ${w.n}회 · 적중 ${w.hits}회 · Brier ${w.brier.toFixed(4)} · Log Loss ${w.logloss.toFixed(4)}`
+  :'검증 가능한 예측을 만들려면 P/B 결과가 최소 9개 필요합니다.';
+}
+
+/* 결과 입력 */
 function addResult(v){
- if(state.shoe.length>=80){alert("한 슈 80판 입력이 완료됐습니다.");return}
- let old=outcomes();
- if(old.length>=5){
-  let pred=ensemble(old).p;
-  state.predictions.push({p:pred,actual:null});
+ if(state.shoe.length>=80){
+  alert('80판 입력 완료. 새 슈를 시작하세요.');
+  return;
  }
  state.shoe.push(v);
- if(v==="B"||v==="P"){
-  let pending=state.predictions.findLast?state.predictions.findLast(x=>x.actual===null):[...state.predictions].reverse().find(x=>x.actual===null);
-  if(pending)pending.actual=v;
- }
- save();render();
+ persist();
+ render();
 }
 function undoResult(){
  state.shoe.pop();
- let pending=[...state.predictions].reverse().find(x=>x.actual!==null);
- if(pending)pending.actual=null;
- save();render();
+ persist();
+ render();
 }
 function newShoe(){
- if(!confirm("현재 슈를 기록에 저장하고 새 슈를 시작할까요?"))return;
- saveCurrentShoe(false);state.shoe=[];state.predictions=[];save();render();
+ if(!confirm('현재 슈를 저장하고 새 슈를 시작할까요?'))return;
+ saveCurrentShoe(false);
+ state.shoe=[];
+ state.dealt=[];
+ persist();
+ render();
 }
-function render(){
- renderBoard();updatePrediction();renderHistory();
+
+/* 실제 카드 입력 */
+function addDealtCard(){
+ if(state.dealt.length>=300)return;
+ state.dealt.push({
+  rank:$('dealRank').value,
+  side:$('dealSide').value
+ });
+ persist();
+ render();
 }
+function undoDealtCard(){
+ state.dealt.pop();
+ persist();
+ render();
+}
+
+/* 기록 관리 */
 function saveCurrentShoe(show=true){
- if(!state.shoe.length){if(show)alert("저장할 결과가 없습니다.");return}
- state.history.unshift({date:new Date().toLocaleString("ko-KR"),shoe:state.shoe.slice(),predictions:state.predictions.slice()});
- save();renderHistory();if(show)alert("현재 슈를 저장했습니다.");
+ if(!state.shoe.length){
+  if(show)alert('저장할 결과가 없습니다.');
+  return;
+ }
+ state.history.unshift({
+  date:new Date().toLocaleString('ko-KR'),
+  shoe:state.shoe.slice(),
+  dealt:state.dealt.slice()
+ });
+ persist();
+ renderHistory();
+ if(show)alert('현재 슈를 저장했습니다.');
 }
 function renderHistory(){
- $("history").innerHTML=state.history.length?state.history.map((h,i)=>
- `<div class="historyrow"><span>${h.date} · ${h.shoe.length}판</span><button onclick="restoreShoe(${i})">불러오기</button></div>`).join("")
- :'<div class="small">저장된 슈 기록이 없습니다.</div>';
+ $('history').innerHTML=state.history.length
+ ?state.history.map((h,i)=>`
+  <div class="historyrow">
+   <span>${h.date} · ${h.shoe.length}판</span>
+   <button class="tag" onclick="restoreShoe(${i})">불러오기</button>
+  </div>
+ `).join('')
+ :'<div class="small">저장된 기록이 없습니다.</div>';
 }
 function restoreShoe(i){
- let h=state.history[i];if(!h)return;
- if(!confirm("현재 입력을 교체하고 불러올까요?"))return;
- state.shoe=h.shoe.slice();state.predictions=h.predictions||[];save();render();
+ const h=state.history[i];
+ if(!h)return;
+ if(!confirm('선택한 슈를 불러올까요? 현재 입력은 교체됩니다.'))return;
+ state.shoe=h.shoe.slice();
+ state.dealt=h.dealt||[];
+ persist();
+ render();
  document.querySelector('[data-tab="live"]').click();
 }
 function exportData(){
- let blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
- let a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="prosperity-tree-backup.json";a.click();URL.revokeObjectURL(a.href);
+ const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+ const a=document.createElement('a');
+ a.href=URL.createObjectURL(blob);
+ a.download='prosperity-tree-backup.json';
+ a.click();
+ setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 }
-$("importFile").addEventListener("change",async e=>{
- let f=e.target.files[0];if(!f)return;
+$('importFile').addEventListener('change',async e=>{
+ const f=e.target.files[0];
+ if(!f)return;
  try{
-  let x=JSON.parse(await f.text());
+  const x=JSON.parse(await f.text());
   if(!Array.isArray(x.shoe)||!Array.isArray(x.history))throw Error();
-  state={...state,...x};save();render();alert("백업을 불러왔습니다.");
- }catch(err){alert("백업 파일을 확인해 주세요.")}
+  state={...state,...x};
+  persist();
+  render();
+  alert('백업을 불러왔습니다.');
+ }catch(err){
+  alert('올바른 백업 파일이 아닙니다.');
+ }
 });
 function wipeAll(){
- if(!confirm("저장된 모든 데이터를 삭제합니까?"))return;
+ if(!confirm('이 브라우저의 모든 앱 데이터를 삭제할까요?'))return;
  localStorage.removeItem(KEY);
- state={shoe:[],history:[],predictions:[],weights:Array(14).fill(1/14),pair:{P:null,B:null}};
+ state={shoe:[],dealt:[],history:[]};
  render();
 }
-document.querySelectorAll(".tab").forEach(btn=>btn.addEventListener("click",()=>{
- document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===btn));
- document.querySelectorAll(".view").forEach(x=>x.classList.toggle("hide",x.id!==btn.dataset.tab));
-}));
-load();render();
+
+/* 탭 */
+document.querySelectorAll('.tab').forEach(btn=>{
+ btn.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===btn));
+  document.querySelectorAll('.view').forEach(x=>x.classList.toggle('hide',x.id!==btn.dataset.tab));
+ });
+});
+
+load();
+render();
 </script>
 </body>
 </html>
