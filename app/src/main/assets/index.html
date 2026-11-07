@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>SMART BACCARAT AI V3.1</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#080d18;color:#eef3ff;font-family:Arial,sans-serif}
+header{padding:16px;background:#101a2d}
+h1{font-size:22px;color:#54d9ff}
+main{padding:10px}
+.panel{background:#111b2e;border:1px solid #263956;border-radius:13px;padding:13px;margin-bottom:11px}
+h2{font-size:16px;color:#a9c9ff}
+.pick{text-align:center;background:#17243a;padding:15px;border-radius:12px}
+.big{font-size:55px;font-weight:900}
+.b{color:#ff637c}.p{color:#4ca8ff}.t{color:#b6a0ff}
+.stats,.buttons,.metric{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat,.metric div{background:#1b2941;padding:12px;text-align:center;border-radius:8px}
+button{border:0;border-radius:10px;padding:17px 5px;color:white;font-size:18px;font-weight:bold}
+.btnB{background:#c52e4b}.btnP{background:#176bc5}.btnT{background:#7253b6}
+.gray{background:#33425b;font-size:14px}
+.actions{display:flex;gap:8px;margin-top:9px}
+.actions button{flex:1}
+.gridwrap{overflow-x:auto}
+.board{display:grid;grid-template-columns:repeat(14,52px);grid-template-rows:repeat(6,52px);gap:3px;width:max-content}
+.cell{border:1px solid #30415d;border-radius:6px;background:#111b2e;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.cell.B{background:#67283b}.cell.P{background:#164c82}.cell.T{background:#49346e}
+.result{font-size:20px;font-weight:bold}.mark{font-size:16px}
+.ok{color:#42efa2}.fail{color:#ff334f}
+.note{font-size:12px;color:#9eafca;line-height:1.8}
+.sequence{display:flex;flex-wrap:wrap;gap:5px}
+.seq{width:35px;height:35px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:bold}
+.seq.B{background:#67283b}.seq.P{background:#164c82}.seq.T{background:#49346e}
+</style>
+</head>
+<body>
+<header><h1>SMART BACCARAT AI V3.1</h1><div>실시간 바카라 분석기</div></header>
+<main>
+<section class="panel">
+<h2>다음 판 예상</h2>
+<div class="pick">
+<div class="big" id="pick">대기</div>
+<div id="pickProb">결과 입력 대기</div>
+</div>
+<div class="stats">
+<div class="stat"><strong id="bprob">50.68%</strong><br>뱅커</div>
+<div class="stat"><strong id="pprob">49.32%</strong><br>플레이어</div>
+<div class="stat"><strong id="accuracy">-</strong><br>실제 적중률</div>
+</div>
+</section>
+<section class="panel">
+<h2>결과 입력</h2>
+<div class="buttons">
+<button class="btnB" id="btnB">뱅커 B</button>
+<button class="btnP" id="btnP">플레이어 P</button>
+<button class="btnT" id="btnT">타이 T</button>
+</div>
+<div class="actions">
+<button class="gray" id="undo">마지막 취소</button>
+<button class="gray" id="reset">초기화</button>
+</div>
+</section>
+<section class="panel">
+<h2>80판 입력판 <span id="count">0/80</span></h2>
+<div class="gridwrap"><div class="board" id="board"></div></div>
+<div class="note">세로 입력: 위에서 아래로 6칸, 다음 열로 이동</div>
+</section>
+<section class="panel">
+<h2>최근 결과</h2>
+<div class="sequence" id="sequence"></div>
+</section>
+<section class="panel">
+<h2>검증 현황</h2>
+<div class="metric">
+<div>검증 판수<strong id="tested">0</strong></div>
+<div>적중<strong id="hits">0</strong></div>
+<div>미적중<strong id="misses">0</strong></div>
+</div>
+</section>
+</main>
+<script>
+"use strict";
+const KEY="SMART_BACCARAT_V31";
+let results=[],scored=[],pending=null;
+const BASE=0.5068,MAX=80;
+
+function probability(){
+ const h=results.filter(v=>v==="B"||v==="P");
+ const recent=h.slice(-6);
+ const b=recent.filter(v=>v==="B").length;
+ return recent.length?(BASE*8+b)/(8+recent.length):BASE;
+}
+function predict(){
+ const b=probability();
+ pending={b};
+ document.getElementById("pick").textContent=b>=0.5?"B":"P";
+ document.getElementById("pick").className="big "+(b>=0.5?"b":"p");
+ document.getElementById("pickProb").textContent=
+ "뱅커 "+(b*100).toFixed(2)+"% / 플레이어 "+((1-b)*100).toFixed(2)+"%";
+ document.getElementById("bprob").textContent=(b*100).toFixed(2)+"%";
+ document.getElementById("pprob").textContent=((1-b)*100).toFixed(2)+"%";
+}
+function add(v){
+ if(results.length>=MAX)return;
+ results.push(v);
+ if(v!=="T"&&pending){
+  const pick=pending.b>=0.5?"B":"P";
+  scored.push({correct:pick===v});
+ }
+ pending=null;
+ predict();render();save();
+}
+function render(){
+ const board=document.getElementById("board");
+ board.innerHTML="";
+ for(let r=0;r<6;r++){
+  for(let c=0;c<14;c++){
+   const i=c*6+r;
+   const el=document.createElement("div");
+   el.className="cell";
+   if(results[i]){
+    const v=results[i];el.classList.add(v);
+    const a=document.createElement("span");
+    a.className="result";a.textContent=v;el.appendChild(a);
+    const m=document.createElement("span");
+    m.className="mark";
+    const s=scored[i];
+    m.textContent=v==="T"?"T":s?(s.correct?"O":"X"):"-";
+    m.classList.add(s?(s.correct?"ok":"fail"):"");
+    el.appendChild(m);
+   }
+   board.appendChild(el);
+  }
+ }
+ document.getElementById("count").textContent=results.length+"/80";
+ const seq=document.getElementById("sequence");
+ seq.innerHTML="";
+ results.slice(-20).forEach(v=>{
+  const e=document.createElement("div");
+  e.className="seq "+v;e.textContent=v;seq.appendChild(e);
+ });
+ const hits=scored.filter(x=>x.correct).length;
+ document.getElementById("tested").textContent=scored.length;
+ document.getElementById("hits").textContent=hits;
+ document.getElementById("misses").textContent=scored.length-hits;
+ document.getElementById("accuracy").textContent=
+ scored.length?(hits/scored.length*100).toFixed(1)+"%":"-";
+}
+function save(){
+ localStorage.setItem(KEY,JSON.stringify({results,scored}));
+}
+function load(){
+ try{
+  const d=JSON.parse(localStorage.getItem(KEY)||"{}");
+  results=(d.results||[]).slice(0,MAX);
+  scored=d.scored||[];
+ }catch(e){results=[];scored=[]}
+ predict();render();
+}
+document.getElementById("btnB").onclick=()=>add("B");
+document.getElementById("btnP").onclick=()=>add("P");
+document.getElementById("btnT").onclick=()=>add("T");
+document.getElementById("undo").onclick=()=>{
+ results.pop();scored.pop();predict();render();save();
+};
+document.getElementById("reset").onclick=()=>{
+ if(confirm("전체 결과를 초기화할까요?")){
+  results=[];scored=[];predict();render();save();
+ }
+};
+load();
+</script>
+</body>
+</html>
