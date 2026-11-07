@@ -3,747 +3,418 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>번영의 나무 AI 분석기</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>번영의 나무 AI 신경망 분석기</title>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
 <style>
-:root{
- --bg:#090d18;--panel:#141c2d;--panel2:#1b2740;
- --line:#2c3a55;--text:#f4f7ff;--muted:#9aa9c3;
- --blue:#2787ff;--red:#f04455;--green:#18c78a;--gold:#ffd166;
-}
+:root{--bg:#090f1d;--panel:#151f33;--line:#30415e;--txt:#f4f7ff;--muted:#aab8ce;--blue:#318cff;--red:#f04455;--green:#20bd83;--gold:#ffd166}
 *{box-sizing:border-box}
-body{
- margin:0;background:var(--bg);color:var(--text);
- font-family:Arial,"Noto Sans KR",sans-serif;
- padding:12px;max-width:900px;margin:auto;
-}
-h1{font-size:25px;margin:8px 0 4px;text-align:center}
-.sub{text-align:center;color:var(--muted);font-size:13px;margin-bottom:14px}
-.panel{
- background:var(--panel);border:1px solid var(--line);
- border-radius:15px;padding:14px;margin-bottom:12px;
-}
-.section-title{font-size:18px;font-weight:900;margin-bottom:12px}
-.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-button{
- border:0;border-radius:11px;padding:14px 12px;
- font-size:17px;font-weight:900;color:white;cursor:pointer;
-}
-button:active{transform:scale(.97)}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:Arial,"Noto Sans KR",sans-serif}
+.app{max-width:900px;margin:auto;padding:12px}
+h1{font-size:23px;margin:8px 0}
+.sub,.note,.small{color:var(--muted);font-size:12px;line-height:1.55}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:14px;margin:12px 0}
+.title{font-size:17px;font-weight:900;margin-bottom:12px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.big{font-size:25px;font-weight:900}
+button{border:0;border-radius:11px;padding:14px 10px;color:white;font-size:17px;font-weight:900}
+button:active{transform:scale(.98)}
 .pbtn{background:var(--blue);flex:1}
 .bbtn{background:var(--red);flex:1}
-.tbtn{background:#159b70;flex:1}
-.gray{background:#34435d}
-.gold{background:#9a711c}
-.smallbtn{font-size:14px;padding:11px 12px}
-.pickbox{
- border:2px solid var(--line);border-radius:14px;
- padding:15px;text-align:center;background:#101827;
-}
-.pick-label{font-size:14px;color:var(--muted)}
-.pick{font-size:42px;font-weight:1000;margin:5px 0}
-.pick.P{color:#58a5ff}.pick.B{color:#ff6675}
-.big{font-size:26px;font-weight:900}
-.muted{color:var(--muted)}
-.importance{font-size:32px;color:var(--gold);font-weight:1000}
-.statgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.stat{background:var(--panel2);padding:12px 5px;border-radius:10px;text-align:center}
-.stat strong{display:block;font-size:23px;margin-top:5px}
-input[type=number]{
- width:100%;background:#0b1322;border:1px solid var(--line);
- color:white;border-radius:9px;padding:12px;font-size:18px;
-}
+.tbtn{background:#168d69;flex:1}
+.darkbtn{background:#35445f;font-size:14px;flex:1}
+.buttons{display:flex;gap:8px}
+.pick{border:2px solid var(--gold);border-radius:13px;padding:13px;background:#1b293d;margin-bottom:12px}
+.gold{color:var(--gold)}
+.pickmain{font-size:34px;font-weight:900;margin:5px 0}
+.pcolor{color:#69aaff}.bcolor{color:#ff7d89}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.stat{background:#0e182a;border-radius:10px;padding:10px;text-align:center}
+.stat strong{display:block;font-size:22px;margin-top:4px}
+.bar{height:10px;background:#26364e;border-radius:10px;display:flex;overflow:hidden;margin:10px 0}
+.boardwrap{overflow-x:auto}
+.board{display:grid;grid-template-rows:repeat(6,48px);grid-auto-flow:column;grid-auto-columns:39px;gap:4px;min-width:600px}
+.cell{position:relative;border:1px solid #40516e;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;background:#0d1728}
+.cell.P{background:#164d91;border-color:#318cff}
+.cell.B{background:#842b39;border-color:#f04455}
+.cell.T{background:#116448;border-color:#20bd83}
+.verdict{position:absolute;right:2px;bottom:0;font-size:10px}
+.model{padding:11px 0;border-bottom:1px solid var(--line)}
+.model:last-child{border:0}
+.meter{height:7px;background:#29384e;border-radius:8px;overflow:hidden;margin-top:7px}
+.meter span{display:block;height:100%;background:#62a7ff}
+input[type=number]{width:100px;background:#0d1728;color:white;border:1px solid var(--line);border-radius:8px;padding:9px;font-size:16px}
 input[type=range]{width:100%;accent-color:var(--gold)}
-.board-wrap{overflow-x:auto;padding-bottom:8px}
-.board{
- display:grid;
- grid-template-columns:repeat(14,minmax(36px,1fr));
- grid-template-rows:repeat(6,48px);
- grid-auto-flow:column;
- gap:4px;width:100%;min-width:560px;
-}
-.cell{
- height:48px;min-width:36px;
- border:1px solid #34415a;border-radius:6px;
- display:flex;align-items:center;justify-content:center;
- position:relative;background:#0d1524;
- font-size:19px;font-weight:900;
-}
-.cell.P{color:#58a5ff;background:#10294b}
-.cell.B{color:#ff6675;background:#3a1723}
-.cell.T{color:#39dca7;background:#103b31}
-.cell .mark{
- position:absolute;right:1px;top:-5px;
- font-size:16px;font-weight:1000;text-shadow:0 1px 3px black;
-}
-.mark.hit{color:#22e6a0}
-.mark.miss{color:#ff4058}
-.cellno{
- position:absolute;bottom:1px;right:3px;
- color:#8290a7;font-size:9px;font-weight:400;
-}
-.details{font-size:13px;color:var(--muted);line-height:1.7}
-.engine-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
-.engine{
- background:#0d1626;border:1px solid #263650;
- border-radius:8px;padding:9px;font-size:12px;
-}
-.engine b{display:block;font-size:13px;margin-bottom:3px}
-.engine .pp{color:#58a5ff}.engine .bb{color:#ff6675}
-.good{color:#20dca1}.bad{color:#ff6575}
-.notice{font-size:12px;color:#9aa9c3;line-height:1.6}
-.progress{
- height:9px;background:#26334a;border-radius:10px;overflow:hidden;margin-top:8px
-}
-.progress>div{height:100%;background:var(--green);width:0%}
-@media(min-width:650px){
- body{padding:18px}
- .engine-list{grid-template-columns:repeat(3,minmax(0,1fr))}
-}
+table{width:100%;border-collapse:collapse;font-size:12px}
+td,th{padding:8px 4px;text-align:center;border-bottom:1px solid var(--line)}
+th{color:var(--muted)}
+.status{padding:9px;border-radius:9px;background:#0d1728;margin:8px 0;font-size:13px}
+.good{color:#53dba9}.warn{color:var(--gold)}
+@media(max-width:500px){.app{padding:8px}.panel{padding:12px}.board{grid-auto-columns:39px}button{font-size:16px}}
 </style>
 </head>
 <body>
+<div class="app">
+<h1>🌳 번영의 나무 AI</h1>
+<div class="sub">LSTM · GRU · TCN · Deep Ensemble · 순차 검증</div>
 
-<h1>🌳 번영의 나무 AI 분석기</h1>
-<div class="sub">실시간 통계 분석 · 단일픽 · 자동 적중 검증</div>
-
-<!-- 진행 상황 -->
 <div class="panel">
- <div class="section-title">현재 슈 진행 상황</div>
- <div class="statgrid">
-  <div class="stat"><span class="muted">전체 입력</span><strong id="totalN">0</strong></div>
-  <div class="stat"><span class="muted">P 입력</span><strong id="countP">0</strong></div>
-  <div class="stat"><span class="muted">B 입력</span><strong id="countB">0</strong></div>
- </div>
- <div class="progress"><div id="progressBar"></div></div>
- <div class="notice" id="progressText" style="margin-top:6px">0 / 80 입력</div>
-</div>
-
-<!-- 배팅 금액 -->
-<div class="panel">
- <div class="section-title">배팅 금액 조절</div>
  <div class="row">
-  <div style="flex:1">
-   <label class="muted">기준 금액 (원)</label>
-   <input id="baseMoney" type="number" min="0" step="1000" value="10000">
-  </div>
-  <div style="flex:1">
-   <label class="muted">최대 금액 (원)</label>
-   <input id="maxMoney" type="number" min="0" step="1000" value="30000">
-  </div>
+  <div><div class="small">현재 입력</div><div class="big"><span id="progress">0</span> / 80</div></div>
+  <div class="small" id="tfStatus">AI 엔진 연결 확인 중</div>
  </div>
- <div style="margin-top:12px">
-  <div class="row" style="justify-content:space-between">
-   <span class="muted">적용 비율</span>
-   <strong id="moneyRate">100%</strong>
-  </div>
-  <input id="moneySlider" type="range" min="0" max="100" value="100">
- </div>
- <div class="pickbox" style="margin-top:10px">
-  <div class="pick-label">계산된 참고 금액</div>
-  <div id="suggestMoney" class="big">0원</div>
-  <div class="notice">기준 금액 × 픽 중요도 × 적용 비율. 최대 금액 제한 적용.</div>
- </div>
+ <div class="bar"><div id="progressBar" style="width:0;background:#318cff"></div></div>
+ <div class="status" id="trainStatus">신경망 엔진 준비 중...</div>
 </div>
 
-<!-- 예상픽: 결과 입력 바로 위 -->
 <div class="panel">
- <div class="section-title">다음 판 단일픽</div>
- <div class="pickbox">
-  <div class="pick-label">AI 종합 예상픽</div>
-  <div id="pick" class="pick">분석 대기</div>
-  <div id="pickText" class="muted">결과를 입력하면 분석합니다</div>
-  <div style="margin-top:12px">
-   <span class="pick-label">픽 중요도</span>
-   <div id="importance" class="importance">--</div>
-   <div id="confidenceText" class="muted">데이터 대기 중</div>
+ <div class="title">다음 판 예상 픽</div>
+ <div class="pick">
+  <div class="gold small">AI 통합 예측</div>
+  <div id="pick" class="pickmain">분석 대기</div>
+  <div id="pickInfo" class="small">결과를 입력하면 분석합니다.</div>
+  <div class="row" style="margin-top:10px">
+   <span>P 추정 <strong id="pProb">49.32%</strong></span>
+   <span>B 추정 <strong id="bProb">50.68%</strong></span>
+  </div>
+  <div class="bar">
+   <div id="pbar" style="background:#318cff;width:49.32%"></div>
+   <div id="bbar" style="background:#f04455;width:50.68%"></div>
   </div>
  </div>
- <div class="statgrid" style="margin-top:10px">
-  <div class="stat"><span class="muted">P 추정</span><strong id="probP">--</strong></div>
-  <div class="stat"><span class="muted">B 추정</span><strong id="probB">--</strong></div>
-  <div class="stat"><span class="muted">유효 모델</span><strong id="dataN">0</strong></div>
- </div>
- <div class="notice" style="margin-top:9px">
-  중요도는 모델 합의도와 데이터 신뢰도를 조합한 참고 지표입니다. 실제 적중 확률이나 수익을 보장하지 않습니다.
- </div>
-</div>
-
-<!-- 결과 입력 -->
-<div class="panel">
- <div class="section-title">실제 결과 입력</div>
  <div class="row">
-  <button class="pbtn" onclick="addResult('P')">PLAYER P</button>
-  <button class="bbtn" onclick="addResult('B')">BANKER B</button>
-  <button class="tbtn" onclick="addResult('T')">TIE T</button>
+  <label>기준 금액</label><input id="baseBet" type="number" min="0" value="10000">
  </div>
- <div class="row" style="margin-top:9px">
-  <button class="gray smallbtn" onclick="undo()">↶ 실행 취소</button>
-  <button class="gray smallbtn" onclick="newShoe()">새 슈</button>
-  <button class="gold smallbtn" onclick="exportData()">기록 내보내기</button>
+ <div class="row" style="margin-top:10px">
+  <label>참고 중요도 비율</label><strong id="ratioText">100%</strong>
  </div>
-</div>
-
-<!-- 검증 -->
-<div class="panel">
- <div class="section-title">예상픽 검증 결과</div>
- <div class="statgrid">
-  <div class="stat"><span class="muted">적중</span><strong id="hitN" class="good">0</strong></div>
-  <div class="stat"><span class="muted">미적중</span><strong id="missN" class="bad">0</strong></div>
-  <div class="stat"><span class="muted">판정률</span><strong id="hitRate">--</strong></div>
- </div>
- <div class="notice" style="margin-top:9px">
-  결과를 입력하기 직전에 저장된 예상픽과 비교합니다. 타이는 P/B 판정에서 제외합니다.
- </div>
-</div>
-
-<!-- 80칸 보드 -->
-<div class="panel">
- <div class="section-title">80칸 입력판 · 6행 × 14열</div>
- <div class="notice" style="margin-bottom:9px">
-  1열 위에서 아래로 6칸 입력 → 2열로 이동합니다. 마지막 14열은 위에서 2칸만 사용합니다.
- </div>
- <div class="board-wrap">
-  <div id="board" class="board"></div>
- </div>
- <div class="notice" style="margin-top:9px">
-  🔵 P 플레이어　🔴 B 뱅커　🟢 T 타이　🟢 O 적중　🔴 X 미적중
- </div>
-</div>
-
-<!-- 모델 -->
-<div class="panel">
- <div class="section-title">통계 모델 분석</div>
- <div class="details" id="modelSummary">결과를 입력하면 모델이 분석합니다.</div>
- <div class="engine-list" id="engineList" style="margin-top:10px"></div>
+ <input id="ratio" type="range" min="0" max="200" value="100">
+ <div class="row"><span class="small">참고 금액</span><strong id="betAmount">5,000원</strong></div>
+ <div class="note">중요도는 모델 간 의견 일치도를 나타내는 참고 지표입니다. 실제 적중 확률이나 수익 보장이 아닙니다.</div>
 </div>
 
 <div class="panel">
- <div class="section-title">최근 입력 결과</div>
- <div id="recent" class="details">아직 입력된 결과가 없습니다.</div>
+ <div class="title">결과 입력</div>
+ <div class="buttons">
+  <button class="pbtn" onclick="add('P')">PLAYER P</button>
+  <button class="bbtn" onclick="add('B')">BANKER B</button>
+  <button class="tbtn" onclick="add('T')">TIE T</button>
+ </div>
+ <div class="buttons" style="margin-top:10px">
+  <button class="darkbtn" onclick="undo()">↶ 되돌리기</button>
+  <button class="darkbtn" onclick="newShoe()">새 슈</button>
+  <button class="darkbtn" onclick="exportData()">백업</button>
+ </div>
+</div>
+
+<div class="panel">
+ <div class="title">실제 적중 검증</div>
+ <div class="stats">
+  <div class="stat"><span class="small">적중</span><strong id="hits">0</strong></div>
+  <div class="stat"><span class="small">실패</span><strong id="misses">0</strong></div>
+  <div class="stat"><span class="small">적중률</span><strong id="hitRate">-</strong></div>
+ </div>
+ <div class="note" style="margin-top:8px">각 판 입력 직전에 계산한 예측을 저장한 뒤 실제 결과와 비교합니다. T는 판정에서 제외합니다.</div>
+</div>
+
+<div class="panel">
+ <div class="title">80판 입력판 · 6행 × 14열</div>
+ <div class="boardwrap"><div class="board" id="board"></div></div>
+ <div class="note">세로 방향 입력: 1열 위에서 아래로, 다음 2열로 이동합니다. 마지막 열은 2칸입니다. O=적중, X=실패.</div>
+</div>
+
+<div class="panel">
+ <div class="title">신경망별 예측</div>
+ <div id="models"></div>
+</div>
+
+<div class="panel">
+ <div class="title">순차 검증 · 실제 입력 당시 예측</div>
+ <div class="small">과거 판의 예측값이 저장된 경우에만 검증합니다. 기존 기록에 예측값이 없으면 소급해서 적중으로 계산하지 않습니다.</div>
+ <div style="overflow-x:auto;margin-top:8px">
+  <table><thead><tr><th>모델</th><th>검증수</th><th>적중률</th><th>Brier</th></tr></thead>
+  <tbody id="validation"></tbody></table>
+ </div>
+</div>
+
+<div class="panel">
+ <div class="title">최근 결과</div>
+ <div id="recent" class="small">입력 대기</div>
+</div>
 </div>
 
 <script>
 "use strict";
-
 const KEY="prosperity_tree_stat_engine_v3";
-const TOTAL=80;
-let state=loadState();
-let latest=null;
+const BASE=.4932, WIN=8;
+let records=[];
+let latest={p:BASE,pick:"B",importance:50,models:[]};
+let nets={};
+let training=false;
+let generation=0;
+let tfReady=false;
 
-function loadState(){
+const names=["LSTM 신경망","GRU 신경망","TCN 시계열 신경망"];
+const $=id=>document.getElementById(id);
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const percent=x=>(x*100).toFixed(1)+"%";
+const money=x=>Math.round(x).toLocaleString("ko-KR")+"원";
+const pbSeq=()=>records.filter(x=>x.r==="P"||x.r==="B").map(x=>x.r);
+
+function priorRate(seq,n=30){
+ const p=seq.filter(x=>x==="P").length;
+ return (p+BASE*n)/(seq.length+n);
+}
+function makeSamples(seq){
+ const xs=[],ys=[];
+ for(let i=WIN;i<seq.length;i++){
+  xs.push(seq.slice(i-WIN,i).map(v=>[v==="P"?1:0]));
+  ys.push([seq[i]==="P"?1:0]);
+ }
+ return {xs,ys};
+}
+function makeModel(type){
+ const input=tf.input({shape:[WIN,1]});
+ let x;
+ if(type==="lstm"){
+  x=tf.layers.lstm({units:12,dropout:.15,recurrentDropout:0}).apply(input);
+ }else if(type==="gru"){
+  x=tf.layers.gru({units:12,dropout:.15,recurrentDropout:0}).apply(input);
+ }else{
+  x=tf.layers.conv1d({filters:12,kernelSize:2,dilationRate:1,padding:"causal",activation:"relu"}).apply(input);
+  x=tf.layers.conv1d({filters:12,kernelSize:2,dilationRate:2,padding:"causal",activation:"relu"}).apply(x);
+  x=tf.layers.globalAveragePooling1d().apply(x);
+ }
+ x=tf.layers.dense({units:8,activation:"relu",kernelRegularizer:tf.regularizers.l2({l2:.015})}).apply(x);
+ x=tf.layers.dropout({rate:.2}).apply(x);
+ const output=tf.layers.dense({units:1,activation:"sigmoid"}).apply(x);
+ const model=tf.model({inputs:input,outputs:output});
+ model.compile({optimizer:tf.train.adam(.006),loss:"binaryCrossentropy",metrics:["accuracy"]});
+ return model;
+}
+function disposeNets(){
+ Object.values(nets).forEach(n=>{try{n.dispose()}catch(e){}});
+ nets={};
+}
+async function trainNetworks(){
+ const seq=pbSeq();
+ const myGen=++generation;
+ if(!tfReady||seq.length<20){
+  disposeNets();
+  $("trainStatus").textContent=!tfReady?"TensorFlow.js 연결을 기다리는 중입니다.":"신경망 학습 대기: P/B 결과 20개 이상 필요합니다. 현재 "+seq.length+"개";
+  renderModels();
+  return;
+ }
+ if(training)return;
+ training=true;
+ $("trainStatus").textContent="신경망 학습 중...";
  try{
-  const x=JSON.parse(localStorage.getItem(KEY));
-  if(x&&Array.isArray(x.records))return x;
- }catch(e){}
- return {records:[],version:3};
+  await tf.ready();
+  const data=makeSamples(seq);
+  const x=tf.tensor3d(data.xs);
+  const y=tf.tensor2d(data.ys);
+  const fresh={};
+  for(const type of ["lstm","gru","tcn"]){
+   if(myGen!==generation)break;
+   const m=makeModel(type);
+   await m.fit(x,y,{epochs:24,batchSize:Math.min(8,data.xs.length),shuffle:false,verbose:0});
+   fresh[type]=m;
+  }
+  x.dispose();y.dispose();
+  if(myGen!==generation){
+   Object.values(fresh).forEach(m=>m.dispose());
+   return;
+  }
+  disposeNets();
+  nets=fresh;
+  $("trainStatus").innerHTML='<span class="good">신경망 학습 완료</span> · 학습 표본 '+data.xs.length+'개';
+ }catch(e){
+  $("trainStatus").innerHTML='<span class="warn">학습 오류: '+String(e.message||e).slice(0,100)+'</span>';
+ }
+ training=false;
+ await predict();
 }
-function save(){localStorage.setItem(KEY,JSON.stringify(state))}
-function pb(){return state.records.filter(x=>x.result==="P"||x.result==="B")}
-function clamp(x,a,b){return Math.max(a,Math.min(b,x))}
-function mean(a){return a.length?a.reduce((s,x)=>s+x,0)/a.length:.5}
-function variance(a){
- if(a.length<2)return 0;
- const m=mean(a);
- return a.reduce((s,x)=>s+(x-m)**2,0)/(a.length-1);
+function predictOne(model,seq){
+ const input=tf.tensor3d([seq.slice(-WIN).map(v=>[v==="P"?1:0])]);
+ const out=model.predict(input);
+ const value=out.dataSync()[0];
+ input.dispose();out.dispose();
+ return clamp(value,.01,.99);
 }
-function sd(a){return Math.sqrt(variance(a))}
-function entropy(p){
- p=clamp(p,.0001,.9999);
- return -(p*Math.log2(p)+(1-p)*Math.log2(1-p));
-}
-function addModel(name,p,weight,valid=true){
- return {name,p:clamp(p,.02,.98),weight,valid};
-}
-
-function analyzeModels(){
- const a=pb().map(x=>x.result==="P"?1:0);
- const n=a.length,models=[];
- if(!n)return models;
- const p0=.4932;
- const sum=a.reduce((s,x)=>s+x,0);
-
- // 1 베타-이항 베이지안
- models.push(addModel("베타-이항 베이지안",(sum+20*p0)/(n+20),1.2));
-
- // 2 지수 가중 베이지안
- {
-  let s=20*p0,w=20;
-  a.forEach((x,i)=>{
-   const k=Math.pow(.94,n-1-i);s+=x*k;w+=k;
-  });
-  models.push(addModel("지수 가중 베이지안",s/w,1.2));
+async function predict(){
+ const seq=pbSeq();
+ let results=[];
+ if(tfReady&&seq.length>=20&&Object.keys(nets).length===3){
+  try{
+   results=[
+    predictOne(nets.lstm,seq),
+    predictOne(nets.gru,seq),
+    predictOne(nets.tcn,seq)
+   ];
+  }catch(e){results=[]}
  }
-
- // 3~6 최근 구간 빈도
- [[5,3,.8,3],[10,5,.9,5],[20,8,.9,8],[40,12,.8,12]]
- .forEach(([len,prior,w,min])=>{
-  const z=a.slice(-len);
-  models.push(addModel("최근 "+len+"회 빈도",
-   (z.reduce((s,x)=>s+x,0)+prior*p0)/(z.length+prior),w,z.length>=min));
- });
-
- // 7 1차 마르코프 P전이
- {
-  let total=0,yes=0;
-  for(let i=1;i<n;i++)if(a[i-1]===1){total++;yes+=a[i]}
-  models.push(addModel("1차 마르코프 P전이",(yes+3*p0)/(total+3),1,total>=3));
+ const neuralReady=results.length===3;
+ const prior=priorRate(seq,30);
+ let p;
+ if(neuralReady){
+  const mean=results.reduce((a,b)=>a+b,0)/3;
+  const spread=Math.sqrt(results.reduce((s,v)=>s+(v-mean)**2,0)/3);
+  const trust=clamp((seq.length-18)/45,0,.65);
+  p=prior*(1-trust)+mean*trust;
+  latest.models=[
+   {name:names[0],p:results[0],kind:"LSTM"},
+   {name:names[1],p:results[1],kind:"GRU"},
+   {name:names[2],p:results[2],kind:"TCN"}
+  ];
+  latest.spread=spread;
+  latest.source="신경망 앙상블 + 기준 확률";
+ }else{
+  p=prior;
+  latest.models=[
+   {name:names[0],p:null,kind:"LSTM"},
+   {name:names[1],p:null,kind:"GRU"},
+   {name:names[2],p:null,kind:"TCN"}
+  ];
+  latest.spread=null;
+  latest.source="베이지안 기준값 (신경망 학습 대기)";
  }
-
- // 8 1차 마르코프 B전이
- {
-  let total=0,yes=0;
-  for(let i=1;i<n;i++)if(a[i-1]===0){total++;yes+=a[i]}
-  models.push(addModel("1차 마르코프 B전이",(yes+3*p0)/(total+3),1,total>=3));
- }
-
- // 9 2차 마르코프
- {
-  let total=0,yes=0;
-  for(let i=2;i<n;i++){
-   if(a[i-2]===a[n-2]&&a[i-1]===a[n-1]){
-    total++;yes+=a[i];
-   }
-  }
-  models.push(addModel("2차 마르코프",(yes+4*p0)/(total+4),1,total>=3));
- }
-
- // 10 3차 마르코프
- {
-  let total=0,yes=0;
-  if(n>=4){
-   const key=a.slice(-3).join("");
-   for(let i=3;i<n;i++){
-    if(a.slice(i-3,i).join("")===key){total++;yes+=a[i]}
-   }
-  }
-  models.push(addModel("3차 마르코프",(yes+5*p0)/(total+5),.8,total>=3));
- }
-
- // 11 빠른 EWMA
- {
-  let q=p0;for(const x of a)q=.78*q+.22*x;
-  models.push(addModel("EWMA 빠른 반응",q,1,n>=3));
- }
-
- // 12 완만한 EWMA
- {
-  let q=p0;for(const x of a)q=.92*q+.08*x;
-  models.push(addModel("EWMA 완만 반응",q,.9,n>=5));
- }
-
- // 13 최근 15회 베이지안
- {
-  const z=a.slice(-15);
-  models.push(addModel("15회 이동 베이지안",
-   (z.reduce((s,x)=>s+x,0)+4*p0)/(z.length+4),.9,z.length>=5));
- }
-
- // 14 30회 라플라스 빈도
- {
-  const z=a.slice(-30);
-  models.push(addModel("30회 라플라스 빈도",
-   (z.reduce((s,x)=>s+x,0)+1)/(z.length+2),.8,z.length>=5));
- }
-
- // 15 선형 추세 회귀
- {
-  const z=a.slice(-30),m=z.length;
-  let sx=0,sy=0,sxx=0,sxy=0;
-  z.forEach((v,i)=>{sx+=i;sy+=v;sxx+=i*i;sxy+=i*v});
-  const den=m*sxx-sx*sx;
-  const slope=den?(m*sxy-sx*sy)/den:0;
-  const intercept=m?(sy-slope*sx)/m:p0;
-  const q=clamp(intercept+slope*m,.05,.95);
-  models.push(addModel("선형 추세 회귀",q,.6,m>=8));
- }
-
- // 16 CUSUM 변화 감지
- {
-  let pos=0,neg=0;
-  for(const x of a){
-   const d=x-p0;
-   pos=Math.max(0,pos+d-.04);
-   neg=Math.min(0,neg+d+.04);
-  }
-  models.push(addModel("CUSUM 변화 감지",p0+clamp((pos+neg)*.1,-.12,.12),.7,n>=8));
- }
-
- // 17 적응형 사전분포
- {
-  const z=a.slice(-12);
-  models.push(addModel("적응형 사전분포",
-   (z.reduce((s,x)=>s+x,0)+6*p0)/(z.length+6),.8,z.length>=5));
- }
-
- // 18 블록 평균
- {
-  const z=a.slice(-24),blocks=[];
-  for(let i=0;i<z.length;i+=4)blocks.push(mean(z.slice(i,i+4)));
-  models.push(addModel("블록 평균 추정",mean(blocks),.6,blocks.length>=3));
- }
-
- // 19 런 전환 보정
- {
-  let runs=0;
-  for(let i=1;i<n;i++)if(a[i]!==a[i-1])runs++;
-  const q=(sum+8*p0)/(n+8);
-  const factor=clamp((runs/Math.max(1,n-1)-.5)*.12,-.04,.04);
-  models.push(addModel("런 전환 보정",q+factor,.5,n>=8));
- }
-
- // 20 엔트로피 수축
- {
-  const z=a.slice(-20),q=mean(z);
-  const shrink=clamp((1-entropy(q))*.12,0,.12);
-  models.push(addModel("엔트로피 수축",p0+(q-p0)*(1-shrink),.7,z.length>=8));
- }
-
- // 21 가중 전이 모델
- {
-  let yes=0,total=0;
-  for(let i=1;i<n;i++){
-   const w=Math.pow(.9,n-1-i);
-   if(a[i-1]===a[n-1]){total+=w;yes+=w*a[i]}
-  }
-  models.push(addModel("가중 전이 모델",(yes+3*p0)/(total+3),.8,total>=2));
- }
-
- // 22 2상태 HMM 필터
- {
-  let sp=.5,sb=.5;
-  const trans=[[.52,.48],[.48,.52]];
-  for(const obs of a){
-   const np=sp*trans[0][0]+sb*trans[1][0];
-   const nb=sp*trans[0][1]+sb*trans[1][1];
-   const lp=obs===1?.55:.45;
-   const lb=obs===0?.55:.45;
-   const norm=np*lp+nb*lb;
-   sp=np*lp/norm;sb=nb*lb/norm;
-  }
-  models.push(addModel("2상태 HMM 필터",sp*trans[0][0]+sb*trans[1][0],.7,n>=8));
- }
-
- // 23 최근 구간 혼합
- {
-  const q=.65*mean(a.slice(-20))+.35*mean(a.slice(-8));
-  models.push(addModel("최근 구간 혼합",q,.7,n>=8));
- }
-
- // 24 변화점 혼합
- {
-  const short=mean(a.slice(-6)),long=mean(a.slice(-30));
-  const change=sd(a.slice(-6))>.48?.65:.3;
-  models.push(addModel("변화점 혼합",change*short+(1-change)*long,.7,n>=8));
- }
-
- // 25 칼만 상태 추정
- {
-  let x=p0,v=.03;
-  for(const obs of a){
-   v+=.01;
-   const k=v/(v+.25);
-   x+=k*(obs-x);v=(1-k)*v;
-  }
-  models.push(addModel("칼만 상태 추정",x,.7,n>=5));
- }
-
- // 26 제프리스 사전분포
- models.push(addModel("제프리스 사전분포",(sum+.5)/(n+1),.8,n>=3));
-
- // 27 Wilson 중심 추정
- {
-  const z=a.slice(-25),q=mean(z),m=z.length,zv=1.96;
-  const center=(q+zv*zv/(2*m))/(1+zv*zv/m);
-  models.push(addModel("Wilson 중심 추정",center,.6,m>=8));
- }
-
- // 28 베이지안 오즈 갱신
- {
-  let odds=1;
-  for(const x of a.slice(-15)){
-   odds*=x?1.04:.96;odds=clamp(odds,.25,4);
-  }
-  models.push(addModel("베이지안 오즈 갱신",odds/(1+odds),.5,n>=8));
- }
-
- // 29 부호 검정 추정
- {
-  const z=a.slice(-12),q=mean(z);
-  models.push(addModel("부호 검정 추정",p0+(q-p0)*.6,.6,z.length>=6));
- }
-
- // 30 블록 중앙값
- {
-  const z=a.slice(-24),blocks=[];
-  for(let i=0;i<z.length;i+=3)blocks.push(mean(z.slice(i,i+3)));
-  blocks.sort((x,y)=>x-y);
-  const med=blocks.length?blocks[Math.floor(blocks.length/2)]:p0;
-  models.push(addModel("블록 중앙값",med,.6,blocks.length>=4));
- }
-
- return models;
-}
-
-function calculate(){
- const models=analyzeModels();
- const valid=models.filter(m=>m.valid);
-
- if(!valid.length){latest=null;renderPick();return}
-
- const familyMap={
-  "베타-이항 베이지안":"bayes",
-  "지수 가중 베이지안":"bayes",
-  "15회 이동 베이지안":"bayes",
-  "적응형 사전분포":"bayes",
-  "제프리스 사전분포":"bayes",
-  "베이지안 오즈 갱신":"bayes",
-  "1차 마르코프 P전이":"markov",
-  "1차 마르코프 B전이":"markov",
-  "2차 마르코프":"markov",
-  "3차 마르코프":"markov",
-  "가중 전이 모델":"markov",
-  "EWMA 빠른 반응":"adaptive",
-  "EWMA 완만 반응":"adaptive",
-  "CUSUM 변화 감지":"adaptive",
-  "칼만 상태 추정":"adaptive",
-  "변화점 혼합":"adaptive",
-  "2상태 HMM 필터":"adaptive",
-  "최근 구간 혼합":"adaptive"
- };
-
- const fam={};
- valid.forEach(m=>{
-  const f=familyMap[m.name]||"frequency";
-  if(!fam[f])fam[f]={sum:0,w:0};
-  fam[f].sum+=m.p*m.weight;
-  fam[f].w+=m.weight;
- });
-
- const fw={bayes:1.2,markov:.8,adaptive:.8,frequency:1};
- let total=0,weight=0;
-
- Object.keys(fam).forEach(f=>{
-  const w=fw[f]||1;
-  total+=(fam[f].sum/fam[f].w)*w;
-  weight+=w;
- });
-
- const raw=weight?total/weight:.4932;
- const n=pb().length;
- const reliability=n/(n+35);
- const finalP=.4932+(raw-.4932)*reliability;
- const finalB=1-finalP;
- const pick=finalP>=.5?"P":"B";
-
- const agreement=valid.filter(m=>(m.p>=.5)===(pick==="P")).length/valid.length;
- const signal=Math.abs(finalP-.5)*2;
- const sample=clamp(n/40,0,1);
- const importance=Math.round(clamp(100*(.55*agreement+.25*signal+.20*sample),0,100));
-
- latest={pick,p:finalP,b:finalB,importance,models,validCount:valid.length};
+ const agree=neuralReady?Math.max(results.filter(v=>v>=.5).length,results.filter(v=>v<.5).length)/3:0;
+ latest.p=clamp(p,.01,.99);
+ latest.pick=p>=.5?"P":"B";
+ latest.importance=neuralReady?Math.round(50+agree*30+clamp(seq.length/60,0,1)*20):50;
+ latest.neuralReady=neuralReady;
  renderPick();
+ renderModels();
+ updateBet();
 }
-
 function renderPick(){
- const el=document.getElementById("pick");
-
- if(!latest){
-  el.textContent="분석 대기";
-  el.className="pick";
-  document.getElementById("pickText").textContent="결과를 입력해 주세요";
-  document.getElementById("importance").textContent="--";
-  document.getElementById("confidenceText").textContent="데이터 부족";
-  document.getElementById("probP").textContent="--";
-  document.getElementById("probB").textContent="--";
-  document.getElementById("dataN").textContent="0";
-  document.getElementById("engineList").innerHTML="";
-  document.getElementById("modelSummary").textContent="분석 대기 중";
-  updateMoney();
-  return;
- }
-
- el.textContent=latest.pick==="P"?"PLAYER P":"BANKER B";
- el.className="pick "+latest.pick;
- document.getElementById("pickText").textContent="다음 판 단일픽";
- document.getElementById("importance").textContent=latest.importance+"%";
- document.getElementById("confidenceText").textContent="모델 합의도 및 데이터 신뢰도 지표";
- document.getElementById("probP").textContent=(latest.p*100).toFixed(1)+"%";
- document.getElementById("probB").textContent=(latest.b*100).toFixed(1)+"%";
- document.getElementById("dataN").textContent=latest.validCount;
-
- document.getElementById("modelSummary").textContent=
-  "유효 모델 "+latest.validCount+"개 / 전체 모델 "+latest.models.length+
-  "개. 동일 데이터 기반이므로 모델 간 통계적 독립성을 의미하지 않습니다.";
-
- document.getElementById("engineList").innerHTML=latest.models.map(m=>{
-  const v=m.valid?(m.p>=.5?"P":"B"):"대기";
-  const cls=v==="P"?"pp":v==="B"?"bb":"";
-  return `<div class="engine">
-   <b>${escapeHtml(m.name)}</b>
-   <span class="${cls}">${v}</span>
-   <span class="muted"> · ${(m.p*100).toFixed(1)}%</span>
-   <span class="muted">${m.valid?" · 유효":" · 데이터 부족"}</span>
-  </div>`;
- }).join("");
-
- updateMoney();
+ const p=latest.p;
+ $("pick").textContent=pbSeq().length===0?"분석 대기":latest.pick==="P"?"PLAYER P":"BANKER B";
+ $("pick").className="pickmain "+(latest.pick==="P"?"pcolor":"bcolor");
+ $("pickInfo").textContent=latest.source+" · 중요도 "+latest.importance+"%";
+ $("pProb").textContent=percent(p);
+ $("bProb").textContent=percent(1-p);
+ $("pbar").style.width=(p*100)+"%";
+ $("bbar").style.width=((1-p)*100)+"%";
 }
-
-function escapeHtml(s){
- return String(s).replace(/[&<>"']/g,c=>({
-  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
- }[c]));
-}
-
-function updateMoney(){
- const base=Math.max(0,Number(document.getElementById("baseMoney").value)||0);
- const max=Math.max(0,Number(document.getElementById("maxMoney").value)||0);
- const rate=(Number(document.getElementById("moneySlider").value)||0)/100;
- const importance=latest?latest.importance/100:0;
- const amount=Math.min(max,base*importance*rate);
-
- document.getElementById("moneyRate").textContent=Math.round(rate*100)+"%";
- document.getElementById("suggestMoney").textContent=
-  Math.round(amount).toLocaleString("ko-KR")+"원";
-}
-
-function addResult(result){
- if(state.records.length>=TOTAL){
-  alert("80칸 입력이 완료됐습니다. 새 슈를 시작해 주세요.");
-  return;
- }
-
- // 결과 입력 전 저장된 예상픽으로만 판정
- const prediction=latest?{
-  pick:latest.pick,
-  importance:latest.importance,
-  p:latest.p,
-  b:latest.b,
-  models:latest.validCount
- }:null;
-
- let verdict=null;
- if((result==="P"||result==="B")&&prediction){
-  verdict=prediction.pick===result?"hit":"miss";
- }
-
- state.records.push({
-  result,prediction,verdict,time:Date.now()
+function renderModels(){
+ const host=$("models");host.innerHTML="";
+ latest.models.forEach(m=>{
+  const div=document.createElement("div");div.className="model";
+  const val=m.p===null?"학습 대기":percent(m.p)+" P / "+percent(1-m.p)+" B";
+  div.innerHTML='<div class="row"><strong>'+m.name+'</strong><strong>'+val+'</strong></div>'+
+   '<div class="meter"><span style="width:'+(m.p===null?0:m.p*100)+'%"></span></div>'+
+   '<div class="small">'+(m.p===null?"P/B 표본이 충분하지 않아 아직 학습하지 않았습니다.":"현재 입력된 P/B 순서를 이용해 학습한 신경망 출력입니다.")+'</div>';
+  host.appendChild(div);
  });
-
- save();
- calculate();
- renderAll();
+ if(latest.neuralReady){
+  const div=document.createElement("div");div.className="status";
+  div.textContent="모델 예측 표준편차: "+(latest.spread*100).toFixed(2)+"%p · 모델 간 의견 차이가 클수록 불확실성이 높습니다.";
+  host.appendChild(div);
+ }
 }
-
-function undo(){
- if(!state.records.length)return;
- state.records.pop();
- save();
- calculate();
- renderAll();
+function renderValidation(){
+ const names2=["LSTM","GRU","TCN","통합 저장픽"];
+ const sums=names2.map(()=>({n:0,h:0,b:0}));
+ records.forEach(r=>{
+  if(!r||r.r==="T"||!r.saved)return;
+  const actual=r.r==="P"?1:0;
+  r.saved.forEach((v,i)=>{
+   if(typeof v!=="number")return;
+   sums[i].n++;if((v>=.5? "P":"B")===r.r)sums[i].h++;
+   sums[i].b+=(v-actual)**2;
+  });
+ });
+ $("validation").innerHTML="";
+ names2.forEach((n,i)=>{
+  const s=sums[i],tr=document.createElement("tr");
+  tr.innerHTML="<td>"+n+"</td><td>"+s.n+"</td><td>"+(s.n?percent(s.h/s.n):"-")+"</td><td>"+(s.n?(s.b/s.n).toFixed(4):"-")+"</td>";
+  $("validation").appendChild(tr);
+ });
 }
-
-function newShoe(){
- if(!confirm("현재 80칸 기록과 판정 결과를 모두 지우고 새 슈를 시작할까요?"))return;
- state.records=[];
- save();
- latest=null;
- calculate();
- renderAll();
-}
-
-/* 6행 × 14열 중 마지막 열은 2칸만 사용 */
-function renderBoard(){
- const board=document.getElementById("board");
- board.innerHTML="";
-
- for(let i=0;i<TOTAL;i++){
-  const r=state.records[i];
-  const cell=document.createElement("div");
-  cell.className="cell"+(r?" "+r.result:"");
-
-  if(r){
-   cell.textContent=r.result;
-   if(r.verdict){
-    const mark=document.createElement("span");
-    mark.className="mark "+r.verdict;
-    mark.textContent=r.verdict==="hit"?"O":"X";
-    cell.appendChild(mark);
-   }
-  }
-
-  const no=document.createElement("span");
-  no.className="cellno";
-  no.textContent=i+1;
-  cell.appendChild(no);
+function render(){
+ $("progress").textContent=records.length;
+ $("progressBar").style.width=(records.length/80*100)+"%";
+ let hits=0,miss=0;
+ records.forEach(r=>{if(r.verdict==="O")hits++;if(r.verdict==="X")miss++});
+ $("hits").textContent=hits;$("misses").textContent=miss;
+ $("hitRate").textContent=hits+miss?percent(hits/(hits+miss)):"-";
+ const board=$("board");board.innerHTML="";
+ for(let i=0;i<80;i++){
+  const r=records[i],cell=document.createElement("div");
+  cell.className="cell"+(r?" "+r.r:"");
+  cell.textContent=r?r.r:"";
+  if(r&&r.verdict){const v=document.createElement("span");v.className="verdict";v.textContent=r.verdict;cell.appendChild(v)}
   board.appendChild(cell);
  }
+ $("recent").textContent=records.slice(-20).map(r=>r.r+(r.verdict?"("+r.verdict+")":"")).join(" · ")||"입력 대기";
+ renderValidation();
 }
-
-function renderStats(){
- const judged=state.records.filter(r=>r.verdict);
- const hit=judged.filter(r=>r.verdict==="hit").length;
- const miss=judged.length-hit;
- const rate=judged.length?hit/judged.length*100:null;
-
- document.getElementById("hitN").textContent=hit;
- document.getElementById("missN").textContent=miss;
- document.getElementById("hitRate").textContent=
-  rate===null?"--":rate.toFixed(1)+"%";
+function add(r){
+ if(records.length>=80){alert("80판 입력 완료. 새 슈를 시작하세요.");return}
+ const before=latest;
+ const saved=before.models&&before.models.every(m=>typeof m.p==="number")?
+  before.models.map(m=>m.p).concat([before.p]):null;
+ const pred=before.pick;
+ const verdict=r==="T"||!pred?null:(r===pred?"O":"X");
+ records.push({r,pred:r==="T"?null:pred,verdict,saved});
+ save();render();
+ trainNetworks();
 }
-
-function renderRecent(){
- const list=state.records.slice(-12).reverse();
-
- document.getElementById("recent").innerHTML=list.length?
-  list.map((r,i)=>{
-   const n=state.records.length-i;
-   const color=r.result==="P"?"#58a5ff":
-    r.result==="B"?"#ff6675":"#39dca7";
-   let check="판정 없음";
-   if(r.verdict==="hit")check="<span class='good'>적중 O</span>";
-   if(r.verdict==="miss")check="<span class='bad'>미적중 X</span>";
-   const pred=r.prediction?r.prediction.pick:"없음";
-   return `${n}번 · <b style="color:${color}">${r.result}</b> · 예상 ${pred} · ${check}`;
-  }).join("<br>"):"아직 입력된 결과가 없습니다.";
+function undo(){
+ if(!records.length)return;
+ records.pop();save();render();trainNetworks();
 }
-
-function renderProgress(){
- const n=state.records.length;
- document.getElementById("progressBar").style.width=(n/TOTAL*100)+"%";
- document.getElementById("progressText").textContent=n+" / 80 입력";
- document.getElementById("totalN").textContent=n;
- document.getElementById("countP").textContent=
-  state.records.filter(r=>r.result==="P").length;
- document.getElementById("countB").textContent=
-  state.records.filter(r=>r.result==="B").length;
+function newShoe(){
+ if(!confirm("현재 80판 기록을 초기화할까요? 백업을 먼저 권장합니다."))return;
+ records=[];save();disposeNets();latest={p:BASE,pick:"B",importance:50,models:[]};
+ render();predict();trainNetworks();
 }
-
-function renderAll(){
- renderBoard();
- renderStats();
- renderRecent();
- renderProgress();
+function save(){
+ try{localStorage.setItem(KEY,JSON.stringify({records,updated:Date.now()}))}
+ catch(e){alert("저장 오류. 백업 기능을 사용하세요.")}
 }
-
+function load(){
+ try{
+  const raw=localStorage.getItem(KEY);if(!raw)return;
+  const d=JSON.parse(raw),a=Array.isArray(d)?d:d.records;
+  if(Array.isArray(a))records=a.map(x=>{
+   if(typeof x==="string")return {r:x,pred:null,verdict:null,saved:null};
+   return {r:x.r||x.result||x.value,pred:x.pred||null,verdict:x.verdict||null,saved:Array.isArray(x.saved)?x.saved:null};
+  }).filter(x=>["P","B","T"].includes(x.r)).slice(0,80);
+ }catch(e){records=[]}
+}
+function updateBet(){
+ const base=Math.max(0,Number($("baseBet").value)||0);
+ const ratio=Number($("ratio").value);
+ $("ratioText").textContent=ratio+"%";
+ $("betAmount").textContent=money(base*(latest.importance/100)*ratio/100);
+}
 function exportData(){
- const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
- const url=URL.createObjectURL(blob);
- const a=document.createElement("a");
- a.href=url;
- a.download="prosperity-tree-records.json";
- a.click();
- URL.revokeObjectURL(url);
+ const blob=new Blob([JSON.stringify({records,exported:new Date().toISOString()},null,2)],{type:"application/json"});
+ const url=URL.createObjectURL(blob),a=document.createElement("a");
+ a.href=url;a.download="prosperity-tree-ai-backup.json";a.click();
+ setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
+$("baseBet").addEventListener("input",updateBet);
+$("ratio").addEventListener("input",updateBet);
+load();render();renderModels();renderPick();updateBet();
 
-["baseMoney","maxMoney","moneySlider"].forEach(id=>{
- document.getElementById(id).addEventListener("input",updateMoney);
-});
-
-calculate();
-renderAll();
+(async()=>{
+ if(typeof tf==="undefined"){
+  $("tfStatus").textContent="TensorFlow.js 로딩 실패";
+  $("trainStatus").textContent="인터넷 연결 또는 CDN 접근을 확인하세요.";
+  return;
+ }
+ try{
+  await tf.ready();tfReady=true;
+  $("tfStatus").innerHTML='<span class="good">TensorFlow.js 연결 완료</span>';
+  await trainNetworks();
+ }catch(e){
+  $("tfStatus").textContent="AI 엔진 초기화 실패";
+  $("trainStatus").textContent=String(e.message||e);
+ }
+})();
 </script>
 </body>
 </html>
