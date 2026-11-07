@@ -1,915 +1,498 @@
+SMART BACCARAT V3.1 AUTO RECOGNITION - FULL SOURCE
+각 파일은 표시된 경로에 저장해야 합니다.
 
+
+==========================================================================================
+FILE: build.gradle.kts
+==========================================================================================
+plugins {
+    id("com.android.application") version "8.7.3" apply false
+    id("org.jetbrains.kotlin.android") version "2.0.21" apply false
+}
+
+
+==========================================================================================
+FILE: settings.gradle.kts
+==========================================================================================
+pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
+dependencyResolutionManagement { repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS); repositories { google(); mavenCentral() } }
+rootProject.name = "SmartBaccaratV31Connected"
+include(":app")
+
+
+==========================================================================================
+FILE: gradle.properties
+==========================================================================================
+org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+android.useAndroidX=true
+kotlin.code.style=official
+
+
+==========================================================================================
+FILE: app/build.gradle.kts
+==========================================================================================
+plugins {
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+}
+android {
+    namespace = "com.smartbaccarat.connected"
+    compileSdk = 35
+    defaultConfig {
+        applicationId = "com.smartbaccarat.connected"
+        minSdk = 26
+        targetSdk = 35
+        versionCode = 2
+        versionName = "3.1-connected-0.2"
+    }
+}
+
+
+==========================================================================================
+FILE: app/src/main/AndroidManifest.xml
+==========================================================================================
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <application android:theme="@style/AppTheme" android:label="SMART BACCARAT AI V3.1" android:allowBackup="false" android:supportsRtl="true">
+        <activity android:name=".MainActivity" android:exported="true">
+            <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>
+        </activity>
+        <service android:name=".CaptureService" android:exported="false" android:foregroundServiceType="mediaProjection"/>
+    </application>
+</manifest>
+
+
+==========================================================================================
+FILE: app/src/main/res/values/styles.xml
+==========================================================================================
+<resources><style name="AppTheme" parent="@android:style/Theme.Material.Light.NoActionBar">
+<item name="android:fontFamily">sans</item><item name="android:colorAccent">#1565C0</item>
+<item name="android:statusBarColor">#080d18</item><item name="android:navigationBarColor">#080d18</item>
+</style></resources>
+
+==========================================================================================
+FILE: app/src/main/java/com/smartbaccarat/connected/MainActivity.kt
+==========================================================================================
+package com.smartbaccarat.connected
+
+import android.app.Activity
+import android.content.Intent
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.IntentFilter
+import android.media.projection.MediaProjectionManager
+import android.os.Bundle
+import android.webkit.JavascriptInterface
+import android.webkit.WebChromeClient
+import android.webkit.WebView
+import android.webkit.WebViewClient
+import android.widget.Toast
+
+class MainActivity : Activity() {
+    private lateinit var web: WebView
+    private val requestCode = 701
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        web = WebView(this)
+        web.settings.javaScriptEnabled = true
+        web.settings.domStorageEnabled = true
+        web.settings.allowFileAccess = true
+        web.webChromeClient = WebChromeClient()
+        web.webViewClient = WebViewClient()
+        web.addJavascriptInterface(AndroidCaptureBridge(), "AndroidCapture")
+        setContentView(web)
+        val filter = IntentFilter("com.smartbaccarat.connected.CAPTURE_STATUS")
+        filter.addAction("com.smartbaccarat.connected.CAPTURE_SEQUENCE")
+        if (android.os.Build.VERSION.SDK_INT >= 33) {
+            registerReceiver(captureReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            @Suppress("DEPRECATION")
+            registerReceiver(captureReceiver, filter)
+        }
+        web.loadUrl("file:///android_asset/index.html")
+    }
+
+    private val captureReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == "com.smartbaccarat.connected.CAPTURE_SEQUENCE") {
+                val sequence = intent.getStringExtra("sequence") ?: return
+                val safe = sequence.filter { it == 'B' || it == 'P' || it == 'T' }
+                web.evaluateJavascript("ScreenBridge.onRecognizedSequence('$safe')", null)
+            } else {
+                val frames = intent?.getIntExtra("frames", 0) ?: 0
+                val width = intent?.getIntExtra("width", 0) ?: 0
+                val height = intent?.getIntExtra("height", 0) ?: 0
+                val recognized = intent?.getIntExtra("recognized", 0) ?: 0
+                web.evaluateJavascript(
+                    "ScreenBridge.onCaptureStatus('화면 분석 중 · ${frames}프레임 · ${width}×${height} · 인식 ${recognized}판')", null)
+            }
+        }
+    }
+
+    inner class AndroidCaptureBridge {
+        @JavascriptInterface fun start() {
+            runOnUiThread {
+                val manager = getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+                @Suppress("DEPRECATION")
+                startActivityForResult(manager.createScreenCaptureIntent(), requestCode)
+            }
+        }
+        @JavascriptInterface fun stop() {
+            runOnUiThread { stopService(Intent(this@MainActivity, CaptureService::class.java)) }
+        }
+    }
+
+    @Deprecated("Deprecated in Android API, retained for broad device compatibility")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == this.requestCode && resultCode == RESULT_OK && data != null) {
+            val service = Intent(this, CaptureService::class.java).apply {
+                action = CaptureService.ACTION_START
+                putExtra(CaptureService.EXTRA_RESULT_CODE, resultCode)
+                putExtra(CaptureService.EXTRA_DATA, data)
+            }
+            startForegroundService(service)
+            web.evaluateJavascript("ScreenBridge.onCaptureStatus('화면 수신 시작 요청 · 프레임 연결 확인 중')", null)
+        } else if (requestCode == this.requestCode) {
+            web.evaluateJavascript("ScreenBridge.onCaptureStatus('화면 공유 권한이 취소되었습니다')", null)
+        }
+    }
+
+    override fun onDestroy() {
+        try { unregisterReceiver(captureReceiver) } catch (_: Exception) {}
+        web.destroy()
+        super.onDestroy()
+    }
+}
+
+
+==========================================================================================
+FILE: app/src/main/java/com/smartbaccarat/connected/CaptureService.kt
+==========================================================================================
+package com.smartbaccarat.connected
+
+import android.app.Activity
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.Service
+import android.content.Context
+import android.content.Intent
+import android.graphics.PixelFormat
+import android.media.Image
+import java.nio.ByteBuffer
+import android.hardware.display.DisplayManager
+import android.hardware.display.VirtualDisplay
+import android.media.ImageReader
+import android.media.projection.MediaProjection
+import android.media.projection.MediaProjectionManager
+import android.os.Build
+import android.os.Handler
+import android.os.HandlerThread
+import android.os.IBinder
+
+class CaptureService : Service() {
+    companion object {
+        const val ACTION_START = "com.smartbaccarat.connected.START"
+        const val EXTRA_RESULT_CODE = "result_code"
+        const val EXTRA_DATA = "projection_data"
+        private const val CHANNEL = "screen_capture"
+        private const val NOTIFICATION_ID = 71
+    }
+    private var projection: MediaProjection? = null
+    private var virtualDisplay: VirtualDisplay? = null
+    private var reader: ImageReader? = null
+    private var thread: HandlerThread? = null
+    private var frames = 0
+    private var lastUiUpdate = 0L
+    private var previousCandidate = ""
+    private var stableCount = 0
+    private var lastSentSequence = ""
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent?.action == ACTION_START) startCapture(intent)
+        return START_NOT_STICKY
+    }
+
+    private fun startCapture(intent: Intent) {
+        createNotificationChannel()
+        val notification = if (Build.VERSION.SDK_INT >= 26)
+            android.app.Notification.Builder(this, CHANNEL)
+                .setContentTitle("SMART BACCARAT AI")
+                .setContentText("바카라 화면 수신 테스트 실행 중")
+                .setSmallIcon(android.R.drawable.ic_menu_view).build()
+        else android.app.Notification.Builder(this)
+            .setContentTitle("화면 수신 중").setSmallIcon(android.R.drawable.ic_menu_view).build()
+        startForeground(NOTIFICATION_ID, notification)
+
+        val resultCode = intent.getIntExtra(EXTRA_RESULT_CODE, Activity.RESULT_CANCELED)
+        val data: Intent? = if (Build.VERSION.SDK_INT >= 33) {
+            intent.getParcelableExtra(EXTRA_DATA, Intent::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            intent.getParcelableExtra(EXTRA_DATA) as? Intent
+        }
+        if (data == null) { stopSelf(); return }
+
+        val manager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+        projection = manager.getMediaProjection(resultCode, data)
+        val metrics = resources.displayMetrics
+        val width = metrics.widthPixels
+        val height = metrics.heightPixels
+        val density = metrics.densityDpi
+        thread = HandlerThread("BaccaratCapture").also { it.start() }
+        val handler = Handler(thread!!.looper)
+        reader = ImageReader.newInstance(width, height, PixelFormat.RGBA_8888, 3)
+        reader!!.setOnImageAvailableListener({ source ->
+            val image = source.acquireLatestImage() ?: return@setOnImageAvailableListener
+            val candidate = try { recognizeBoard(image) } catch (_: Exception) { "" } finally { image.close() }
+            frames++
+            if (candidate.isNotEmpty() && candidate == previousCandidate) stableCount++
+            else { previousCandidate = candidate; stableCount = if (candidate.isNotEmpty()) 1 else 0 }
+            if (stableCount >= 2 && candidate != lastSentSequence) {
+                lastSentSequence = candidate
+                sendBroadcast(Intent("com.smartbaccarat.connected.CAPTURE_SEQUENCE")
+                    .setPackage(packageName).putExtra("sequence", candidate))
+            }
+            val now = System.currentTimeMillis()
+            if (now - lastUiUpdate >= 1200) {
+                lastUiUpdate = now
+                sendBroadcast(Intent("com.smartbaccarat.connected.CAPTURE_STATUS")
+                    .setPackage(packageName).putExtra("frames", frames)
+                    .putExtra("width", width).putExtra("height", height)
+                    .putExtra("recognized", lastSentSequence.length))
+            }
+        }, handler)
+
+        projection?.registerCallback(object : MediaProjection.Callback() {
+            override fun onStop() { releaseCapture() }
+        }, handler)
+        virtualDisplay = projection?.createVirtualDisplay(
+            "BaccaratDisplay", width, height, density,
+            DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
+            reader!!.surface, null, handler
+        )
+    }
+
+
+    // 6행 x 14열 결과판 판독. 입력 순서는 세로 우선: 1열 위→아래 6칸, 다음 2열 위→아래.
+    // 좌표는 사용자가 보낸 600x1600 화면 샘플의 상대 비율 기준.
+    // 셀 중심 주변의 링 픽셀을 표본화해 글자/금색 테두리 영향을 줄입니다.
+    private fun recognizeBoard(image: Image): String {
+        val plane = image.planes[0]
+        val buffer = plane.buffer
+        val rowStride = plane.rowStride
+        val pixelStride = plane.pixelStride
+        val w = image.width
+        val h = image.height
+        val out = StringBuilder()
+        for (c in 0 until 14) {
+            for (r in 0 until 6) {
+                val cx = (w * (0.040f + 0.070f * c)).toInt()
+                val cy = (h * (0.4156f + 0.02625f * r)).toInt()
+                val kind = classifyCell(buffer, rowStride, pixelStride, w, h, cx, cy)
+                if (kind == '?') return ""
+                if (kind == '.') return out.toString()
+                out.append(kind)
+            }
+        }
+        return out.toString()
+    }
+
+    private fun classifyCell(buffer: ByteBuffer, rowStride: Int, pixelStride: Int,
+                             w: Int, h: Int, cx: Int, cy: Int): Char {
+        var red = 0; var blue = 0; var green = 0; var seen = 0
+        val radius = (w * 0.012f).toInt().coerceAtLeast(3)
+        for (i in 0 until 16) {
+            val angle = Math.PI * 2.0 * i / 16.0
+            val x = (cx + kotlin.math.cos(angle) * radius).toInt().coerceIn(0, w - 1)
+            val y = (cy + kotlin.math.sin(angle) * radius).toInt().coerceIn(0, h - 1)
+            val offset = y * rowStride + x * pixelStride
+            if (offset + 2 >= buffer.limit()) continue
+            val rr = buffer.get(offset).toInt() and 255
+            val gg = buffer.get(offset + 1).toInt() and 255
+            val bb = buffer.get(offset + 2).toInt() and 255
+            if (rr > 85 && rr > gg * 1.35 && rr > bb * 1.20) red++
+            if (bb > 90 && bb > rr * 1.20 && bb > gg * 1.08) blue++
+            if (gg > 75 && gg > rr * 1.15 && gg > bb * 1.05) green++
+            seen++
+        }
+        if (seen == 0) return '?'
+        val best = maxOf(red, blue, green)
+        if (best < 4) return '.'
+        return when (best) { red -> if (red >= 4) 'B' else '.'; blue -> if (blue >= 4) 'P' else '.'; else -> if (green >= 4) 'T' else '.' }
+    }
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= 26) {
+            val channel = NotificationChannel(CHANNEL, "화면 캡처", NotificationManager.IMPORTANCE_LOW)
+            getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
+        }
+    }
+    private fun releaseCapture() {
+        virtualDisplay?.release(); virtualDisplay = null
+        reader?.close(); reader = null
+        projection = null
+        thread?.quitSafely(); thread = null
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        stopSelf()
+    }
+    override fun onDestroy() {
+        releaseCapture()
+        super.onDestroy()
+    }
+    override fun onBind(intent: Intent?): IBinder? = null
+}
+
+
+==========================================================================================
+FILE: app/src/main/assets/index.html
+==========================================================================================
 <!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>BACCARAT LIVE AI V4</title>
+<title>SMART BACCARAT AI V3.1</title>
 <style>
-:root{
-  --bg:#090e19;--panel:#131d2d;--panel2:#1a2940;
-  --line:#293b55;--text:#f3f6fc;--muted:#9eacc0;
-  --blue:#398cff;--red:#ff5268;--green:#22d69a;--gold:#ffc75c;
-}
-*{box-sizing:border-box}
-body{
-  margin:0;background:var(--bg);color:var(--text);
-  font-family:Arial,"Noto Sans KR",sans-serif;
-  padding:12px 10px 30px;
-}
-.app{max-width:760px;margin:auto}
-header{text-align:center;padding:10px 0 15px}
-h1{font-size:23px;margin:0 0 6px;letter-spacing:1px}
-.sub{font-size:12px;color:var(--muted)}
-.panel{
-  background:var(--panel);border:1px solid var(--line);
-  border-radius:14px;padding:13px;margin-bottom:12px;
-}
-.panel-title{font-size:14px;font-weight:800;margin-bottom:11px}
-.status-grid{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:7px
-}
-.status{
-  background:var(--panel2);border-radius:9px;padding:10px 5px;
-  text-align:center;min-width:0
-}
-.status small{display:block;color:var(--muted);font-size:11px;margin-bottom:5px}
-.status strong{font-size:17px;overflow-wrap:anywhere}
-.good{color:var(--green)}
-.warn{color:var(--gold)}
-.bad{color:var(--red)}
-.board-wrap{overflow-x:auto;overscroll-behavior-x:contain}
-.board{
-  display:grid;grid-template-columns:repeat(14,minmax(34px,1fr));
-  gap:3px;min-width:510px
-}
-.cell{
-  height:43px;border:1px solid #293950;border-radius:6px;
-  display:flex;align-items:center;justify-content:center;
-  background:#0d1625;font-size:17px;font-weight:900;
-  position:relative
-}
-.cell.B{color:var(--blue);border-color:#2865b1;background:#102849}
-.cell.P{color:var(--red);border-color:#a53c50;background:#351923}
-.cell.T{color:var(--green);border-color:#248767;background:#10362d}
-.cell.latest{outline:2px solid var(--gold);outline-offset:-2px}
-.cell.empty{color:#34445b}
-.legend{display:flex;gap:14px;margin-top:9px;font-size:11px;color:var(--muted)}
-.legend b{font-size:14px}
-.controls{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
-button{
-  border:0;border-radius:12px;min-height:57px;
-  font-size:22px;font-weight:900;color:white;cursor:pointer;
-  touch-action:manipulation
-}
-button:active{transform:scale(.97)}
-.btnB{background:#1768cf}
-.btnP{background:#d93650}
-.btnT{background:#168b68}
-.btnSub{
-  min-height:43px;font-size:14px;background:#263750;
-  border:1px solid #405575
-}
-.subcontrols{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}
-.pickbox{
-  background:#0d1727;border:1px solid var(--line);
-  border-radius:13px;padding:15px;text-align:center
-}
-.pick-label{font-size:12px;color:var(--muted)}
-.pick{
-  font-size:48px;font-weight:1000;line-height:1.2;margin:7px 0
-}
-.pick.B{color:var(--blue)}
-.pick.P{color:var(--red)}
-.pick-info{font-size:12px;color:var(--muted)}
-.meter{height:9px;background:#26354b;border-radius:10px;overflow:hidden;margin-top:12px}
-.meter>div{height:100%;background:var(--green);width:50%;transition:width .15s}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-.info{
-  background:var(--panel2);padding:11px;border-radius:10px;
-  min-width:0
-}
-.info small{color:var(--muted);font-size:11px;display:block;margin-bottom:5px}
-.info strong{font-size:15px;overflow-wrap:anywhere}
-.scenario{padding:9px 0;border-bottom:1px solid var(--line)}
-.scenario:last-child{border:0}
-.sc-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.sequence{display:flex;gap:4px;flex-wrap:wrap}
-.ball{
-  width:27px;height:27px;border-radius:50%;display:flex;
-  align-items:center;justify-content:center;font-size:12px;font-weight:900
-}
-.ball.B{background:#1768cf}
-.ball.P{background:#d93650}
-.ball.T{background:#168b68}
-.log{
-  max-height:190px;overflow:auto;font-size:12px;color:var(--muted);
-  line-height:1.8
-}
-.note{font-size:11px;color:var(--muted);line-height:1.6}
-.footer{text-align:center;color:#718198;font-size:10px;padding:10px}
-@media(max-width:420px){
-  body{padding:8px 7px 24px}
-  h1{font-size:20px}
-  .cell{height:39px}
-  .status strong{font-size:15px}
-}
-</style>
-</head>
-<body>
-<div class="app">
-<header>
-  <h1>♠ BACCARAT LIVE AI V4</h1>
-  <div class="sub">REALTIME BOARD CHANGE & SCENARIO ENGINE</div>
-</header>
-
-<section class="panel">
-  <div class="panel-title">실시간 엔진 상태</div>
-  <div class="status-grid">
-    <div class="status">
-      <small>보드 버전</small><strong id="boardVer">000</strong>
-    </div>
-    <div class="status">
-      <small>분석 버전</small><strong id="analysisVer">000</strong>
-    </div>
-    <div class="status">
-      <small>동기화</small><strong id="sync" class="good">대기</strong>
-    </div>
-  </div>
+*{box-sizing:border-box}body{margin:0;background:#080d18;color:#eef3ff;font-family:Arial,sans-serif}
+header{padding:16px;background:#101a2d;border-bottom:1px solid #293b5d}h1{font-size:22px;margin:0;color:#54d9ff}.sub{font-size:11px;color:#91a5c8;margin-top:6px}
+main{padding:11px;max-width:850px;margin:auto}.panel{background:#111b2e;border:1px solid #263956;border-radius:13px;padding:13px;margin-bottom:11px}
+h2{font-size:16px;margin:0 0 12px;color:#a9c9ff}.pick{background:#17243a;border-radius:12px;padding:17px;text-align:center;margin-bottom:12px}
+.big{font-size:54px;font-weight:900;margin:8px}.b{color:#ff637c}.p{color:#4ca8ff}.t{color:#b6a0ff}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.stat{background:#1b2941;padding:11px 4px;border-radius:9px;text-align:center}
+.stat strong{display:block;font-size:21px;margin-bottom:5px}.stat small{font-size:11px;color:#9fb1cf}
+.buttons{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}button{border:0;border-radius:10px;padding:17px 4px;font-size:19px;font-weight:bold;color:white;cursor:pointer;touch-action:manipulation}
+.btnB{background:#c52e4b}.btnP{background:#176bc5}.btnT{background:#7253b6}.gray{background:#33425b;font-size:14px;padding:15px}.actions{display:flex;gap:8px;margin-top:9px}.actions button{flex:1}
+.gridwrap{overflow-x:auto;padding-bottom:5px}.board{display:grid;grid-template-columns:repeat(14,51px);grid-template-rows:repeat(6,51px);gap:3px;width:max-content}
+.cell{border:1px solid #30415d;border-radius:6px;background:#111b2e;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.cell.B{background:#67283b}.cell.P{background:#164c82}.cell.T{background:#49346e}.result{font-size:19px;font-weight:900;color:white}.mark{font-size:17px;font-weight:900;line-height:18px}
+.ok{color:#42efa2}.fail{color:#ff334f}.tie{color:#d1b5ff}.metric{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.metric div{background:#1b2941;padding:12px;border-radius:8px;font-size:12px}.metric strong{display:block;font-size:21px;margin-top:6px}
+.note{font-size:12px;line-height:1.8;color:#9eafca}.tag{display:inline-block;border-radius:5px;padding:5px 8px;background:#243b58;font-size:11px;color:#9bdfff}
+.green{color:#4de1a2}.red{color:#ff647c}.sequence{display:flex;flex-wrap:wrap;gap:5px}.seq{width:35px;height:35px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:bold}
+.seq.B{background:#67283b}.seq.P{background:#164c82}.seq.T{background:#49346e}.model{padding:12px 3px;border-bottom:1px solid #263752}
+.modeltop{display:flex;justify-content:space-between;gap:8px;font-size:13px}.bar{height:9px;background:#263752;border-radius:9px;overflow:hidden;margin-top:8px}.fill{height:100%;background:#41c8ed}
+footer{text-align:center;color:#657998;font-size:10px;padding:15px}
+.capture{border:1px solid #35648b;background:#10243a;padding:12px;border-radius:10px;margin-bottom:10px}
+.capture button{font-size:15px;padding:12px}.captureState{font-size:13px;color:#b7d9ff;line-height:1.7;margin-top:8px}
+@media(max-width:420px){main{padding:8px}.panel{padding:11px}.big{font-size:58px}.board{grid-template-columns:repeat(14,53px);grid-template-rows:repeat(6,53px)}}
+</style></head><body>
+<header><h1>SMART BACCARAT AI V3.1</h1><div class="sub">ANDROID SCREEN CAPTURE LINK BUILD</div></header>
+<main>
+<section class="panel capture">
+<h2>실제 게임 화면 연결</h2>
+<button id="screenStart" class="gray">화면 캡처 시작</button>
+<button id="screenStop" class="gray">중지</button>
+<div class="captureState" id="screenState">화면 수신 대기 · 화면 캡처 권한을 허용해야 합니다.</div>
+<div class="note">화면의 6행 결과판 색상을 읽어 P/B/T를 자동 반영합니다. 인식 결과가 2프레임 연속 같을 때만 반영하며, 기존 입력과 불일치하면 자동 입력을 멈춥니다.</div>
 </section>
-
-<section class="panel">
-  <div class="panel-title">80판 보드 · 6행 × 14열</div>
-  <div class="board-wrap"><div class="board" id="board"></div></div>
-  <div class="legend">
-    <span><b style="color:var(--blue)">● B</b> 뱅커</span>
-    <span><b style="color:var(--red)">● P</b> 플레이어</span>
-    <span><b style="color:var(--green)">● T</b> 타이</span>
-    <span>노란 테두리: 마지막 입력</span>
-  </div>
-</section>
-
-<section class="panel">
-  <div class="panel-title">결과 입력</div>
-  <div class="controls">
-    <button class="btnB" onclick="addResult('B')">B</button>
-    <button class="btnP" onclick="addResult('P')">P</button>
-    <button class="btnT" onclick="addResult('T')">T</button>
-  </div>
-  <div class="subcontrols">
-    <button class="btnSub" onclick="undo()">↶ 마지막 입력 취소</button>
-    <button class="btnSub" onclick="resetAll()">전체 초기화</button>
-  </div>
-</section>
-
-<section class="panel">
-  <div class="panel-title">다음 결과 예상 픽</div>
-  <div class="pickbox">
-    <div class="pick-label">현재 보드 기준 실시간 예측</div>
-    <div id="pick" class="pick">-</div>
-    <div id="pickInfo" class="pick-info">결과를 입력하면 분석합니다</div>
-    <div class="meter"><div id="probMeter"></div></div>
-    <div id="probText" class="pick-info" style="margin-top:9px">B 50.0% / P 49.0%</div>
-  </div>
-  <div class="two" style="margin-top:9px">
-    <div class="info">
-      <small>예측 기록</small>
-      <strong id="hitRate">0 / 0</strong>
-    </div>
-    <div class="info">
-      <small>연속 미적중</small>
-      <strong id="missRun">0회</strong>
-    </div>
-  </div>
-</section>
-
-<section class="panel">
-  <div class="panel-title">그림 변화 감지</div>
-  <div class="two">
-    <div class="info">
-      <small>감지 상태</small>
-      <strong id="changeStatus">초기 상태</strong>
-    </div>
-    <div class="info">
-      <small>변화 유형</small>
-      <strong id="changeType">-</strong>
-    </div>
-    <div class="info">
-      <small>마지막 변경 위치</small>
-      <strong id="changePos">-</strong>
-    </div>
-    <div class="info">
-      <small>변화 강도</small>
-      <strong id="changeStrength">-</strong>
-    </div>
-  </div>
-  <div class="note" id="changeDetail" style="margin-top:10px">
-    결과 입력을 기다리는 중
-  </div>
-</section>
-
-<section class="panel">
-  <div class="panel-title">현재 그림 상태 분석</div>
-  <div class="two">
-    <div class="info">
-      <small>최근 상태 추정</small>
-      <strong id="stateName">데이터 부족</strong>
-    </div>
-    <div class="info">
-      <small>최근 연속 길이</small>
-      <strong id="streak">0</strong>
-    </div>
-    <div class="info">
-      <small>최근 교차 비율</small>
-      <strong id="alternate">-</strong>
-    </div>
-    <div class="info">
-      <small>공간 특징</small>
-      <strong id="spatial">-</strong>
-    </div>
-  </div>
-</section>
-
-<section class="panel">
-  <div class="panel-title">다음 3칸 시나리오 탐색</div>
-  <div class="note" style="margin-bottom:8px">
-    현재 상태에서 가능한 3칸 전개를 확률 모델로 비교합니다.
-  </div>
-  <div id="scenarios">
-    <div class="note">결과 입력 후 시나리오가 표시됩니다.</div>
-  </div>
-</section>
-
-<section class="panel">
-  <div class="panel-title">최근 분석 기록</div>
-  <div class="log" id="logs">분석 기록이 없습니다.</div>
-</section>
-
-<section class="panel">
-  <div class="panel-title">엔진 작동 원리</div>
-  <div class="note">
-    • 새 결과 입력 즉시 보드 버전 증가 및 재분석<br>
-    • 변경 좌표와 이전 보드 비교<br>
-    • B/P/T 입력 상태 분리<br>
-    • 타이는 B/P 적중 판정에서 제외<br>
-    • 다음 픽은 결과 입력 전에 저장<br>
-    • 이전 분석 결과가 최신 보드에 재사용되지 않도록 버전 검사
-  </div>
-</section>
-
-<div class="footer">
-  BACCARAT LIVE AI V4 · 확률 분석은 실제 결과를 보장하지 않습니다.
-</div>
-</div>
-
+<section class="panel"><h2>실시간 다음 판 예측</h2><div class="pick"><div class="note">NEXT RESULT PREDICTION</div><div class="big" id="pick">대기</div><div id="pickProb">결과 입력 대기</div><div style="margin-top:10px"><span class="tag" id="confidence">분석 대기</span></div></div>
+<div class="stats"><div class="stat"><strong id="bprob" class="b">50.68%</strong><small>뱅커 확률</small></div><div class="stat"><strong id="pprob" class="p">49.32%</strong><small>플레이어 확률</small></div><div class="stat"><strong id="margin">1.36%p</strong><small>확률 차이</small></div></div></section>
+<section class="panel"><h2>결과 입력</h2><div class="buttons"><button type="button" id="btnB" class="btnB">뱅커 B</button><button type="button" id="btnP" class="btnP">플레이어 P</button><button type="button" id="btnT" class="btnT">타이 T</button></div><div class="actions"><button type="button" id="btnUndo" class="gray">↶ 마지막 취소</button><button type="button" id="btnReset" class="gray">전체 초기화</button></div><div id="inputStatus" class="note" style="margin-top:9px">엔진 준비 중</div></section>
+<section class="panel"><h2>80판 입력판 <span class="tag" id="count">0 / 80</span></h2><div class="gridwrap"><div class="board" id="board"></div></div><div class="note" style="margin-top:10px"><span class="green">O 적중</span>　<span class="red">X 미적중</span>　<span class="t">T 타이</span><br>B/P는 실제 결과, O/X는 사전 예측 판정이야.</div></section>
+<section class="panel"><h2>최근 그림 원본</h2><div class="sequence" id="sequence"></div><div class="note" style="margin-top:8px">최근 20개 결과 입력 순서</div></section>
+<section class="panel"><h2>실시간 그림 추종 상태</h2><div class="metric"><div>현재 그림 상태<strong id="flow">대기</strong></div><div>현재 연속<strong id="run">-</strong></div><div>최근 3판<strong id="last3">-</strong></div><div>최근 6판<strong id="last6">-</strong></div><div>유사 그림 표본<strong id="matches">0건</strong></div><div>평균 그림 유사도<strong id="similarity">-</strong></div></div><div id="flowNote" class="note" style="margin-top:10px"></div></section>
+<section class="panel"><h2>그림 변화 반응</h2><div class="metric"><div>직전 그림 상태<strong id="oldFlow">-</strong></div><div>변화 감지<strong id="changed">-</strong></div></div><div id="changeNote" class="note" style="margin-top:10px"></div></section>
+<section class="panel"><h2>그림 추종 연산 결과</h2><div id="engine"></div></section>
+<section class="panel"><h2>실제 적중률 검증</h2><div class="metric"><div>전체 적중률<strong id="accuracy">-</strong></div><div>검증 판수<strong id="tested">0</strong></div><div>Brier Score<strong id="brier">-</strong></div><div>최근 20판<strong id="recent20">-</strong></div><div>최근 50판<strong id="recent50">-</strong></div><div>최대 연속 X<strong id="maxLoss">0</strong></div></div><div class="note" style="margin-top:9px">확률은 추정치이며 적중이나 수익을 보장하지 않아. 실제 입력 결과로 검증해.</div></section>
+<section class="panel"><h2>엔진 상태</h2><div id="status" class="note"></div></section><footer>SMART BACCARAT AI V3.1 · ANDROID LINK</footer></main>
 <script>
 "use strict";
-
-/* ===============================
-   설정 및 데이터
-================================ */
-const MAX_HANDS = 80;
-const ROWS = 6;
-const COLS = 14;
-const STORAGE_KEY = "BACCARAT_LIVE_V4";
-
-let results = [];
-let boardVersion = 0;
-let analysisVersion = 0;
-let currentAnalysis = null;
-let currentPick = null;
-let pendingPick = null;
-let historyLog = [];
-let lastChange = null;
-
-const $ = id => document.getElementById(id);
-
-function loadData(){
-  try{
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if(saved && Array.isArray(saved.results)){
-      results = saved.results.filter(x=>["B","P","T"].includes(x)).slice(0,MAX_HANDS);
-    }
-  }catch(e){}
-  boardVersion = results.length;
-  rebuild();
-}
-
-function saveData(){
-  try{
-    localStorage.setItem(STORAGE_KEY,JSON.stringify({
-      results:results
-    }));
-  }catch(e){}
-}
-
-function decisive(){
-  return results.filter(x=>x==="B"||x==="P");
-}
-
-/* ===============================
-   보드 구성
-   6행 × 14열, 열 우선 입력
-================================ */
-function boardArray(data){
-  const cells = Array(ROWS*COLS).fill(null);
-  data.forEach((v,i)=>{
-    if(i<MAX_HANDS) cells[i]=v;
-  });
-  return cells;
-}
-
-function positionOf(index){
-  return {
-    row:(index%ROWS)+1,
-    col:Math.floor(index/ROWS)+1
-  };
-}
-
-function renderBoard(){
-  const el=$("board");
-  el.innerHTML="";
-  const cells=boardArray(results);
-
-  for(let r=0;r<ROWS;r++){
-    for(let c=0;c<COLS;c++){
-      const idx=c*ROWS+r;
-      const value=cells[idx];
-      const div=document.createElement("div");
-      div.className="cell "+(value||"empty");
-      if(idx===results.length-1) div.classList.add("latest");
-      div.textContent=value||"·";
-      el.appendChild(div);
-    }
-  }
-}
-
-/* ===============================
-   변화 감지
-================================ */
-function detectBoardChange(previous,current){
-  let changed=[];
-  const a=boardArray(previous);
-  const b=boardArray(current);
-
-  for(let i=0;i<a.length;i++){
-    if(a[i]!==b[i]){
-      changed.push({
-        index:i,
-        before:a[i],
-        after:b[i],
-        ...positionOf(i)
-      });
-    }
-  }
-
-  const oldD=previous.filter(x=>x!=="T");
-  const newD=current.filter(x=>x!=="T");
-  const recent=newD.slice(-8);
-
-  let type="새 결과 입력";
-  let strength=changed.length;
-
-  if(newD.length>=3){
-    let same=0, flips=0;
-    for(let i=1;i<recent.length;i++){
-      if(recent[i]===recent[i-1]) same++;
-      else flips++;
-    }
-    const total=Math.max(1,recent.length-1);
-    const ratio=flips/total;
-
-    if(ratio>=0.72) type="교차 성향";
-    else if(ratio<=0.28) type="연속 성향";
-    else type="혼합 성향";
-
-    if(oldD.length>=5){
-      const oldTail=oldD.slice(-5);
-      const newTail=newD.slice(-5);
-      const oldFlip=flipRatio(oldTail);
-      const newFlip=flipRatio(newTail);
-      if(Math.abs(oldFlip-newFlip)>=0.4) type="구조 변화 감지";
-    }
-  }
-
-  if(changed.length===0) type="변화 없음";
-  return {
-    changed,
-    type,
-    strength,
-    last:changed.length?changed[changed.length-1]:null,
-    time:Date.now()
-  };
-}
-
-function flipRatio(arr){
-  if(arr.length<2)return 0;
-  let n=0;
-  for(let i=1;i<arr.length;i++) if(arr[i]!==arr[i-1])n++;
-  return n/(arr.length-1);
-}
-
-/* ===============================
-   공간 특징 추출
-   주변 칸의 B/P/T 상태를 계산
-================================ */
-function spatialFeatures(data){
-  const cells=boardArray(data);
-  let horizontal=0,vertical=0,diagonal=0,valid=0;
-
-  function compare(a,b){
-    if(a===null||b===null||a==="T"||b==="T")return;
-    valid++;
-    if(a===b) return 1;
-    return 0;
-  }
-
-  for(let c=0;c<COLS;c++){
-    for(let r=0;r<ROWS;r++){
-      const i=c*ROWS+r;
-      if(r+1<ROWS){
-        const v=compare(cells[i],cells[i+1]);
-        if(v===1)vertical++;
-      }
-      if(c+1<COLS){
-        const v=compare(cells[i],cells[i+ROWS]);
-        if(v===1)horizontal++;
-        if(r+1<ROWS){
-          const d=compare(cells[i],cells[i+ROWS+1]);
-          if(d===1)diagonal++;
-        }
-      }
-    }
-  }
-
-  return {
-    horizontal,vertical,diagonal,valid,
-    description:valid===0?"데이터 부족":
-      "가로 "+horizontal+" / 세로 "+vertical+" / 대각 "+diagonal
-  };
-}
-
-/* ===============================
-   상태 및 변화점 추정
-================================ */
-function stateFeatures(data){
-  const n=data.length;
-  if(n===0){
-    return {
-      streak:0,alternation:0,state:"데이터 부족",
-      changeScore:0,change:false
-    };
-  }
-
-  const last=data[n-1];
-  let streak=1;
-  for(let i=n-2;i>=0;i--){
-    if(data[i]===last)streak++;
-    else break;
-  }
-
-  const recent=data.slice(-12);
-  const alternation=flipRatio(recent);
-
-  let state="혼합 상태";
-  if(alternation>=0.7)state="교차 성향";
-  if(alternation<=0.3)state="연속 성향";
-
-  const all=data.slice(-16);
-  const split=Math.floor(all.length/2);
-  const older=all.slice(0,split);
-  const newer=all.slice(split);
-  const diff=Math.abs(flipRatio(older)-flipRatio(newer));
-  const changeScore=Math.min(1,diff*1.5);
-
-  return {
-    streak,
-    alternation,
-    state,
-    changeScore,
-    change:all.length>=8 && diff>=0.4
-  };
-}
-
-/* ===============================
-   확률 계산
-   최근 빈도는 강하게 추종하지 않음.
-   연승/연패는 방향 신호가 아니라
-   불확실성 조정에 사용.
-================================ */
-const BASE_B=0.5068;
-
-function clamp(v,min,max){
-  return Math.max(min,Math.min(max,v));
-}
-
-function probabilityModel(data){
-  const n=data.length;
-  if(n===0)return {b:BASE_B,p:1-BASE_B};
-
-  const recent=data.slice(-12);
-  const bCount=recent.filter(x=>x==="B").length;
-  const pCount=recent.length-bCount;
-
-  // 작은 표본의 극단적 편향을 줄이는 사전분포
-  const alpha=8;
-  const raw=(bCount+alpha*BASE_B)/(recent.length+alpha);
-
-  const state=stateFeatures(data);
-  const streakDamp=1/(1+Math.max(0,state.streak-2)*0.45);
-  const changeDamp=state.change?0.65:1;
-
-  let b=BASE_B+(raw-BASE_B)*streakDamp*changeDamp;
-
-  // 이 엔진은 과거 결과만으로 큰 확률 편향을 만들지 않음
-  b=clamp(b,BASE_B-0.025,BASE_B+0.025);
-
-  return {b,p:1-b};
-}
-
-/* ===============================
-   HMM 스타일 상태 추정
-   실제 학습 모델이 아닌 확률 상태 모델
-================================ */
-function hiddenStateEstimate(data){
-  if(data.length<4)return {
-    name:"데이터 부족",continuation:0.5,transition:0.5
-  };
-
-  const recent=data.slice(-8);
-  const flip=flipRatio(recent);
-  const continuation=1-flip;
-
-  return {
-    name:continuation>=0.65?"연속 우세":
-         continuation<=0.35?"교차 우세":"혼합 상태",
-    continuation,
-    transition:flip
-  };
-}
-
-/* ===============================
-   다음 3칸 빔 탐색
-================================ */
-function beamSearch(data,depth=3,width=12){
-  const first=probabilityModel(data);
-  let beam=[{seq:"",prob:1,data:data.slice()}];
-
-  for(let step=0;step<depth;step++){
-    let next=[];
-
-    for(const node of beam){
-      const model=probabilityModel(node.data);
-      for(const side of ["B","P"]){
-        const chance=side==="B"?model.b:model.p;
-        const seq=node.seq+side;
-        const nextData=node.data.concat(side);
-
-        next.push({
-          seq,
-          prob:node.prob*chance,
-          data:nextData
-        });
-      }
-    }
-
-    next.sort((a,b)=>b.prob-a.prob);
-    beam=next.slice(0,width);
-  }
-
-  return beam.sort((a,b)=>b.prob-a.prob).slice(0,5);
-}
-
-/* ===============================
-   분석 실행
-================================ */
-function calculate(){
-  const data=decisive();
-  const probability=probabilityModel(data);
-  const state=stateFeatures(data);
-  const spatial=spatialFeatures(results);
-  const hidden=hiddenStateEstimate(data);
-  const scenarios=beamSearch(data,3,12);
-
-  const pick=probability.b>=probability.p?"B":"P";
-  const confidence=Math.max(probability.b,probability.p);
-
-  return {
-    probability,state,spatial,hidden,scenarios,pick,
-    confidence,
-    boardVersion
-  };
-}
-
-function renderAnalysis(){
-  if(!currentAnalysis)return;
-  const a=currentAnalysis;
-
-  $("pick").textContent=a.pick;
-  $("pick").className="pick "+a.pick;
-  $("pickInfo").textContent=
-    "모델상 우세 "+(a.confidence*100).toFixed(1)+"% · 보장 확률 아님";
-
-  $("probText").textContent=
-    "B "+(a.probability.b*100).toFixed(1)+
-    "% / P "+(a.probability.p*100).toFixed(1)+"%";
-
-  $("probMeter").style.width=
-    (a.probability.b*100)+"%";
-
-  $("stateName").textContent=a.state.state;
-  $("streak").textContent=a.state.streak+"회";
-  $("alternate").textContent=
-    (a.state.alternation*100).toFixed(0)+"%";
-  $("spatial").textContent=a.spatial.description;
-
-  renderScenarios(a.scenarios);
-  renderStats();
-}
-
-function renderScenarios(items){
-  const el=$("scenarios");
-  el.innerHTML="";
-
-  items.forEach((item,i)=>{
-    const row=document.createElement("div");
-    row.className="scenario";
-
-    const top=document.createElement("div");
-    top.className="sc-row";
-
-    const label=document.createElement("strong");
-    label.textContent="시나리오 "+(i+1);
-
-    const prob=document.createElement("span");
-    prob.textContent=(item.prob*100).toFixed(2)+"%";
-    prob.style.color="var(--gold)";
-
-    top.append(label,prob);
-
-    const seq=document.createElement("div");
-    seq.className="sequence";
-    seq.style.marginTop="7px";
-
-    for(const ch of item.seq){
-      const ball=document.createElement("span");
-      ball.className="ball "+ch;
-      ball.textContent=ch;
-      seq.appendChild(ball);
-    }
-
-    row.append(top,seq);
-    el.appendChild(row);
-  });
-}
-
-/* ===============================
-   O/X 기록
-================================ */
-let records=[];
-
-function gradePending(result){
-  if(!pendingPick)return;
-  if(result==="T")return;
-
-  records.push({
-    pick:pendingPick.pick,
-    result,
-    hit:pendingPick.pick===result,
-    sourceVersion:pendingPick.version
-  });
-
-  pendingPick=null;
-}
-
-function renderStats(){
-  const total=records.length;
-  const hits=records.filter(x=>x.hit).length;
-  $("hitRate").textContent=
-    hits+" / "+total+
-    (total?" ("+(hits/total*100).toFixed(1)+"%)":"");
-
-  let misses=0;
-  for(let i=records.length-1;i>=0;i--){
-    if(records[i].hit)break;
-    misses++;
-  }
-  $("missRun").textContent=misses+"회";
-}
-
-/* ===============================
-   입력 처리
-================================ */
-function addResult(value){
-  if(results.length>=MAX_HANDS){
-    alert("80판 입력이 완료되었습니다. 초기화 후 새 슈를 시작하세요.");
-    return;
-  }
-
-  const previous=results.slice();
-
-  // 입력 직전 픽을 결과와 연결
-  if(value!=="T"){
-    gradePending(value);
-  }
-
-  results.push(value);
-  boardVersion++;
-
-  lastChange=detectBoardChange(previous,results);
-
-  // 새 보드 입력 즉시 기존 픽 폐기
-  currentPick=null;
-  currentAnalysis=null;
-
-  $("sync").textContent="분석 중";
-  $("sync").className="warn";
-
-  renderBoard();
-
-  // 동기 방식 즉시 재분석
-  currentAnalysis=calculate();
-  analysisVersion=boardVersion;
-  currentPick=currentAnalysis.pick;
-
-  // 이번 분석 결과는 다음 판 결과 판정용으로 보관
-  pendingPick={
-    pick:currentPick,
-    version:analysisVersion
-  };
-
-  renderAnalysis();
-  renderChange();
-  renderVersions();
-  addLog(value);
-  saveData();
-
-  // 분석이 최신 보드와 일치하는지 확인
-  if(analysisVersion===boardVersion){
-    $("sync").textContent="일치";
-    $("sync").className="good";
-  }else{
-    $("sync").textContent="불일치";
-    $("sync").className="bad";
-  }
-}
-
-/* ===============================
-   변경 정보 표시
-================================ */
-function renderChange(){
-  if(!lastChange)return;
-
-  $("changeStatus").textContent=
-    lastChange.changed.length?"변화 감지":"변화 없음";
-
-  $("changeType").textContent=lastChange.type;
-
-  const last=lastChange.last;
-  $("changePos").textContent=last?
-    last.row+"행 "+last.col+"열":"-";
-
-  $("changeStrength").textContent=
-    lastChange.strength+"칸";
-
-  if(last){
-    $("changeDetail").textContent=
-      "변경 위치 "+last.row+"행 "+last.col+
-      "열 · "+(last.before||"빈칸")+" → "+last.after+
-      " · 최신 보드로 재분석 완료";
-  }else{
-    $("changeDetail").textContent=
-      "보드의 변경 사항이 없습니다.";
-  }
-}
-
-function renderVersions(){
-  $("boardVer").textContent=
-    String(boardVersion).padStart(3,"0");
-  $("analysisVer").textContent=
-    String(analysisVersion).padStart(3,"0");
-}
-
-/* ===============================
-   기록
-================================ */
-function addLog(value){
-  const time=new Date().toLocaleTimeString("ko-KR");
-  historyLog.unshift(
-    time+" · "+value+" 입력 · 보드 "+boardVersion+
-    " · 분석 "+analysisVersion+
-    " · 픽 "+currentPick
-  );
-  historyLog=historyLog.slice(0,30);
-
-  $("logs").innerHTML="";
-  historyLog.forEach(line=>{
-    const div=document.createElement("div");
-    div.textContent=line;
-    $("logs").appendChild(div);
-  });
-}
-
-/* ===============================
-   전체 재구성 / 취소
-================================ */
-function rebuild(){
-  records=[];
-  pendingPick=null;
-  currentPick=null;
-  currentAnalysis=null;
-  historyLog=[];
-  lastChange=null;
-
-  boardVersion=results.length;
-  analysisVersion=0;
-
-  // 저장된 결과를 순서대로 재생해 O/X 기록 복원
-  const original=results.slice();
-  results=[];
-
-  for(const value of original){
-    if(value!=="T"){
-      if(pendingPick){
-        records.push({
-          pick:pendingPick.pick,
-          result:value,
-          hit:pendingPick.pick===value,
-          sourceVersion:pendingPick.version
-        });
-      }
-    }
-
-    results.push(value);
-    boardVersion=results.length;
-    currentAnalysis=calculate();
-    currentPick=currentAnalysis.pick;
-    analysisVersion=boardVersion;
-
-    pendingPick={
-      pick:currentPick,
-      version:analysisVersion
-    };
-  }
-
-  renderBoard();
-  renderVersions();
-
-  if(results.length){
-    renderAnalysis();
-    $("sync").textContent="일치";
-    $("sync").className="good";
-    $("changeStatus").textContent="재구성 완료";
-    $("changeType").textContent="전체 보드 재분석";
-    $("changePos").textContent="-";
-    $("changeStrength").textContent="-";
-    $("changeDetail").textContent=
-      "저장된 결과를 순서대로 재생하고 예측 기록을 복원했습니다.";
-  }else{
-    $("sync").textContent="대기";
-    $("sync").className="good";
-    $("pick").textContent="-";
-    $("pickInfo").textContent="결과를 입력하면 분석합니다";
-    $("probText").textContent="B 50.7% / P 49.3%";
-    $("probMeter").style.width="50.7%";
-    $("stateName").textContent="데이터 부족";
-    $("streak").textContent="0";
-    $("alternate").textContent="-";
-    $("spatial").textContent="-";
-    $("scenarios").innerHTML=
-      '<div class="note">결과 입력 후 시나리오가 표시됩니다.</div>';
-    $("changeStatus").textContent="초기 상태";
-    $("changeType").textContent="-";
-    $("changePos").textContent="-";
-    $("changeStrength").textContent="-";
-    $("changeDetail").textContent="결과 입력을 기다리는 중";
-  }
-
-  renderStats();
-}
-
-function undo(){
-  if(!results.length)return;
-  results.pop();
-  saveData();
-  rebuild();
-}
-
-function resetAll(){
-  if(!confirm("입력된 80판 결과와 기록을 모두 초기화할까요?"))return;
-  results=[];
-  records=[];
-  historyLog=[];
-  pendingPick=null;
-  lastChange=null;
-  localStorage.removeItem(STORAGE_KEY);
-  rebuild();
-}
-
-/* ===============================
-   시작
-================================ */
-loadData();
-</script>
-</body>
-</html>
+const KEY="SMART_BACCARAT_V31";
+const OLD_KEYS=["SMART_BACCARAT_V30","SMART_BACCARAT_V271","SMART_BACCARAT_V27","SMART_BACCARAT_V26","SMART_BACCARAT_V25","SMART_BACCARAT_V24","SMART_BACCARAT_V23","SMART_BACCARAT_V22","SMART_BACCARAT_V2"];
+const BASE=.5068,MAX=80,OFFSETS=[-1,-2,-6,-5,-7,-12,-11,-13];
+let results=[],scored=[],pending=null,busy=false;
+function clamp(v,min=.01,max=.99){return Math.max(min,Math.min(max,v))}
+function pct(v){return (v*100).toFixed(2)+"%"}
+function avg(a){return a.length?a.reduce((s,v)=>s+v,0)/a.length:0}
+function decisive(){return results.filter(x=>x==="B"||x==="P")}
+function fresh(){results=[];scored=[];pending=null;busy=false}
+function runLength(h){if(!h.length)return 0;let n=1;for(let i=h.length-2;i>=0;i--){if(h[i]===h[h.length-1])n++;else break}return n}
+function flowName(h){if(h.length<3)return "초기";const r=runLength(h);let alt=1;for(let i=h.length-1;i>0;i--){if(h[i]!==h[i-1])alt++;else break}if(r>=4)return "연속 강화";if(alt>=4)return "교대 강화";if(r>=2&&r>=alt)return "연속 변화";if(alt>=2)return "교대 변화";return "혼합"}
+function getContext(data,targetIndex){const values=[];for(const offset of OFFSETS){const k=targetIndex+offset;values.push(k>=0&&k<targetIndex?data[k]:null)}return values}
+function compareContext(a,b){let compared=0,same=0;for(let i=0;i<OFFSETS.length;i++){if(a[i]===null||b[i]===null)continue;compared++;if(a[i]===b[i])same++}if(compared<3)return null;return {similarity:same/compared,compared,same}}
+function searchSimilarPictures(data){const target=data.length,current=getContext(data,target);let weightedB=0,weightedTotal=0,matches=0,similaritySum=0,exact=0;const start=Math.max(1,target-180);for(let j=start;j<target;j++){const outcome=data[j];if(outcome!=="B"&&outcome!=="P")continue;const comparison=compareContext(current,getContext(data,j));if(!comparison||comparison.similarity<.60)continue;const strength=Math.pow(comparison.similarity,3)*Math.exp(-(target-j)/65)*(comparison.compared/OFFSETS.length);weightedTotal+=strength;if(outcome==="B")weightedB+=strength;matches++;similaritySum+=comparison.similarity;if(comparison.similarity>=.999)exact++}const prior=12;return {probability:clamp((BASE*prior+weightedB)/(prior+weightedTotal)),matches,effective:weightedTotal,similarity:matches?similaritySum/matches:0,exact}}
+function recentPictureFlow(data){const h=data.filter(x=>x==="B"||x==="P");if(h.length<3)return BASE;const recent=h.slice(-6),b=recent.filter(x=>x==="B").length,observed=(BASE*8+b)/(8+recent.length);return clamp(BASE+(observed-BASE)*.35)}
+function calculatePicture(data){const similar=searchSimilarPictures(data),recent=recentPictureFlow(data),reliability=similar.effective/(similar.effective+5),b=BASE+(similar.probability-BASE)*reliability*.8+(recent-BASE)*.20;return {b:clamp(b),similar,recent,reliability}}
+function makePrediction(){if(results.length>=MAX){pending=null;return}const a=calculatePicture(results);pending={resultIndex:results.length,b:a.b,analysis:{similar:{...a.similar},recent:a.recent,reliability:a.reliability},flow:flowName(decisive())}}
+function scorePrediction(actual){if(!pending)return;const q=pending,pick=q.b>=.5?"B":"P";scored.push({resultIndex:results.length-1,pick,actual,correct:pick===actual,probability:q.b,flow:q.flow,matches:q.analysis.similar.matches,similarity:q.analysis.similar.similarity,loss:Math.pow(q.b-(actual==="B"?1:0),2)});pending=null}
+function add(value,source="manual"){if(busy||results.length>=MAX)return;busy=true;try{results.push(value);if(value==="B"||value==="P"){scorePrediction(value);if(results.length<MAX)makePrediction()}render();save();document.getElementById("inputStatus").textContent=(source==="screen"?"화면 인식 결과 ":"수동 입력 ")+value+" · 분석 갱신 완료"}finally{busy=false}}
+function rebuild(old){fresh();makePrediction();old.forEach(v=>{results.push(v);if(v==="B"||v==="P"){scorePrediction(v);if(results.length<MAX)makePrediction()}});if(!pending&&results.length<MAX)makePrediction()}
+function undo(){if(busy||!results.length)return;rebuild(results.slice(0,-1));render();save()}
+function resetAll(){if(busy||!confirm("입력 결과와 검증 기록을 초기화할까?"))return;fresh();makePrediction();localStorage.removeItem(KEY);render();save()}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({version:3.1,results}))}catch(e){console.error(e)}}
+function load(){try{let d=localStorage.getItem(KEY);if(!d){for(const k of OLD_KEYS){d=localStorage.getItem(k);if(d)break}}if(d)rebuild((JSON.parse(d).results||[]).filter(x=>["B","P","T"].includes(x)).slice(0,MAX));else{fresh();makePrediction()}}catch(e){fresh();makePrediction()}}
+function renderBoard(){const board=document.getElementById("board");board.innerHTML="";const map=new Map(scored.map(x=>[x.resultIndex,x]));for(let r=0;r<6;r++)for(let c=0;c<14;c++){const i=c*6+r,el=document.createElement("div");el.className="cell";if(results[i]){const v=results[i];el.classList.add(v);const a=document.createElement("span");a.className="result";a.textContent=v;el.append(a);const m=document.createElement("span");m.className="mark";const rec=map.get(i);m.textContent=v==="T"?"T":rec?(rec.correct?"O":"X"):"-";m.classList.add(v==="T"?"tie":rec?(rec.correct?"ok":"fail"):"");el.append(m)}board.append(el)}document.getElementById("count").textContent=results.length+" / 80"}
+function renderSequence(){const box=document.getElementById("sequence");box.innerHTML="";results.slice(-20).forEach(v=>{const e=document.createElement("div");e.className="seq "+v;e.textContent=v;box.append(e)})}
+function renderFlow(){const h=decisive(),cur=flowName(h),a=calculatePicture(results),s=a.similar;document.getElementById("flow").textContent=cur;document.getElementById("run").textContent=runLength(h)+"연속";document.getElementById("last3").textContent=h.slice(-3).join("")||"-";document.getElementById("last6").textContent=h.slice(-6).join("")||"-";document.getElementById("matches").textContent=s.matches+"건";document.getElementById("similarity").textContent=s.matches?Math.round(s.similarity*100)+"%":"자료 부족";document.getElementById("flowNote").textContent="유사 그림 "+s.matches+"건 · 정확 일치 "+s.exact+"건 · 유효 가중 표본 "+s.effective.toFixed(2);const old=flowName(h.slice(0,-1)),changed=old!==cur&&h.length>=5;document.getElementById("oldFlow").textContent=old;document.getElementById("changed").textContent=changed?"변화 감지":"유지";document.getElementById("changeNote").textContent=changed?old+" → "+cur+" · 재계산":"현재 상태 유지"}
+function renderEngine(){const box=document.getElementById("engine");box.innerHTML="";const a=calculatePicture(results);[["유사 그림 검색 확률",a.similar.probability],["최근 그림 흐름",a.recent],["최종 결합 확률",a.b]].forEach(([n,v])=>{const row=document.createElement("div");row.className="model";const top=document.createElement("div");top.className="modeltop";const label=document.createElement("b");label.textContent=n;const val=document.createElement("span");val.textContent="B "+pct(v)+" / P "+pct(1-v);top.append(label,val);const bar=document.createElement("div");bar.className="bar";const fill=document.createElement("div");fill.className="fill";fill.style.width=v*100+"%";bar.append(fill);row.append(top,bar);box.append(row)})}
+function accuracy(a){return a.length?a.filter(x=>x.correct).length/a.length:null}
+function render(){renderBoard();renderSequence();renderFlow();renderEngine();const a=calculatePicture(results),b=pending?pending.b:a.b,pick=b>=.5?"B":"P",done=results.length>=MAX;const el=document.getElementById("pick");el.textContent=done?"완료":pick;el.className="big "+(pick==="B"?"b":"p");document.getElementById("pickProb").textContent=done?"80판 입력 완료":"선택 방향 추정 확률 "+pct(Math.max(b,1-b));document.getElementById("confidence").textContent="그림 신뢰도 "+Math.round(a.reliability*100)+"%";document.getElementById("bprob").textContent=pct(b);document.getElementById("pprob").textContent=pct(1-b);document.getElementById("margin").textContent=(Math.abs(b-(1-b))*100).toFixed(2)+"%p";const total=scored.length;document.getElementById("accuracy").textContent=accuracy(scored)===null?"-":pct(accuracy(scored));document.getElementById("tested").textContent=total;document.getElementById("brier").textContent=total?avg(scored.map(x=>x.loss)).toFixed(4):"-";document.getElementById("recent20").textContent=accuracy(scored.slice(-20))===null?"-":pct(accuracy(scored.slice(-20)));document.getElementById("recent50").textContent=accuracy(scored.slice(-50))===null?"-":pct(accuracy(scored.slice(-50)));let run=0,mx=0;scored.forEach(x=>{if(x.correct)run=0;else mx=Math.max(mx,++run)});document.getElementById("maxLoss").textContent=mx;document.getElementById("status").textContent="입력 "+results.length+"/80 · B/P "+decisive().length+"판 · 검증 "+total+"판 · 수동 입력 및 화면 연동 브리지 준비 · 타이 O/X 제외"}
+function bindButtons(){const m={btnB:()=>add("B"),btnP:()=>add("P"),btnT:()=>add("T"),btnUndo:undo,btnReset:resetAll};Object.entries(m).forEach(([id,fn])=>document.getElementById(id).addEventListener("click",fn))}
+let lastScreenSequence="";
+window.ScreenBridge={
+ onCaptureStatus:function(s){document.getElementById("screenState").textContent=s},
+ onScreenResult:function(v){if(["B","P","T"].includes(v))add(v,"screen")},
+ onRecognizedSequence:function(seq){
+   if(!/^[BPT]+$/.test(seq)||seq===lastScreenSequence)return;
+   lastScreenSequence=seq;
+   const current=results.join("");
+   if(current===seq){document.getElementById("screenState").textContent="화면 인식 동기화 완료 · "+seq.length+"판";return;}
+   if(seq.startsWith(current)){
+     const fresh=seq.slice(current.length);
+     for(const v of fresh){if(results.length>=MAX)break;add(v,"screen");}
+     document.getElementById("screenState").textContent="자동 입력 완료 · 총 "+results.length+"판";
+   }else if(current.startsWith(seq)){
+     document.getElementById("screenState").textContent="화면 결과판이 이전 상태입니다 · 입력 유지";
+   }else{
+     document.getElementById("screenState").textContent="불일치 감지 · 자동 입력 중단 · 수동 확인 필요";
+   }
+ }
+};
+document.getElementById("screenStart").onclick=()=>{if(window.AndroidCapture)AndroidCapture.start();else document.getElementById("screenState").textContent="Android 앱에서 실행해야 화면 캡처가 연결됩니다."};
+document.getElementById("screenStop").onclick=()=>{if(window.AndroidCapture)AndroidCapture.stop()};
+load();bindButtons();render();
+</script></body></html>
+
+==========================================================================================
+FILE: README_KO.md
+==========================================================================================
+# SMART BACCARAT AI V3.1 Connected
+
+사용자가 제공한 V3.1 HTML 분석 화면을 Android WebView 앱에 넣고, Android MediaProjection 화면 캡처 서비스를 같은 앱에 연결한 프로젝트입니다.
+
+## 현재 실제 연결된 것
+- 제공된 V3.1 분석기 UI 및 수동 B/P/T 입력 로직을 앱 안에 통합
+- 분석기의 '화면 캡처 시작/중지' 버튼이 Android MediaProjection 권한 요청/서비스 중지와 연결
+- 화면 캡처 서비스가 실제 프레임을 수신하고 프레임 수 및 해상도를 앱에 전달하는 기반 포함
+
+## 아직 연결되지 않은 것
+- 캡처 프레임에서 바카라 보드 위치 자동 검출
+- P/B/T 색상·셀 자동 판독
+- 판독 결과의 중복 방지 및 분석기 자동 입력
+
+위 자동 판독은 게임 화면별 보드 좌표·색상·셀 배열을 보정해야 합니다. 현재 코드가 임의로 B/P/T를 만들어 입력하지 않도록 안전하게 막아 두었습니다.
+
+## 빌드
+1. PC에서 Android Studio를 열고 이 폴더를 프로젝트로 엽니다.
+2. Gradle JDK 17을 선택하고 Sync 합니다.
+3. 갤럭시 Z Fold5를 USB 디버깅으로 연결하거나 APK를 빌드합니다.
+4. Build > Build Bundle(s) / APK(s) > Build APK(s)
+5. `app/build/outputs/apk/debug/app-debug.apk` 설치
+
+## 실제 화면 테스트
+1. 앱에서 화면 캡처 시작을 누릅니다.
+2. Android 화면 공유 허용 창에서 전체 화면 공유를 허용합니다.
+3. 크롬 바카라 게임을 화면에 띄웁니다. 폴드 멀티윈도우에서 앱과 크롬을 함께 배치하면 확인하기 쉽습니다.
+4. 앱에 캡처 권한/수신 상태가 표시되는지 확인합니다.
+
+주의: 이 빌드는 화면 캡처 연결 기반이며, 아직 자동 P/B/T 인식 엔진은 포함하지 않습니다. 게임 페이지가 캡처를 차단하면 프레임이 검게 나올 수 있습니다.
+
+
+## 결과 입력 순서
+- 세로 우선(column-major)입니다. 1열을 위에서 아래로 읽고, 다음 열로 이동합니다.
+- 화면 인식 좌표는 제공된 600×1600 샘플의 6행×14열 결과판 위치를 기준으로 보정했습니다.
+- 실제 Fold5 표시 배율/분할 화면에 따라 좌표가 달라질 수 있으므로 첫 실행에서 인식 결과를 확인해야 합니다.
