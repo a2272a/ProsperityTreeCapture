@@ -4,73 +4,63 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SMART BACCARAT AI V3.0</title>
+<title>SMART BACCARAT AI V3.2</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#080d18;color:#eef3ff;font-family:Arial,sans-serif}
 header{padding:16px;background:#101a2d;border-bottom:1px solid #293b5d}
 h1{font-size:22px;margin:0;color:#54d9ff}
 .sub{font-size:11px;color:#91a5c8;margin-top:6px}
-main{padding:11px;max-width:850px;margin:auto}
+main{padding:10px;max-width:850px;margin:auto}
 .panel{background:#111b2e;border:1px solid #263956;border-radius:13px;padding:13px;margin-bottom:11px}
-h2{font-size:15px;margin:0 0 12px;color:#a9c9ff}
+h2{font-size:16px;margin:0 0 12px;color:#a9c9ff}
 .pick{background:#17243a;border-radius:12px;padding:17px;text-align:center;margin-bottom:12px}
-.big{font-size:52px;font-weight:900;margin:8px}
+.big{font-size:55px;font-weight:900;margin:8px}
 .b{color:#ff637c}.p{color:#4ca8ff}.t{color:#b6a0ff}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
-.stat{background:#1b2941;padding:10px 4px;border-radius:9px;text-align:center}
-.stat strong{display:block;font-size:20px;margin-bottom:4px}
-.stat small{font-size:10px;color:#9fb1cf}
+.stat{background:#1b2941;padding:11px 4px;border-radius:9px;text-align:center}
+.stat strong{display:block;font-size:20px;margin-bottom:5px}
+.stat small{font-size:11px;color:#9fb1cf}
 .buttons{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-button{border:0;border-radius:10px;padding:16px 4px;font-size:18px;font-weight:bold;color:white;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-button:active{transform:scale(.97);filter:brightness(1.15)}
+button{border:0;border-radius:10px;padding:17px 4px;font-size:19px;font-weight:bold;color:white;cursor:pointer;touch-action:manipulation}
+button:active{transform:scale(.97)}
 .btnB{background:#c52e4b}.btnP{background:#176bc5}.btnT{background:#7253b6}
 .gray{background:#33425b;font-size:14px;padding:14px}
 .actions{display:flex;gap:8px;margin-top:9px}
 .actions button{flex:1}
-.gridwrap{overflow-x:auto;padding-bottom:5px}
-.board{display:grid;grid-template-columns:repeat(14,49px);grid-template-rows:repeat(6,49px);gap:3px;width:max-content}
+.gridwrap{overflow-x:auto}
+.board{display:grid;grid-template-columns:repeat(14,51px);grid-template-rows:repeat(6,51px);gap:3px;width:max-content}
 .cell{border:1px solid #30415d;border-radius:6px;background:#111b2e;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .cell.B{background:#67283b}.cell.P{background:#164c82}.cell.T{background:#49346e}
-.result{font-size:18px;font-weight:900;color:white}
-.mark{font-size:16px;font-weight:900;line-height:17px}
+.result{font-size:19px;font-weight:900}
+.mark{font-size:17px;font-weight:900}
 .ok{color:#42efa2}.fail{color:#ff334f}.tie{color:#d1b5ff}
-.model{padding:11px 3px;border-bottom:1px solid #263752}
-.modeltop{display:flex;justify-content:space-between;gap:5px;font-size:12px}
-.modeltop b{font-size:13px}
-.bar{height:8px;background:#263752;border-radius:9px;overflow:hidden;margin-top:7px}
-.fill{height:100%;background:#41c8ed}
 .metric{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
-.metric div{background:#1b2941;padding:11px;border-radius:8px;font-size:12px}
-.metric strong{display:block;font-size:21px;margin-top:5px}
-.note{font-size:12px;line-height:1.7;color:#9eafca}
-.tag{display:inline-block;border-radius:5px;padding:4px 7px;background:#243b58;font-size:11px;color:#9bdfff}
-.green{color:#4de1a2}.red{color:#ff647c}
+.metric div{background:#1b2941;padding:12px;border-radius:8px;font-size:12px}
+.metric strong{display:block;font-size:21px;margin-top:6px}
+.note{font-size:12px;line-height:1.8;color:#9eafca}
+.tag{display:inline-block;border-radius:5px;padding:5px 8px;background:#243b58;font-size:11px;color:#9bdfff}
 .sequence{display:flex;flex-wrap:wrap;gap:5px}
 .seq{width:35px;height:35px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:bold}
 .seq.B{background:#67283b}.seq.P{background:#164c82}.seq.T{background:#49346e}
+.model{padding:12px 3px;border-bottom:1px solid #263752}
+.modeltop{display:flex;justify-content:space-between;gap:8px;font-size:13px}
+.bar{height:8px;background:#263752;border-radius:9px;overflow:hidden;margin-top:7px}
+.fill{height:100%;background:#41c8ed}
 footer{text-align:center;color:#657998;font-size:10px;padding:15px}
-@media(max-width:420px){
- main{padding:8px}
- .panel{padding:11px}
- .big{font-size:56px}
- .board{grid-template-columns:repeat(14,51px);grid-template-rows:repeat(6,51px)}
- .cell .result{font-size:19px}
- .mark{font-size:17px}
-}
 </style>
 </head>
 <body>
 <header>
-<h1>SMART BACCARAT AI V3.0</h1>
-<div class="sub">REALTIME SPATIAL FLOW ENGINE · ADAPTIVE ANALYSIS</div>
+<h1>SMART BACCARAT AI V3.2</h1>
+<div class="sub">CHANGE DETECTION · ONLINE BAYES · ADAPTIVE FLOW</div>
 </header>
 <main>
 
 <section class="panel">
 <h2>실시간 다음 판 예측</h2>
 <div class="pick">
-<div class="note">SPATIAL ENSEMBLE PICK</div>
+<div class="note">ADAPTIVE ENSEMBLE PICK</div>
 <div class="big" id="pick">대기</div>
 <div id="pickProb">결과 입력 대기</div>
 <div style="margin-top:10px"><span class="tag" id="confidence">분석 대기</span></div>
@@ -85,13 +75,13 @@ footer{text-align:center;color:#657998;font-size:10px;padding:15px}
 <section class="panel">
 <h2>결과 입력</h2>
 <div class="buttons">
-<button type="button" id="btnB" class="btnB">뱅커 B</button>
-<button type="button" id="btnP" class="btnP">플레이어 P</button>
-<button type="button" id="btnT" class="btnT">타이 T</button>
+<button id="btnB" class="btnB">뱅커 B</button>
+<button id="btnP" class="btnP">플레이어 P</button>
+<button id="btnT" class="btnT">타이 T</button>
 </div>
 <div class="actions">
-<button type="button" id="btnUndo" class="gray">↶ 마지막 취소</button>
-<button type="button" id="btnReset" class="gray">전체 초기화</button>
+<button id="btnUndo" class="gray">↶ 마지막 취소</button>
+<button id="btnReset" class="gray">전체 초기화</button>
 </div>
 <div id="inputStatus" class="note" style="margin-top:9px">엔진 준비 중</div>
 </section>
@@ -100,116 +90,94 @@ footer{text-align:center;color:#657998;font-size:10px;padding:15px}
 <h2>80판 입력판 <span class="tag" id="count">0 / 80</span></h2>
 <div class="gridwrap"><div class="board" id="board"></div></div>
 <div class="note" style="margin-top:10px">
-<span class="green">O 적중</span>　
-<span class="red">X 미적중</span>　
-<span class="t">T 타이</span><br>
-B/P는 실제 결과, O/X는 해당 판의 사전 예측 판정이야.
+<span class="ok">O 적중</span>　<span class="fail">X 미적중</span>　<span class="t">T 타이</span>
+<br>실제 결과와 해당 판 직전의 예측을 연결해 표시해.
 </div>
 </section>
 
 <section class="panel">
 <h2>최근 그림 원본</h2>
 <div class="sequence" id="sequence"></div>
-<div class="note" style="margin-top:8px">최근 20개 입력 결과</div>
 </section>
 
 <section class="panel">
-<h2>실시간 그림 변화 감지</h2>
+<h2>실시간 변화점 탐지</h2>
 <div class="metric">
-<div>현재 국면<strong id="flow">대기</strong></div>
-<div>현재 연속<strong id="run">-</strong></div>
-<div>최근 3판<strong id="flow3">-</strong></div>
-<div>최근 5판<strong id="flow5">-</strong></div>
-<div>최근 8판<strong id="flow8">-</strong></div>
-<div>교대 연속<strong id="altRun">-</strong></div>
-<div>좌우 유사도<strong id="spatial">-</strong></div>
-<div>공간 일치<strong id="spatialMatch">-</strong></div>
+<div>현재 상태<strong id="flow">초기</strong></div>
+<div>변화 감지<strong id="change">대기</strong></div>
+<div>변화 점수<strong id="changeScore">0.00</strong></div>
+<div>상태 신뢰도<strong id="stateConfidence">-</strong></div>
 </div>
-<div id="flowNote" class="note" style="margin-top:10px"></div>
+<div id="changeNote" class="note" style="margin-top:9px"></div>
 </section>
 
 <section class="panel">
-<h2>국면 전환 감지</h2>
+<h2>순차 상태 추적</h2>
 <div class="metric">
-<div>직전 국면<strong id="previousFlow">-</strong></div>
-<div>전환 상태<strong id="transition">-</strong></div>
+<div>연속 상태<strong id="streakState">-</strong></div>
+<div>교대 상태<strong id="alternateState">-</strong></div>
+<div>혼합 상태<strong id="mixedState">-</strong></div>
+<div>현재 주도 상태<strong id="dominantState">-</strong></div>
 </div>
-<div id="transitionNote" class="note" style="margin-top:10px"></div>
 </section>
 
 <section class="panel">
-<h2>6개 연산 모델 비교</h2>
+<h2>온라인 베이지안 업데이트</h2>
+<div class="metric">
+<div>온라인 B 확률<strong id="onlineB">50.68%</strong></div>
+<div>온라인 P 확률<strong id="onlineP">49.32%</strong></div>
+<div>B 누적 가중치<strong id="onlineBC">0</strong></div>
+<div>P 누적 가중치<strong id="onlinePC">0</strong></div>
+</div>
+<div class="note" id="bayesNote" style="margin-top:9px"></div>
+</section>
+
+<section class="panel">
+<h2>그림 추종 연산</h2>
 <div id="models"></div>
 </section>
 
 <section class="panel">
-<h2>연패 감지</h2>
-<div class="metric">
-<div>현재 연속 X<strong id="lossRun">0</strong></div>
-<div>최대 연속 X<strong id="maxLoss">0</strong></div>
-<div>최근 10판 적중<strong id="recentAccuracy">-</strong></div>
-<div>최근 20판 적중<strong id="recent20">-</strong></div>
-</div>
-<div id="lossNote" class="note" style="margin-top:10px"></div>
-</section>
-
-<section class="panel">
-<h2>실제 적중률 검증</h2>
+<h2>실제 성능 검증</h2>
 <div class="metric">
 <div>전체 적중률<strong id="accuracy">-</strong></div>
 <div>검증 판수<strong id="tested">0</strong></div>
 <div>Brier Score<strong id="brier">-</strong></div>
-<div>60% 목표<strong id="goal">검증 중</strong></div>
+<div>최근 20판<strong id="recent20">-</strong></div>
+<div>최근 50판<strong id="recent50">-</strong></div>
+<div>최대 연속 X<strong id="maxLoss">0</strong></div>
 </div>
-<div class="note" style="margin-top:9px">60%는 목표치이며 보장된 적중률이 아니야. 실제 입력 결과로 검증해.</div>
-</section>
-
-<section class="panel">
-<h2>최근 적중률</h2>
-<div class="stats">
-<div class="stat"><strong id="a20">-</strong><small>최근 20판</small></div>
-<div class="stat"><strong id="a50">-</strong><small>최근 50판</small></div>
-<div class="stat"><strong id="a100">-</strong><small>최근 100판</small></div>
-</div>
+<div class="note" style="margin-top:9px">실제 적중률은 입력 데이터로 검증해야 해. 예측 확률은 수익이나 승리를 보장하지 않아.</div>
 </section>
 
 <section class="panel">
 <h2>엔진 상태</h2>
 <div id="status" class="note"></div>
 </section>
-
-<footer>SMART BACCARAT AI V3.0 · REALTIME ENGINE</footer>
+<footer>SMART BACCARAT AI V3.2</footer>
 </main>
 
 <script>
 "use strict";
 
-const KEY="SMART_BACCARAT_V30";
-const OLD_KEYS=["SMART_BACCARAT_V271","SMART_BACCARAT_V27","SMART_BACCARAT_V26","SMART_BACCARAT_V25"];
-const BASE=0.5068;
-const NAMES=[
- "기본 확률",
- "최근 흐름",
- "연속 변화",
- "교대 변화",
- "공간 패턴",
- "유사 그림 검색"
-];
+const KEY="SMART_BACCARAT_V32";
+const OLD_KEYS=["SMART_BACCARAT_V31","SMART_BACCARAT_V30","SMART_BACCARAT_V271","SMART_BACCARAT_V27","SMART_BACCARAT_V26","SMART_BACCARAT_V25"];
+const BASE=.5068;
+const MAX=80;
+const OFFSETS=[-1,-2,-6,-5,-7,-12,-11,-13];
 
 let results=[];
 let scored=[];
 let pending=null;
 let busy=false;
 
+/* 공통 함수 */
 function clamp(x,a=.01,b=.99){return Math.max(a,Math.min(b,x))}
 function pct(x){return (x*100).toFixed(2)+"%"}
 function avg(a){return a.length?a.reduce((s,v)=>s+v,0)/a.length:0}
 function decisive(){return results.filter(x=>x==="B"||x==="P")}
-function bit(x){return x==="B"?1:0}
 function fresh(){results=[];scored=[];pending=null;busy=false}
-
-function boardPos(i){return {c:Math.floor(i/6),r:i%6}}
-function at(i){return i>=0&&i<results.length?results[i]:null}
+function bit(x){return x==="B"?1:0}
 
 function runLength(h){
  if(!h.length)return 0;
@@ -219,267 +187,243 @@ function runLength(h){
  }
  return n;
 }
-function altLength(h){
- if(h.length<2)return 0;
- let n=1;
- for(let i=h.length-1;i>=1;i--){
-  if(h[i]!==h[i-1])n++;else break;
+
+/* 1. 순차 상태 추적 */
+function trackState(h){
+ const recent=h.slice(-12);
+ if(recent.length<3){
+  return {streak:.33,alternate:.33,mixed:.34,dominant:"초기",confidence:0};
  }
- return n;
-}
-function detectFlow(h){
- if(h.length<3)return "초기";
- const run=runLength(h),alt=altLength(h);
- if(run>=4)return "강한 연속";
- if(alt>=4)return "강한 교대";
- if(run>=2&&run>=alt)return "연속 형성";
- if(alt>=2)return "교대 형성";
- return "혼합";
-}
-function transitionInfo(h){
- if(h.length<5)return {prev:"초기",now:detectFlow(h),changed:false};
- const a=detectFlow(h.slice(0,-1)),b=detectFlow(h);
- return {prev:a,now:b,changed:a!==b};
+
+ let same=0,change=0;
+ for(let i=1;i<recent.length;i++){
+  if(recent[i]===recent[i-1])same++;
+  else change++;
+ }
+ const total=same+change;
+ const streak=(same+1)/(total+2);
+ const alternate=(change+1)/(total+2);
+ const mixed=1-Math.abs(streak-alternate);
+ const values=[
+  ["연속",streak],
+  ["교대",alternate],
+  ["혼합",mixed]
+ ].sort((a,b)=>b[1]-a[1]);
+
+ return {
+  streak,alternate,mixed,
+  dominant:values[0][0],
+  confidence:Math.min(1,(recent.length-2)/10)
+ };
 }
 
-/* 결과 순서와 실제 6행 14열 보드 위치를 연결 */
-function cellSignature(index,data){
- const c=Math.floor(index/6),r=index%6;
- const get=(cc,rr)=>{
-  if(cc<0||cc>=14||rr<0||rr>=6)return null;
-  const k=cc*6+rr;
-  return k<data.length?data[k]:null;
+/* 2. 변화점 탐지: 최근 구간과 직전 구간 비교 */
+function detectChange(h){
+ if(h.length<8){
+  return {score:0,changed:false,description:"표본 부족"};
+ }
+
+ const recent=h.slice(-4);
+ const previous=h.slice(-8,-4);
+ const rate=a=>a.filter(x=>x==="B").length/a.length;
+
+ const delta=Math.abs(rate(recent)-rate(previous));
+ const lastSame=recent.filter((x,i)=>i>0&&x===recent[i-1]).length;
+ const prevSame=previous.filter((x,i)=>i>0&&x===previous[i-1]).length;
+ const structure=Math.abs(lastSame-prevSame)/3;
+
+ const score=clamp(delta*.65+structure*.35,0,1);
+ return {
+  score,
+  changed:score>=.42,
+  description:score>=.65?"강한 변화":score>=.42?"변화 감지":"큰 변화 없음"
  };
- return [
-  get(c-1,r),
-  get(c-1,r-1),
-  get(c-1,r+1),
-  get(c,r-1),
-  get(c-2,r),
-  get(c-2,r-1),
-  get(c-2,r+1)
- ];
 }
-function signatureSimilarity(a,b){
+
+/* 3. 공간 그림 분석 */
+function getContext(data,index){
+ return OFFSETS.map(offset=>{
+  const k=index+offset;
+  return k>=0&&k<index?data[k]:null;
+ });
+}
+
+function compareContext(a,b){
  let same=0,total=0;
  for(let i=0;i<a.length;i++){
-  if(a[i]!==null&&b[i]!==null){
-   total++;
-   if(a[i]===b[i])same++;
-  }
+  if(a[i]===null||b[i]===null)continue;
+  total++;
+  if(a[i]===b[i])same++;
  }
- return total>=2?same/total:0;
+ if(total<3)return null;
+ return same/total;
 }
 
-/* 기본 확률과 최근 구간 확률 */
-function smoothRate(h,strength){
- const b=h.filter(x=>x==="B").length;
- return (BASE*strength+b)/(strength+h.length);
-}
-function baseModel(h){
- return smoothRate(h.slice(-40),30);
-}
-function recentModel(h){
- const short=smoothRate(h.slice(-5),7);
- const medium=smoothRate(h.slice(-12),14);
- return clamp(BASE+(short-BASE)*.65+(medium-BASE)*.35);
-}
+function searchPicture(data){
+ const target=data.length;
+ const context=getContext(data,target);
+ let weightedB=0,weightedTotal=0,matches=0,simTotal=0;
 
-/* 현재 연속 길이와 유사한 과거 연속 상태의 다음 결과 */
-function streakModel(h){
- if(h.length<3)return BASE;
- const side=h[h.length-1];
- const length=Math.min(runLength(h),4);
- let b=0,n=0;
- for(let i=1;i<h.length;i++){
-  let old=1;
-  for(let j=i-2;j>=0&&h[j]===h[i-1];j--)old++;
-  if(h[i-1]===side&&Math.min(old,4)===length){
-   n++;
-   if(h[i]==="B")b++;
-  }
- }
- return (BASE*10+b)/(10+n);
-}
+ for(let j=Math.max(1,target-180);j<target;j++){
+  const result=data[j];
+  if(result!=="B"&&result!=="P")continue;
 
-/* 최근 교대 흐름과 과거 교대 상황 */
-function alternateModel(h){
- if(h.length<3)return BASE;
- const side=h[h.length-1];
- let b=0,n=0;
- for(let i=2;i<h.length;i++){
-  if(h[i-2]!==h[i-1]){
-   n++;
-   if(h[i]==="B")b++;
-  }
- }
- const observed=(BASE*10+b)/(10+n);
- const expected=side==="B"?1-observed:observed;
- const reliability=n/(n+14);
- return clamp(BASE+(expected-BASE)*reliability);
-}
+  const sim=compareContext(context,getContext(data,j));
+  if(sim===null||sim<.60)continue;
 
-/* 다음 칸의 공간 이웃을 이용한 과거 유사 그림 검색 */
-function spatialModel(data){
- const nextIndex=data.length;
- if(data.length<8)return {p:BASE,matches:0,similarity:0};
- const target=cellSignature(nextIndex,data);
- let weightedB=0,weightedN=0,matches=0,simSum=0;
+  const recency=Math.exp(-(target-j)/65);
+  const weight=Math.pow(sim,3)*recency;
 
- for(let j=7;j<data.length-1;j++){
-  const candidate=cellSignature(j,data);
-  const sim=signatureSimilarity(target,candidate);
-  if(sim<.55)continue;
-  const weight=Math.pow(sim,3);
-  weightedN+=weight;
-  if(data[j]==="B")weightedB+=weight;
+  weightedTotal+=weight;
+  if(result==="B")weightedB+=weight;
   matches++;
-  simSum+=sim;
+  simTotal+=sim;
  }
- const p=(BASE*5+weightedB)/(5+weightedN);
+
+ const probability=(BASE*10+weightedB)/(10+weightedTotal);
  return {
-  p:clamp(p),
+  p:clamp(probability),
   matches,
-  similarity:matches?simSum/matches:0
+  weight:weightedTotal,
+  similarity:matches?simTotal/matches:0
  };
 }
 
-/* 최근 그림과 유사한 짧은 구간의 다음 결과 검색 */
-function similarityModel(h){
- if(h.length<7)return {p:BASE,matches:0};
- const maxLen=Math.min(5,h.length-2);
- let best=[];
- for(let len=maxLen;len>=3;len--){
-  const pattern=h.slice(-len);
-  let matches=[];
-  for(let i=len;i<h.length-1;i++){
-   let ok=true;
-   for(let j=0;j<len;j++){
-    if(h[i-len+j]!==pattern[j]){ok=false;break}
-   }
-   if(ok)matches.push(h[i]);
-  }
-  if(matches.length){
-   best=matches;
-   break;
-  }
- }
- const b=best.filter(x=>x==="B").length;
- return {p:(BASE*6+b)/(6+best.length),matches:best.length};
-}
+/* 4. 온라인 베이지안 상태 */
+function onlineBayes(){
+ let b=2,p=2;
+ const recent=scored.slice(-40);
 
-function calculateModels(){
- const h=decisive();
- const spatial=spatialModel(results);
- const similar=similarityModel(h);
+ recent.forEach(row=>{
+  const weight=Math.exp(-(recent.length-recent.indexOf(row))/35);
+  if(row.actual==="B")b+=weight;
+  else p+=weight;
+ });
+
  return {
-  "기본 확률":baseModel(h),
-  "최근 흐름":recentModel(h),
-  "연속 변화":streakModel(h),
-  "교대 변화":alternateModel(h),
-  "공간 패턴":spatial.p,
-  "유사 그림 검색":similar.p
+  b:b/(b+p),
+  p:p/(b+p),
+  bCount:b-2,
+  pCount:p-2
  };
 }
 
-function priorWeights(regime){
- const w={};
- NAMES.forEach(n=>w[n]=1);
- if(regime==="강한 교대"){
-  w["교대 변화"]=1.6;
-  w["연속 변화"]=.7;
- }
- if(regime==="강한 연속"){
-  w["연속 변화"]=1.6;
-  w["교대 변화"]=.7;
- }
- if(regime==="혼합"){
-  w["기본 확률"]=1.4;
-  w["최근 흐름"]=1.2;
- }
- return w;
+/* 5. 최근 흐름 */
+function recentFlow(h){
+ if(!h.length)return BASE;
+ const short=h.slice(-5);
+ const medium=h.slice(-12);
+ const shortB=(BASE*6+short.filter(x=>x==="B").length)/(6+short.length);
+ const mediumB=(BASE*12+medium.filter(x=>x==="B").length)/(12+medium.length);
+ return clamp(BASE+(shortB-BASE)*.55+(mediumB-BASE)*.45);
 }
 
-/* 사전 예측 기록으로 모델 성능 평가 */
-function modelWeights(regime){
- const prior=priorWeights(regime);
+/* 6. 모델 성능 가중치 */
+const MODEL_NAMES=["공간 그림","최근 흐름","온라인 베이지안","상태 추적"];
+
+function adaptiveWeights(){
  const weights={};
- let total=0;
- NAMES.forEach(name=>{
-  const rows=scored.filter(x=>x.regime===regime&&
-   x.models&&Number.isFinite(x.models[name]));
+ let sum=0;
+
+ MODEL_NAMES.forEach(name=>{
+  const rows=scored.slice(-60).filter(x=>x.models&&Number.isFinite(x.models[name]));
   const loss=rows.length
    ?avg(rows.map(x=>Math.pow(x.models[name]-(x.actual==="B"?1:0),2)))
    :.25;
   const reliability=rows.length/(rows.length+20);
-  const performance=Math.exp(-1.5*(loss-.25)*reliability);
-  weights[name]=prior[name]*performance;
-  total+=weights[name];
+  const performance=Math.exp(-2*(loss-.25)*reliability);
+  weights[name]=performance;
+  sum+=performance;
  });
- NAMES.forEach(n=>weights[n]/=total||1);
+
+ MODEL_NAMES.forEach(n=>weights[n]/=sum||1);
  return weights;
 }
 
-function ensemble(models,regime){
- const weights=modelWeights(regime);
- let b=0;
- NAMES.forEach(n=>b+=models[n]*weights[n]);
- /* 모델이 기본 확률에서 지나치게 멀어지지 않도록 보수적으로 결합 */
- return {b:clamp(BASE+(b-BASE)*.75),weights};
+/* 7. 모든 연산 결합 */
+function calculate(){
+ const h=decisive();
+ const state=trackState(h);
+ const change=detectChange(h);
+ const picture=searchPicture(results);
+ const bayes=onlineBayes();
+ const recent=recentFlow(h);
+
+ const stateB=clamp(BASE+
+  (state.streak-state.alternate)*.08);
+
+ const models={
+  "공간 그림":picture.p,
+  "최근 흐름":recent,
+  "온라인 베이지안":bayes.b,
+  "상태 추적":stateB
+ };
+
+ const weights=adaptiveWeights();
+ let combined=0;
+ MODEL_NAMES.forEach(n=>combined+=models[n]*weights[n]);
+
+ /* 변화가 감지되면 과거 가중치를 줄이고 최근 관측 반영 */
+ const changeFactor=change.changed?.75:1;
+ const b=clamp(BASE+(combined-BASE)*changeFactor);
+
+ return {b,models,weights,state,change,picture,bayes,recent};
 }
 
+/* 8. 다음 예측 저장 */
 function makePrediction(){
- if(results.length>=80){pending=null;return}
- const h=decisive();
- const regime=detectFlow(h);
- const models=calculateModels();
- const final=ensemble(models,regime);
+ if(results.length>=MAX){pending=null;return}
+ const a=calculate();
  pending={
   resultIndex:results.length,
-  regime,
-  models:{...models},
-  weights:{...final.weights},
-  b:final.b
+  b:a.b,
+  models:{...a.models},
+  weights:{...a.weights},
+  state:a.state.dominant,
+  change:a.change.score
  };
 }
 
-/* 실제 B/P 결과에 해당 직전 픽을 연결 */
+/* 9. 사전 예측 채점 */
 function scorePrediction(actual){
  if(!pending)return;
- const pick=pending.b>=.5?"B":"P";
+ const saved=pending;
+ const pick=saved.b>=.5?"B":"P";
+
  scored.push({
   resultIndex:results.length-1,
-  pick,
-  actual,
+  pick,actual,
   correct:pick===actual,
-  probability:pending.b,
-  regime:pending.regime,
-  models:{...pending.models},
-  loss:Math.pow(pending.b-(actual==="B"?1:0),2)
+  probability:saved.b,
+  models:{...saved.models},
+  weights:{...saved.weights},
+  loss:Math.pow(saved.b-(actual==="B"?1:0),2)
  });
  pending=null;
 }
 
+/* 10. 입력 */
 function add(value){
  if(busy)return;
- if(results.length>=80){alert("80판 입력 완료");return}
+ if(results.length>=MAX){alert("80판 입력 완료");return}
  busy=true;
  try{
   results.push(value);
   if(value==="B"||value==="P"){
    scorePrediction(value);
-   if(results.length<80)makePrediction();
+   if(results.length<MAX)makePrediction();
   }
   render();
   save();
   document.getElementById("inputStatus").textContent=
-   value==="T"?"타이 입력 · 기존 예측 유지":value+" 입력 · 그림 재연산 완료";
+   value==="T"?"타이 입력 · 기존 예측 유지":value+" 입력 · 전체 연산 갱신";
  }catch(e){
   console.error(e);
   alert("입력 오류: "+e.message);
  }finally{busy=false}
 }
 
+/* 11. 기록 재생 */
 function rebuild(old){
  fresh();
  makePrediction();
@@ -487,46 +431,47 @@ function rebuild(old){
   results.push(v);
   if(v==="B"||v==="P"){
    scorePrediction(v);
-   if(results.length<80)makePrediction();
+   if(results.length<MAX)makePrediction();
   }
  });
- if(!pending&&results.length<80)makePrediction();
+ if(!pending&&results.length<MAX)makePrediction();
 }
 function undo(){
  if(busy||!results.length)return;
  busy=true;
  try{
-  const old=results.slice(0,-1);
-  rebuild(old);
+  rebuild(results.slice(0,-1));
   render();save();
-  document.getElementById("inputStatus").textContent="마지막 결과 취소 완료";
+  document.getElementById("inputStatus").textContent="마지막 입력 취소 완료";
  }finally{busy=false}
 }
 function resetAll(){
  if(busy)return;
- if(!confirm("모든 입력과 검증 기록을 초기화할까요?"))return;
+ if(!confirm("모든 결과와 검증 기록을 초기화할까?"))return;
  fresh();makePrediction();
  try{localStorage.removeItem(KEY)}catch(e){}
  render();save();
  document.getElementById("inputStatus").textContent="초기화 완료";
 }
+
+/* 12. 저장과 복구 */
 function save(){
  try{
-  localStorage.setItem(KEY,JSON.stringify({version:3,results}));
- }catch(e){console.error("저장 실패",e)}
+  localStorage.setItem(KEY,JSON.stringify({version:3.2,results}));
+ }catch(e){console.error(e)}
 }
 function load(){
  try{
   let data=localStorage.getItem(KEY);
   if(!data){
-   for(const key of OLD_KEYS){
-    data=localStorage.getItem(key);
+   for(const k of OLD_KEYS){
+    data=localStorage.getItem(k);
     if(data)break;
    }
   }
   if(data){
    const d=JSON.parse(data);
-   rebuild((d.results||[]).filter(x=>["B","P","T"].includes(x)).slice(0,80));
+   rebuild((d.results||[]).filter(x=>["B","P","T"].includes(x)).slice(0,MAX));
   }else{
    fresh();makePrediction();
   }
@@ -536,29 +481,31 @@ function load(){
  }
 }
 
-/* 입력판 */
+/* 13. 보드 */
 function renderBoard(){
  const board=document.getElementById("board");
  board.innerHTML="";
- const records=new Map(scored.map(x=>[x.resultIndex,x]));
+ const map=new Map(scored.map(x=>[x.resultIndex,x]));
+
  for(let r=0;r<6;r++){
   for(let c=0;c<14;c++){
    const i=c*6+r;
    const el=document.createElement("div");
    el.className="cell";
    if(results[i]){
-    const actual=results[i];
-    el.classList.add(actual);
-    const result=document.createElement("span");
-    result.className="result";
-    result.textContent=actual;
-    el.appendChild(result);
+    const v=results[i];
+    el.classList.add(v);
+    const top=document.createElement("span");
+    top.className="result";
+    top.textContent=v;
+    el.appendChild(top);
+
     const mark=document.createElement("span");
     mark.className="mark";
-    if(actual==="T"){
+    if(v==="T"){
      mark.textContent="T";mark.classList.add("tie");
     }else{
-     const rec=records.get(i);
+     const rec=map.get(i);
      mark.textContent=rec?(rec.correct?"O":"X"):"-";
      if(rec)mark.classList.add(rec.correct?"ok":"fail");
     }
@@ -569,138 +516,168 @@ function renderBoard(){
  }
  document.getElementById("count").textContent=results.length+" / 80";
 }
+
 function renderSequence(){
  const box=document.getElementById("sequence");
  box.innerHTML="";
  results.slice(-20).forEach(v=>{
   const el=document.createElement("div");
-  el.className="seq "+v;el.textContent=v;box.appendChild(el);
+  el.className="seq "+v;
+  el.textContent=v;
+  box.appendChild(el);
  });
 }
-function renderModels(models,regime){
+
+/* 14. 모델 화면 */
+function renderModels(a){
  const box=document.getElementById("models");
  box.innerHTML="";
- const weights=pending?pending.weights:modelWeights(regime);
- NAMES.forEach(n=>{
-  const row=document.createElement("div");row.className="model";
-  const top=document.createElement("div");top.className="modeltop";
-  const name=document.createElement("b");name.textContent=n;
-  const val=document.createElement("span");
-  val.innerHTML="<span class='b'>B "+pct(models[n])+"</span> / <span class='p'>P "+pct(1-models[n])+"</span>";
-  top.append(name,val);
-  const bar=document.createElement("div");bar.className="bar";
-  const fill=document.createElement("div");fill.className="fill";
-  fill.style.width=(models[n]*100)+"%";bar.appendChild(fill);
-  const foot=document.createElement("div");foot.className="note";
-  foot.textContent="결합 가중치 "+(weights[n]*100).toFixed(1)+"%";
-  row.append(top,bar,foot);box.appendChild(row);
+ MODEL_NAMES.forEach(n=>{
+  const row=document.createElement("div");
+  row.className="model";
+  const top=document.createElement("div");
+  top.className="modeltop";
+  const name=document.createElement("b");
+  name.textContent=n;
+  const value=document.createElement("span");
+  value.textContent="B "+pct(a.models[n])+" / P "+pct(1-a.models[n]);
+  top.append(name,value);
+
+  const bar=document.createElement("div");
+  bar.className="bar";
+  const fill=document.createElement("div");
+  fill.className="fill";
+  fill.style.width=(a.models[n]*100)+"%";
+  bar.appendChild(fill);
+
+  const foot=document.createElement("div");
+  foot.className="note";
+  foot.textContent="현재 가중치 "+(a.weights[n]*100).toFixed(1)+"%";
+  row.append(top,bar,foot);
+  box.appendChild(row);
  });
 }
-function renderFlow(){
- const h=decisive(),flow=detectFlow(h);
- const recent=h.slice(-8);
- const spatial=spatialModel(results);
- document.getElementById("flow").textContent=flow;
- document.getElementById("run").textContent=runLength(h)+"연속";
- document.getElementById("flow3").textContent=h.slice(-3).join("")||"-";
- document.getElementById("flow5").textContent=h.slice(-5).join("")||"-";
- document.getElementById("flow8").textContent=recent.join("")||"-";
- document.getElementById("altRun").textContent=altLength(h)+"칸";
- document.getElementById("spatial").textContent=
-  spatial.matches?Math.round(spatial.similarity*100)+"%":"표본 부족";
- document.getElementById("spatialMatch").textContent=spatial.matches+"건";
- document.getElementById("flowNote").textContent=
-  "공간 유사 그림 "+spatial.matches+"건 · 평균 유사도 "+
-  (spatial.matches?Math.round(spatial.similarity*100)+"%":"자료 부족")+
-  " · 현재 그림 "+flow;
- const tr=transitionInfo(h);
- document.getElementById("previousFlow").textContent=tr.prev;
- document.getElementById("transition").textContent=tr.changed?"변화 감지":"유지";
- document.getElementById("transitionNote").textContent=
-  tr.changed?tr.prev+" → "+tr.now+" 변화 감지":"현재 국면 유지";
-}
+
+/* 15. 전체 갱신 */
 function accuracy(rows){
  return rows.length?rows.filter(x=>x.correct).length/rows.length:null;
 }
-function renderLoss(){
- let cur=0,max=0;
- scored.forEach(x=>{
-  if(x.correct)cur=0;
-  else{cur++;max=Math.max(max,cur)}
- });
- const a10=accuracy(scored.slice(-10)),a20=accuracy(scored.slice(-20));
- document.getElementById("lossRun").textContent=cur;
- document.getElementById("maxLoss").textContent=max;
- document.getElementById("recentAccuracy").textContent=a10===null?"-":pct(a10);
- document.getElementById("recent20").textContent=a20===null?"-":pct(a20);
- document.getElementById("lossNote").textContent=
-  cur>=4?"연속 미적중 "+cur+"회 · 예측 성능 점검 필요":"현재 연속 미적중 "+cur+"회";
-}
+
 function render(){
- renderBoard();renderSequence();
- const models=calculateModels();
- const regime=detectFlow(decisive());
- const result=pending?pending:ensemble(models,regime);
- const b=pending?pending.b:result.b;
+ renderBoard();
+ renderSequence();
+
+ const a=calculate();
+ const b=pending?pending.b:a.b;
  const pick=b>=.5?"B":"P";
- const done=results.length>=80;
- document.getElementById("pick").textContent=done?"완료":pick;
+
+ document.getElementById("pick").textContent=results.length>=MAX?"완료":pick;
  document.getElementById("pick").className="big "+(pick==="B"?"b":"p");
- document.getElementById("pickProb").textContent=done?"80판 입력 완료":"선택 방향 확률 "+pct(Math.max(b,1-b));
+ document.getElementById("pickProb").textContent=
+  results.length>=MAX?"80판 입력 완료":"선택 방향 추정 확률 "+pct(Math.max(b,1-b));
+
  document.getElementById("confidence").textContent=
-  "현재 그림 "+regime+" · 기준 대비 "+(Math.abs(b-BASE)*100).toFixed(2)+"%p";
+  "변화 점수 "+a.change.score.toFixed(2);
+
  document.getElementById("bprob").textContent=pct(b);
  document.getElementById("pprob").textContent=pct(1-b);
- document.getElementById("margin").textContent=(Math.abs(b-(1-b))*100).toFixed(2)+"%p";
- renderModels(models,regime);renderFlow();renderLoss();
- const total=scored.length,acc=accuracy(scored);
+ document.getElementById("margin").textContent=
+  (Math.abs(b-(1-b))*100).toFixed(2)+"%p";
+
+ /* 변화점 탐지 */
+ document.getElementById("flow").textContent=a.state.dominant;
+ document.getElementById("change").textContent=a.change.description;
+ document.getElementById("changeScore").textContent=a.change.score.toFixed(2);
+ document.getElementById("stateConfidence").textContent=
+  pct(a.state.confidence);
+ document.getElementById("changeNote").textContent=
+  a.change.changed
+   ?"최근 4판과 직전 4판의 구조 차이가 감지됐어. 기존 흐름 가중치를 낮췄어."
+   :"현재 비교 구간에서 뚜렷한 변화가 감지되지 않았어.";
+
+ /* 상태 추적 */
+ document.getElementById("streakState").textContent=pct(a.state.streak);
+ document.getElementById("alternateState").textContent=pct(a.state.alternate);
+ document.getElementById("mixedState").textContent=pct(a.state.mixed);
+ document.getElementById("dominantState").textContent=a.state.dominant;
+
+ /* 온라인 베이지안 */
+ document.getElementById("onlineB").textContent=pct(a.bayes.b);
+ document.getElementById("onlineP").textContent=pct(a.bayes.p);
+ document.getElementById("onlineBC").textContent=a.bayes.bCount.toFixed(1);
+ document.getElementById("onlinePC").textContent=a.bayes.pCount.toFixed(1);
+ document.getElementById("bayesNote").textContent=
+  "실제 B/P 결과를 순차 반영한 가중 사후 추정치야. 표본이 적을 때는 기본 확률에 가깝게 유지해.";
+
+ renderModels(a);
+
+ /* 성능 */
+ const total=scored.length;
+ const acc=accuracy(scored);
  document.getElementById("accuracy").textContent=acc===null?"-":pct(acc);
  document.getElementById("tested").textContent=total;
- document.getElementById("brier").textContent=total?avg(scored.map(x=>x.loss)).toFixed(4):"-";
- document.getElementById("goal").textContent=total<100?"검증 중":acc>=.60?"60% 이상":"60% 미달";
- [20,50,100].forEach(k=>{
-  const a=accuracy(scored.slice(-k));
-  document.getElementById("a"+k).textContent=a===null?"-":pct(a);
+ document.getElementById("brier").textContent=
+  total?avg(scored.map(x=>x.loss)).toFixed(4):"-";
+ const r20=accuracy(scored.slice(-20));
+ const r50=accuracy(scored.slice(-50));
+ document.getElementById("recent20").textContent=r20===null?"-":pct(r20);
+ document.getElementById("recent50").textContent=r50===null?"-":pct(r50);
+
+ let loss=0,maxLoss=0;
+ scored.forEach(x=>{
+  if(x.correct)loss=0;
+  else{loss++;maxLoss=Math.max(maxLoss,loss)}
  });
+ document.getElementById("maxLoss").textContent=maxLoss;
+
  document.getElementById("status").innerHTML=
-  "입력 결과: "+results.length+"/80<br>"+
-  "B/P 결과: "+decisive().length+"판<br>"+
-  "O/X 검증: "+total+"판<br>"+
-  "연산 모델: 6개<br>"+
-  "공간 위치 분석: 활성<br>"+
-  "유사 그림 검색: 활성<br>"+
-  "실시간 재계산: 활성<br>"+
-  "현재 국면: "+regime+"<br>"+
-  "현재 픽: "+(done?"완료":pick)+"<br>"+
-  "예측 위치: "+(pending?pending.resultIndex+1:"완료")+"<br>"+
-  "타이: 예측 유지 / OX 제외";
+  "결과 입력: "+results.length+"/80<br>"+
+  "B/P 검증: "+total+"판<br>"+
+  "변화점 탐지: 활성<br>"+
+  "온라인 베이지안 갱신: 활성<br>"+
+  "순차 상태 추적: 활성<br>"+
+  "오차 기반 모델 가중치: 활성<br>"+
+  "공간 그림 검색: 활성<br>"+
+  "타이: O/X 제외<br>"+
+  "현재 예측 위치: "+(pending?pending.resultIndex+1:"완료");
 }
+
+/* 16. 버튼 연결 */
 function bindButtons(){
- const binds=[
+ const items=[
   ["btnB",()=>add("B")],
   ["btnP",()=>add("P")],
   ["btnT",()=>add("T")],
   ["btnUndo",undo],
   ["btnReset",resetAll]
  ];
- binds.forEach(([id,fn])=>{
+ items.forEach(([id,fn])=>{
   const el=document.getElementById(id);
   if(!el)throw new Error("버튼 누락 "+id);
-  el.addEventListener("click",e=>{e.preventDefault();fn()});
+  el.addEventListener("click",e=>{
+   e.preventDefault();fn();
+  });
  });
 }
-function startApp(){
+
+function start(){
  try{
-  load();bindButtons();render();save();
-  document.getElementById("inputStatus").textContent="V3.0 엔진 준비 완료 · 결과 입력 가능";
+  load();
+  bindButtons();
+  render();
+  save();
+  document.getElementById("inputStatus").textContent=
+   "V3.2 적응형 엔진 준비 완료";
  }catch(e){
   console.error(e);
-  document.body.innerHTML="<div style='padding:25px;color:white'><h2>시작 오류</h2><pre>"+String(e.stack||e)+"</pre></div>";
+  document.body.innerHTML=
+   "<div style='padding:25px;color:white'><h2>시작 오류</h2><pre>"+
+   String(e.stack||e)+"</pre></div>";
  }
 }
 if(document.readyState==="loading"){
- document.addEventListener("DOMContentLoaded",startApp);
-}else{startApp()}
+ document.addEventListener("DOMContentLoaded",start);
+}else{start()}
 </script>
 </body>
 </html>
