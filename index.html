@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#07110e">
+<title>번영의 나무 바카라</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#07110e;color:#e9f5ec;font-family:Arial,sans-serif;padding:14px}
+header{text-align:center;padding:20px 5px}
+h1{color:#d8bd65;font-size:27px;margin:5px}
+.sub{color:#9eae9f;font-size:12px}
+.panel{background:#102019;border:1px solid #31513c;border-radius:15px;padding:15px;margin-bottom:13px}
+h2{font-size:17px;color:#e4ca78;margin:0 0 13px}
+.buttons{display:flex;gap:10px}
+button{border:0;border-radius:12px;padding:15px 5px;font-weight:bold;font-size:19px;flex:1}
+.b{background:#2366dc;color:white}
+.p{background:#d83d4e;color:white}
+.t{background:#299d6c;color:white}
+.undo{background:#46554c;color:white;font-size:14px}
+.reset{background:#713b3b;color:white;font-size:14px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:#192d22;border-radius:10px;text-align:center;padding:12px 3px}
+.num{font-size:25px;font-weight:bold;margin-top:5px}
+.blue{color:#6da4ff}.red{color:#ff7580}.gold{color:#e8cf79}
+.boardwrap{overflow-x:auto;padding-bottom:8px}
+.board{display:grid;grid-template-rows:repeat(6,29px);grid-auto-columns:29px;grid-auto-flow:column;gap:3px;width:max-content}
+.cell{width:29px;height:29px;border:1px solid #3b5545;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:bold;color:#748477}
+.cell.B{background:#2366dc;color:white}
+.cell.P{background:#d83d4e;color:white}
+.cell.T{background:#299d6c;color:white}
+.pred{text-align:center;padding:18px}
+.pick{font-size:42px;font-weight:bold;margin:10px}
+.note{font-size:12px;color:#a8b8aa;line-height:1.6}
+.bar{height:12px;background:#26392d;border-radius:10px;overflow:hidden;display:flex;margin:12px 0}
+.barB{background:#3678ed}.barP{background:#e34c5b}
+.actions{display:flex;gap:9px;margin-top:12px}
+.actions button{font-size:13px;padding:12px}
+</style>
+</head>
+<body>
+<header>
+<div class="gold">✦ PROSPERITY TREE ✦</div>
+<h1>번영의 나무 바카라</h1>
+<div class="sub">REAL-TIME PROBABILITY ANALYSIS</div>
+</header>
+
+<section class="panel">
+<h2>① 결과 입력</h2>
+<div class="buttons">
+<button class="b" onclick="add('B')">BANKER</button>
+<button class="p" onclick="add('P')">PLAYER</button>
+<button class="t" onclick="add('T')">TIE</button>
+</div>
+<div class="actions">
+<button class="undo" onclick="undo()">↶ 되돌리기</button>
+<button class="reset" onclick="resetAll()">초기화</button>
+</div>
+</section>
+
+<section class="panel">
+<h2>② 현재 슈 통계</h2>
+<div class="stats">
+<div class="stat">BANKER<div id="bc" class="num blue">0</div></div>
+<div class="stat">PLAYER<div id="pc" class="num red">0</div></div>
+<div class="stat">TIE<div id="tc" class="num gold">0</div></div>
+</div>
+<p id="total" class="note">입력: 0 / 80</p>
+</section>
+
+<section class="panel">
+<h2>③ 6행 × 80열 결과판</h2>
+<div class="boardwrap"><div class="board" id="board"></div></div>
+<div class="note">결과는 위에서 아래로 6개씩 입력됩니다. 오른쪽으로 이동하면 다음 열입니다.</div>
+</section>
+
+<section class="panel">
+<h2>④ 다음 결과 확률 기준</h2>
+<div class="pred">
+<div class="sub">기본 이론 확률 (타이 제외 기준)</div>
+<div class="pick gold">BANKER 우세</div>
+<div id="prob" style="font-size:17px">B 50.68% / P 49.32%</div>
+<div class="bar"><div class="barB" id="barB" style="width:50.68%"></div><div class="barP" id="barP" style="width:49.32%"></div></div>
+<div class="note">바카라의 기본 확률 기준입니다. 개별 다음 판의 결과를 보장하거나 예측하는 수치는 아닙니다.</div>
+</div>
+</section>
+
+<section class="panel">
+<h2>⑤ 실시간 분석 상태</h2>
+<div id="status" class="gold" style="font-size:20px;font-weight:bold">대기 중</div>
+<p id="detail" class="note">결과를 입력하면 현재 슈의 통계가 자동 갱신됩니다.</p>
+</section>
+
+<script>
+let data=[];
+function add(v){
+ if(data.length>=480){alert('입력판이 가득 찼습니다.');return;}
+ data.push(v);render();
+}
+function undo(){data.pop();render();}
+function resetAll(){
+ if(confirm('현재 입력 결과를 모두 삭제할까요?')){
+ data=[];render();
+ }
+}
+function render(){
+ let b=data.filter(x=>x==='B').length;
+ let p=data.filter(x=>x==='P').length;
+ let t=data.filter(x=>x==='T').length;
+ document.getElementById('bc').textContent=b;
+ document.getElementById('pc').textContent=p;
+ document.getElementById('tc').textContent=t;
+ document.getElementById('total').textContent='입력: '+data.length+' / 480';
+ let board=document.getElementById('board');
+ board.innerHTML='';
+ for(let i=0;i<480;i++){
+  let c=document.createElement('div');
+  c.className='cell '+(data[i]||'');
+  c.textContent=data[i]||'';
+  board.appendChild(c);
+ }
+ let pctB=data.length?((b/(b+p||1))*100).toFixed(1):0;
+ let pctP=data.length?((p/(b+p||1))*100).toFixed(1):0;
+ document.getElementById('status').textContent=
+ data.length===0?'대기 중':data.length+'개 결과 입력 완료';
+ document.getElementById('detail').textContent=
+ '현재 슈 누적 통계: 뱅커 '+b+'회, 플레이어 '+p+'회, 타이 '+t+'회. '+ 
+ (data.length?'승패 결과의 빈도를 관찰하는 용도이며 다음 판 확률과는 별개입니다.':'결과를 입력해 주세요.');
+}
+render();
+</script>
+</body>
+</html>
