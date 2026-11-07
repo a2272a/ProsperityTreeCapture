@@ -3,236 +3,494 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>번영의 나무 바카라</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#080d18">
+<title>번영의 나무 MAX ULTIMATE</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#080d18;color:#fff;font-family:Arial,sans-serif;padding:12px}
-h1{font-size:25px;text-align:center;color:#62eaff;margin:10px 0}
-.sub{text-align:center;color:#9eabc1;font-size:13px;margin-bottom:15px}
-.panel{background:#131d30;border:1px solid #293c59;border-radius:13px;padding:13px;margin-bottom:12px}
-.panel h2{font-size:17px;margin:0 0 12px;color:#a8dfff}
-.buttons{display:flex;gap:10px}
-button{border:0;border-radius:10px;font-weight:bold;cursor:pointer}
-.inputBtn{flex:1;height:65px;font-size:25px;color:white}
-.player{background:#1766d1}
-.banker{background:#d52d48}
-.control{background:#34445d;color:white;padding:12px;font-size:14px}
-.reset{background:#792d3b}
+body{margin:0;padding:11px;background:#080d18;color:#f4f7ff;font-family:Arial,sans-serif}
+h1{text-align:center;color:#62eaff;font-size:25px;margin:12px 0 4px}
+h2{font-size:18px;color:#a9ddff;margin:0 0 13px}
+.sub{text-align:center;color:#9eabc1;font-size:12px;margin-bottom:15px}
+.panel{background:#141e31;border:1px solid #2c405f;border-radius:14px;padding:14px;margin-bottom:12px}
+.buttons{display:flex;gap:8px}
+button{border:0;border-radius:10px;font-weight:bold;color:white;cursor:pointer}
+.entry{height:70px;flex:1;font-size:25px}
+.pbtn{background:#1769d2}.bbtn{background:#cf2948}.tbtn{background:#13865f}
+.gray{background:#354761;padding:12px;font-size:14px}
+.danger{background:#873247}
+.small{font-size:12px;color:#aab8cc;line-height:1.6}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
-.stat{background:#0b1425;border-radius:9px;padding:10px 5px;text-align:center}
-.stat small{display:block;color:#aab8ce;font-size:12px}
-.stat strong{display:block;font-size:21px;margin-top:5px}
-.pick{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.pickbox{padding:15px 5px;text-align:center;border-radius:10px;background:#0b1425}
-.pickbox strong{font-size:28px;display:block;margin:5px}
-.pickbox small{color:#aab8ce}
-.blue{color:#59aaff}
-.red{color:#ff687d}
-.green{color:#6cf0b0}
-.note{font-size:12px;color:#aab8ce;line-height:1.5;margin-top:10px}
-.boardWrap{overflow-x:auto;max-height:420px;border:1px solid #34445d;border-radius:8px}
-.board{display:grid;grid-template-columns:repeat(80,35px);grid-template-rows:repeat(6,35px);width:max-content;background:#0b1425}
-.cell{border:1px solid #29374e;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:bold}
-.cell.p{background:#174e9b;color:white}
-.cell.b{background:#a9213b;color:white}
-.scenarios{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}
-.scenario{background:#0b1425;border-radius:8px;padding:9px;font-size:15px;display:flex;justify-content:space-between;gap:5px}
-.scenario b{letter-spacing:2px}
-.muted{color:#aab8ce}
-#allScenarios{display:none;margin-top:10px}
-#allScenarios.show{display:grid}
+.stat{background:#0b1425;padding:11px 4px;border-radius:10px;text-align:center;min-width:0}
+.stat small{display:block;color:#aab8cc;font-size:11px}
+.stat strong{display:block;font-size:21px;margin-top:6px;overflow-wrap:anywhere}
+.blue{color:#63adff}.red{color:#ff7088}.green{color:#68e5b0}.yellow{color:#ffd16c}
+.pickbox{background:#0b1425;border-radius:12px;padding:16px;text-align:center}
+.pick{font-size:35px;font-weight:900;margin:8px 0}
+.bar{height:14px;background:#26354c;border-radius:20px;overflow:hidden;display:flex;margin:10px 0}
+.bp{background:#287be0}.bb{background:#e04461}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.metric{background:#0b1425;border-radius:10px;padding:11px;min-width:0}
+.metric small{color:#aab8cc;font-size:11px}
+.metric strong{display:block;font-size:20px;margin-top:6px;overflow-wrap:anywhere}
+.row{display:grid;grid-template-columns:1fr auto;gap:8px;padding:11px 0;border-bottom:1px solid #2a3a53;align-items:center;font-size:13px}
+.row:last-child{border:0}
+.tag{padding:5px 7px;border-radius:7px;background:#263954;font-size:11px}
+.boardwrap{overflow:auto;max-height:420px;border:1px solid #35445e;border-radius:9px}
+.board{display:grid;grid-template-columns:repeat(80,34px);grid-template-rows:repeat(6,34px);width:max-content;background:#0b1425}
+.cell{border:1px solid #293951;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:bold}
+.cell.P{background:#1756a0}.cell.B{background:#a5233d}.cell.T{background:#12664e}
+.cell.latest{outline:2px solid white;outline-offset:-3px}
+.log{max-height:260px;overflow:auto}
+.logitem{padding:9px 2px;border-bottom:1px solid #2a3a53;font-size:12px;display:flex;justify-content:space-between;gap:8px}
+select{background:#0b1425;color:white;border:1px solid #405574;border-radius:8px;padding:10px;font-size:14px}
+.footer{text-align:center;color:#7f90a9;font-size:11px;padding:15px}
 </style>
 </head>
 <body>
 
-<h1>🌳 번영의 나무 바카라</h1>
-<div class="sub">실시간 확률 분석 · 6행 × 80열 · 64개 시나리오</div>
+<h1>🌳 번영의 나무</h1>
+<div class="sub">MAX ULTIMATE · ADAPTIVE STATISTICAL ENGINE</div>
 
 <div class="panel">
-<h2>① 결과 입력</h2>
+<h2>① 실시간 결과 입력</h2>
 <div class="buttons">
-<button class="inputBtn player" onclick="add('P')">PLAYER P</button>
-<button class="inputBtn banker" onclick="add('B')">BANKER B</button>
+<button class="entry pbtn" onclick="add('P')">PLAYER P</button>
+<button class="entry bbtn" onclick="add('B')">BANKER B</button>
+<button class="entry tbtn" onclick="add('T')">TIE T</button>
 </div>
 <div class="buttons" style="margin-top:9px">
-<button class="control" onclick="undo()">↩ 실행 취소</button>
-<button class="control reset" onclick="resetAll()">전체 초기화</button>
+<button class="gray" onclick="undo()">↶ 취소</button>
+<button class="gray" onclick="exportCSV()">기록 저장</button>
+<button class="gray danger" onclick="resetAll()">초기화</button>
 </div>
-<div class="note">타이(T)는 분석에서 제외합니다. P 또는 B 결과만 입력하세요.</div>
+<p class="small">P/B/T 모두 기록합니다. 타이는 예측 적중·실패 판정에서 제외하며, 타이 입력 후에도 진행 중인 예측을 유지합니다.</p>
 </div>
 
 <div class="panel">
-<h2>② 현재 입력 현황</h2>
+<h2>② 데이터 현황</h2>
 <div class="stats">
-<div class="stat"><small>입력 횟수</small><strong id="total">0</strong></div>
-<div class="stat"><small>PLAYER</small><strong class="blue" id="pcount">0</strong></div>
-<div class="stat"><small>BANKER</small><strong class="red" id="bcount">0</strong></div>
+<div class="stat"><small>전체 판수</small><strong id="total">0</strong></div>
+<div class="stat"><small>PLAYER</small><strong class="blue" id="pc">0</strong></div>
+<div class="stat"><small>BANKER</small><strong class="red" id="bc">0</strong></div>
+</div>
+<div class="stats" style="margin-top:7px">
+<div class="stat"><small>TIE</small><strong class="green" id="tc">0</strong></div>
+<div class="stat"><small>P/B 판수</small><strong id="decisive">0</strong></div>
+<div class="stat"><small>검증 예측</small><strong id="tested">0</strong></div>
 </div>
 </div>
 
 <div class="panel">
-<h2>③ 다음 기준픽</h2>
-<div class="pick">
+<h2>③ 최종 통합 예측</h2>
 <div class="pickbox">
-<small>PLAYER 기준확률</small>
-<strong class="blue">49.31%</strong>
+<div class="small">ADAPTIVE ENSEMBLE</div>
+<div class="pick yellow" id="pick">PASS</div>
+<div class="small" id="reason">최소 분석 데이터가 필요합니다.</div>
 </div>
-<div class="pickbox">
-<small>BANKER 기준확률</small>
-<strong class="red">50.69%</strong>
+<div class="bar">
+<div class="bp" id="pbar" style="width:49.31%"></div>
+<div class="bb" id="bbar" style="width:50.69%"></div>
 </div>
+<div class="stats">
+<div class="stat"><small>PLAYER 확률</small><strong class="blue" id="pp">49.31%</strong></div>
+<div class="stat"><small>BANKER 확률</small><strong class="red" id="bpct">50.69%</strong></div>
+<div class="stat"><small>모델 불일치</small><strong id="spread">-</strong></div>
 </div>
-<div style="text-align:center;margin-top:13px">
-<div class="muted">기준확률상 우세</div>
-<strong class="red" id="mainPick" style="font-size:35px">BANKER B</strong>
-</div>
-<div class="note">표준 8덱 바카라의 타이를 제외한 참고 확률입니다. 매 판은 독립적이므로 직전 결과가 다음 결과를 보장하거나 예측해 주지는 않습니다.</div>
+<p class="small" id="signal" style="margin-top:11px">분석 대기 중</p>
 </div>
 
 <div class="panel">
-<h2>④ 6행 × 80열 결과판</h2>
-<div class="boardWrap" id="boardWrap">
+<h2>④ 독립 분석 모델</h2>
+<div class="row"><span>기본 바카라 확률</span><strong id="base">49.31 / 50.69</strong></div>
+<div class="row"><span>누적 베이지안 모델</span><strong id="global">49.31 / 50.69</strong></div>
+<div class="row"><span>최근 10회 모델</span><strong id="r10">49.31 / 50.69</strong></div>
+<div class="row"><span>최근 20회 모델</span><strong id="r20">49.31 / 50.69</strong></div>
+<div class="row"><span>최근 50회 모델</span><strong id="r50">49.31 / 50.69</strong></div>
+<div class="row"><span>변화 감지 모델</span><strong id="changeModel">49.31 / 50.69</strong></div>
+<p class="small">모델별 결과를 독립적으로 계산합니다. 모델 간 결과가 크게 다르면 통합 예측의 신뢰도를 낮춥니다.</p>
+</div>
+
+<div class="panel">
+<h2>⑤ 자동 가중치 조절</h2>
+<div id="weights"></div>
+<p class="small">각 모델의 과거 순차 예측 로그손실을 바탕으로 가중치를 조절합니다. 성능이 나쁜 모델의 영향은 줄어듭니다.</p>
+</div>
+
+<div class="panel">
+<h2>⑥ 변화 및 위험 감지</h2>
+<div class="grid2">
+<div class="metric"><small>최근 20회 P 비율</small><strong class="blue" id="rp">-</strong></div>
+<div class="metric"><small>최근 20회 B 비율</small><strong class="red" id="rb">-</strong></div>
+<div class="metric"><small>기준과 차이</small><strong id="dev">-</strong></div>
+<div class="metric"><small>데이터 상태</small><strong id="sample">부족</strong></div>
+</div>
+<p class="small" id="risk" style="margin-top:10px">데이터를 입력하면 통계적 변화와 표본 불확실성을 계산합니다.</p>
+</div>
+
+<div class="panel">
+<h2>⑦ 실제 예측 검증</h2>
+<div class="stats">
+<div class="stat"><small>적중</small><strong class="green" id="hits">0</strong></div>
+<div class="stat"><small>실패</small><strong class="red" id="misses">0</strong></div>
+<div class="stat"><small>적중률</small><strong id="hitRate">-</strong></div>
+</div>
+<div class="grid2" style="margin-top:8px">
+<div class="metric"><small>Brier 점수</small><strong id="brier">-</strong></div>
+<div class="metric"><small>로그손실</small><strong id="loss">-</strong></div>
+</div>
+<p class="small" id="validation">다음 결과를 입력하면 이전 예측을 검증합니다. PASS는 적중률 분모에서 제외합니다.</p>
+</div>
+
+<div class="panel">
+<h2>⑧ 6행 × 80열 결과판</h2>
+<div class="boardwrap" id="boardwrap">
 <div class="board" id="board"></div>
 </div>
-<div class="note">왼쪽부터 한 열씩 아래 방향으로 입력됩니다. 화면을 좌우로 밀어 전체 80열을 확인하세요.</div>
+<p class="small">칸을 누르면 그 결과부터 이후 기록을 삭제합니다. 입력 순서는 왼쪽 열부터 아래 방향입니다.</p>
 </div>
 
 <div class="panel">
-<h2>⑤ 다음 6개 시나리오 분석</h2>
-<div class="stats" style="margin-bottom:10px">
-<div class="stat"><small>전체 경우의 수</small><strong>64</strong></div>
-<div class="stat"><small>PLAYER 기준</small><strong class="blue">49.31%</strong></div>
-<div class="stat"><small>BANKER 기준</small><strong class="red">50.69%</strong></div>
-</div>
-<div class="muted" style="font-size:12px;margin-bottom:9px">아래는 다음 6회의 가능한 P/B 조합입니다. 확률이 높은 순서로 표시합니다.</div>
-<div class="scenarios" id="topScenarios"></div>
-<button class="control" style="width:100%;margin-top:10px" onclick="toggleAll()">64개 전체 시나리오 보기 / 닫기</button>
-<div class="scenarios" id="allScenarios"></div>
+<h2>⑨ 예측 검증 기록</h2>
+<div class="log" id="log"><div class="small">아직 기록이 없습니다.</div></div>
 </div>
 
 <div class="panel">
-<h2>⑥ 분석 안내</h2>
-<div class="note">
-• 입력할 때마다 결과판과 시나리오가 즉시 갱신됩니다.<br>
-• 64개는 다음 6회의 모든 P/B 조합입니다.<br>
-• 시나리오 순위는 기준확률을 곱해 계산합니다.<br>
-• 과거 결과로 미래 결과를 확정할 수는 없습니다.
+<h2>⑩ 엔진 설정</h2>
+<div class="row">
+<span>예측 기준</span>
+<select id="threshold" onchange="update()">
+<option value="0.510">낮은 기준</option>
+<option value="0.515" selected>표준 기준</option>
+<option value="0.520">엄격한 기준</option>
+<option value="0.530">매우 엄격한 기준</option>
+</select>
 </div>
+<div class="row">
+<span>최근 분석 구간</span>
+<strong>10 / 20 / 50회</strong>
 </div>
+<p class="small">기준을 높이면 PASS가 늘어납니다. 기준 변경은 이후 예측에만 적용됩니다.</p>
+</div>
+
+<div class="panel">
+<h2>분석 원칙</h2>
+<p class="small">
+1. 8덱 바카라의 P/B 기본 확률을 기준으로 사용합니다.<br>
+2. 타이를 제외한 P/B 조건부 확률로 분석합니다.<br>
+3. 각 판의 예측은 실제 결과가 나오기 전에 저장합니다.<br>
+4. 다음 P/B 결과로만 직전 예측을 검증합니다.<br>
+5. 타이는 예측 검증을 종료시키지 않습니다.<br>
+6. 모델 가중치는 실제 순차 검증 성능으로 조정합니다.<br>
+7. 통계적 변화가 있어도 다음 결과를 보장하지 않습니다.
+</p>
+</div>
+
+<div class="footer">PROSPERITY TREE · MAX ULTIMATE ENGINE</div>
 
 <script>
-const P_RATE=0.4931;
-const B_RATE=0.5069;
-let results=[];
+"use strict";
 
-function add(v){
- if(results.length>=480){
-  alert("입력판이 가득 찼습니다. 최대 480회입니다.");
-  return;
+const KEY="PT_ULTIMATE_V2";
+const BP=.4931, BB=.5069, PRIOR=40;
+const MODEL_NAMES=["기본","누적","최근10","최근20","최근50","변화"];
+let data=[],history=[],pending=null;
+
+function load(){
+ try{
+  let x=JSON.parse(localStorage.getItem(KEY)||"{}");
+  data=Array.isArray(x.data)?x.data:[];
+  history=Array.isArray(x.history)?x.history:[];
+  pending=x.pending||null;
+ }catch(e){data=[];history=[];pending=null;}
+}
+function save(){
+ try{localStorage.setItem(KEY,JSON.stringify({data,history,pending}));}
+ catch(e){alert("저장 공간이 부족합니다.");}
+}
+function count(a){
+ let p=0,b=0,t=0;
+ a.forEach(x=>{if(x==="P")p++;if(x==="B")b++;if(x==="T")t++;});
+ return {p,b,t,n:p+b};
+}
+function decisive(a){return a.filter(x=>x==="P"||x==="B");}
+function beta(a){
+ let c=count(a);
+ return (BP*PRIOR+c.p)/(PRIOR+c.n);
+}
+function clamp(x,lo,hi){return Math.max(lo,Math.min(hi,x));}
+function logLoss(p,y){
+ p=clamp(p,.001,.999);
+ return -(y*Math.log(p)+(1-y)*Math.log(1-p));
+}
+function brier(p,y){return (p-y)*(p-y);}
+
+function forecasts(){
+ let d=decisive(data);
+ let g=beta(d);
+ let r10=beta(d.slice(-10));
+ let r20=beta(d.slice(-20));
+ let r50=beta(d.slice(-50));
+
+ // 변화 감지: 최근 10회와 누적 추정치 비교
+ let recent=d.slice(-10);
+ let short=beta(recent);
+ let long=beta(d.slice(0,Math.max(0,d.length-10)));
+ let delta=short-long;
+ let change=clamp(BP+delta*.30,.40,.60);
+
+ return [BP,g,r10,r20,r50,change];
+}
+function modelScores(){
+ let scores=MODEL_NAMES.map(()=>({loss:0,brier:0,n:0}));
+ history.forEach(h=>{
+  if(!h.probs||!Number.isFinite(h.y))return;
+  h.probs.forEach((p,i)=>{
+   scores[i].loss+=logLoss(p,h.y);
+   scores[i].brier+=brier(p,h.y);
+   scores[i].n++;
+  });
+ });
+ return scores;
+}
+function weights(scores){
+ // 온라인 성능 가중：较小的平均损失获得较高权重
+ let raw=scores.map((s,i)=>{
+  if(s.n<5)return 1;
+  let avg=s.loss/s.n;
+  return Math.exp(-Math.min(5,Math.max(0,avg-.60))*2.0);
+ });
+ let sum=raw.reduce((a,b)=>a+b,0);
+ return raw.map(x=>x/sum);
+}
+function analyze(){
+ let probs=forecasts();
+ let scores=modelScores();
+ let w=weights(scores);
+ let final=probs.reduce((s,p,i)=>s+p*w[i],0);
+ let spread=(Math.max(...probs)-Math.min(...probs))*100;
+ let d=decisive(data);
+ let recent=d.slice(-20);
+ let rc=count(recent);
+ let recentRate=rc.n?rc.p/rc.n:BP;
+ let deviation=Math.abs(recentRate-BP)*100;
+ let enough=d.length>=20;
+ let threshold=Number(document.getElementById("threshold")?.value||.515);
+ let side="PASS";
+ let reason="표본이 부족합니다.";
+
+ if(enough){
+  if(spread>5){reason="모델 간 의견 차이가 큽니다.";}
+  else if(Math.max(final,1-final)<threshold){reason="예측 우세 기준에 미달합니다.";}
+  else{
+   side=final>0.5?"P":"B";
+   reason="통계 기준을 통과했습니다.";
+  }
  }
- results.push(v);
- render();
+ return {probs,scores,w,final,spread,rc,recentRate,deviation,side,reason,enough};
 }
+function add(v){
+ if(data.length>=480){alert("최대 480회까지 입력할 수 있습니다.");return;}
 
+ // T는 직전 예측 검증을 보류하고 P/B에서만 검증
+ if(v==="P"||v==="B"){
+  if(pending){
+   let y=v==="P"?1:0;
+   history.push({
+    side:pending.side,
+    y,
+    probs:pending.probs,
+    ensemble:pending.ensemble,
+    result:v,
+    hit:pending.side===v,
+    time:new Date().toLocaleTimeString("ko-KR")
+   });
+   history=history.slice(-500);
+   pending=null;
+  }
+ }
+ data.push(v);
+ update();
+}
 function undo(){
- if(results.length===0)return;
- results.pop();
- render();
+ if(!data.length)return;
+ data.pop();
+ rebuildHistory();
+ update();
 }
-
+function rebuildHistory(){
+ // 원본 순서대로 예측을 재생성해 검증 기록 복원
+ history=[];
+ pending=null;
+ const original=data.slice();
+ data=[];
+ for(let v of original){
+  if(v==="P"||v==="B"){
+   if(pending){
+    let y=v==="P"?1:0;
+    history.push({
+     side:pending.side,y,probs:pending.probs,
+     ensemble:pending.ensemble,result:v,
+     hit:pending.side===v,time:"복원"
+    });
+   }
+  }
+  data.push(v);
+  const a=analyze();
+  if(a.side!=="PASS"){
+   pending={side:a.side,probs:a.probs.slice(),ensemble:a.final};
+  }else pending=null;
+ }
+}
+function removeFrom(i){
+ if(!confirm("선택한 칸부터 이후 기록을 삭제할까요?"))return;
+ data=data.slice(0,i);
+ rebuildHistory();
+ update();
+}
 function resetAll(){
- if(!confirm("입력한 결과를 모두 삭제할까요?"))return;
- results=[];
- render();
+ if(!confirm("모든 데이터와 학습 기록을 삭제할까요?"))return;
+ data=[];history=[];pending=null;update();
 }
-
+function pct(x){return (x*100).toFixed(2)+"%";}
+function pair(p){return (p*100).toFixed(2)+" / "+((1-p)*100).toFixed(2);}
 function renderBoard(){
  const board=document.getElementById("board");
  board.innerHTML="";
  for(let r=0;r<6;r++){
   for(let c=0;c<80;c++){
-   const i=c*6+r;
-   const cell=document.createElement("div");
-   cell.className="cell";
-   if(results[i]){
-    cell.textContent=results[i];
-    cell.classList.add(results[i]==="P"?"p":"b");
+   let i=c*6+r;
+   let el=document.createElement("div");
+   el.className="cell";
+   if(data[i]){
+    el.textContent=data[i];
+    el.classList.add(data[i]);
+    if(i===data.length-1)el.classList.add("latest");
+    el.onclick=()=>removeFrom(i);
    }
-   board.appendChild(cell);
+   board.appendChild(el);
   }
  }
- const wrap=document.getElementById("boardWrap");
- if(results.length>0){
-  const col=Math.floor((results.length-1)/6);
-  wrap.scrollLeft=Math.max(0,col*35-100);
+ if(data.length){
+  let col=Math.floor((data.length-1)/6);
+  document.getElementById("boardwrap").scrollLeft=Math.max(0,col*34-100);
  }
 }
-
-function getScenarios(){
- const arr=[];
- for(let n=0;n<64;n++){
-  let seq="";
-  let prob=1;
-  for(let bit=5;bit>=0;bit--){
-   const isB=(n>>bit)&1;
-   if(isB){
-    seq+="B";
-    prob*=B_RATE;
-   }else{
-    seq+="P";
-    prob*=P_RATE;
-   }
-  }
-  arr.push({seq,prob});
+function renderWeights(a){
+ let box=document.getElementById("weights");
+ box.innerHTML="";
+ a.w.forEach((w,i)=>{
+  let row=document.createElement("div");
+  row.className="row";
+  let name=document.createElement("span");
+  name.textContent=MODEL_NAMES[i]+" 모델";
+  let value=document.createElement("strong");
+  value.textContent=pct(w);
+  row.append(name,value);
+  box.appendChild(row);
+ });
+}
+function renderLog(){
+ let box=document.getElementById("log");
+ box.innerHTML="";
+ if(!history.length){
+  box.innerHTML='<div class="small">아직 검증 기록이 없습니다.</div>';return;
  }
- arr.sort((a,b)=>b.prob-a.prob);
- return arr;
-}
-
-function renderScenarios(){
- const arr=getScenarios();
- const top=document.getElementById("topScenarios");
- const all=document.getElementById("allScenarios");
- top.innerHTML="";
- all.innerHTML="";
- arr.slice(0,8).forEach((item,i)=>{
-  top.appendChild(makeScenario(item,i+1));
- });
- arr.forEach((item,i)=>{
-  all.appendChild(makeScenario(item,i+1));
+ history.slice().reverse().slice(0,40).forEach(h=>{
+  let el=document.createElement("div");
+  el.className="logitem";
+  let left=document.createElement("span");
+  left.textContent=h.time+" · "+h.side+" → "+h.result;
+  let right=document.createElement("strong");
+  right.textContent=h.hit?"적중":"실패";
+  right.className=h.hit?"green":"red";
+  el.append(left,right);
+  box.appendChild(el);
  });
 }
-
-function makeScenario(item,rank){
- const div=document.createElement("div");
- div.className="scenario";
- const seq=document.createElement("b");
- seq.textContent=item.seq;
- seq.className=item.seq[0]==="P"?"blue":"red";
- const info=document.createElement("span");
- info.className="muted";
- info.textContent="#"+rank+" · "+(item.prob*100).toFixed(3)+"%";
- div.appendChild(seq);
- div.appendChild(info);
- return div;
+function exportCSV(){
+ let rows=[["번호","결과"],...data.map((v,i)=>[i+1,v])];
+ rows.push([],["예측","실제","판정","예측확률P","시간"]);
+ history.forEach(h=>rows.push([
+  h.side,h.result,h.hit?"적중":"실패",
+  h.ensemble,h.time
+ ]));
+ let csv="\uFEFF"+rows.map(r=>r.join(",")).join("\n");
+ let url=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
+ let a=document.createElement("a");
+ a.href=url;a.download="번영의나무_MAX_기록.csv";a.click();
+ URL.revokeObjectURL(url);
 }
+function update(){
+ let a=analyze(),c=count(data),scores=a.scores;
+ document.getElementById("total").textContent=data.length;
+ document.getElementById("pc").textContent=c.p;
+ document.getElementById("bc").textContent=c.b;
+ document.getElementById("tc").textContent=c.t;
+ document.getElementById("decisive").textContent=c.n;
+ document.getElementById("tested").textContent=history.length;
 
-function toggleAll(){
- document.getElementById("allScenarios").classList.toggle("show");
-}
+ let pick=document.getElementById("pick");
+ pick.textContent=a.side==="P"?"PLAYER P":a.side==="B"?"BANKER B":"PASS";
+ pick.className="pick "+(a.side==="P"?"blue":a.side==="B"?"red":"yellow");
+ document.getElementById("reason").textContent=a.reason;
+ document.getElementById("pp").textContent=pct(a.final);
+ document.getElementById("bpct").textContent=pct(1-a.final);
+ document.getElementById("pbar").style.width=(a.final*100)+"%";
+ document.getElementById("bbar").style.width=((1-a.final)*100)+"%";
+ document.getElementById("spread").textContent=a.spread.toFixed(2)+"%p";
+ document.getElementById("signal").textContent=
+  "P/B 표본 "+c.n+"회 · 모델 불일치 "+a.spread.toFixed(2)+"%p · "+a.reason;
 
-function render(){
- const p=results.filter(x=>x==="P").length;
- const b=results.filter(x=>x==="B").length;
- document.getElementById("total").textContent=results.length;
- document.getElementById("pcount").textContent=p;
- document.getElementById("bcount").textContent=b;
+ document.getElementById("base").textContent=pair(a.probs[0]);
+ document.getElementById("global").textContent=pair(a.probs[1]);
+ document.getElementById("r10").textContent=pair(a.probs[2]);
+ document.getElementById("r20").textContent=pair(a.probs[3]);
+ document.getElementById("r50").textContent=pair(a.probs[4]);
+ document.getElementById("changeModel").textContent=pair(a.probs[5]);
+
+ let n=a.rc.n;
+ document.getElementById("rp").textContent=n?pct(a.rc.p/n):"-";
+ document.getElementById("rb").textContent=n?pct(a.rc.b/n):"-";
+ document.getElementById("dev").textContent=n?a.deviation.toFixed(2)+"%p":"-";
+ document.getElementById("sample").textContent=
+  c.n<20?"부족":c.n<50?"보통":c.n<100?"충분":"누적";
+ document.getElementById("risk").textContent=
+  c.n<20?"표본이 부족해 픽을 내지 않습니다.":
+  "최근 구간과 기본 P 비율 차이 "+a.deviation.toFixed(2)+"%p. 이 차이는 우연한 변동일 수 있습니다.";
+
+ renderWeights(a);
+
+ let hits=history.filter(x=>x.hit).length;
+ let misses=history.length-hits;
+ document.getElementById("hits").textContent=hits;
+ document.getElementById("misses").textContent=misses;
+ document.getElementById("hitRate").textContent=
+  history.length?pct(hits/history.length):"-";
+
+ let bs=0,ll=0;
+ history.forEach(h=>{
+  bs+=brier(h.ensemble,h.y);
+  ll+=logLoss(h.ensemble,h.y);
+ });
+ document.getElementById("brier").textContent=
+  history.length?(bs/history.length).toFixed(4):"-";
+ document.getElementById("loss").textContent=
+  history.length?(ll/history.length).toFixed(4):"-";
+ document.getElementById("validation").textContent=
+  history.length?"검증 "+history.length+"회 · PASS 제외 · 타이 결과는 검증 보류":
+  "검증 기록이 아직 없습니다.";
+
+ // 현재 예측은 다음 결과를 입력하기 전까지 고정
+ if(!pending&&a.side!=="PASS"){
+  pending={side:a.side,probs:a.probs.slice(),ensemble:a.final};
+ }
  renderBoard();
- renderScenarios();
+ renderLog();
+ save();
 }
-
-render();
+load();
+update();
 </script>
 </body>
 </html>
