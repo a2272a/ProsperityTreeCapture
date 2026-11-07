@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SMART BACCARAT AI V2</title>
+<title>SMART BACCARAT AI V2.2</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#080d18;color:#eef3ff;font-family:Arial,sans-serif}
@@ -15,7 +15,7 @@ main{padding:11px;max-width:850px;margin:auto}
 .panel{background:#111b2e;border:1px solid #263956;border-radius:13px;padding:13px;margin-bottom:11px}
 h2{font-size:15px;margin:0 0 12px;color:#a9c9ff}
 .pick{background:#17243a;border-radius:12px;padding:17px;text-align:center;margin-bottom:12px}
-.big{font-size:45px;font-weight:900;margin:8px}
+.big{font-size:46px;font-weight:900;margin:8px}
 .b{color:#ff637c}.p{color:#4ca8ff}.t{color:#b6a0ff}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
 .stat{background:#1b2941;padding:10px 4px;border-radius:9px;text-align:center}
@@ -23,25 +23,26 @@ h2{font-size:15px;margin:0 0 12px;color:#a9c9ff}
 .stat small{font-size:10px;color:#9fb1cf}
 .buttons{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 button{border:0;border-radius:10px;padding:15px 4px;font-size:17px;font-weight:bold;color:white;cursor:pointer}
+button:active{transform:scale(.97)}
 .btnB{background:#c52e4b}.btnP{background:#176bc5}.btnT{background:#7253b6}
 .gray{background:#33425b;font-size:13px;padding:12px}
 .actions{display:flex;gap:8px;margin-top:9px}
 .actions button{flex:1}
 .gridwrap{overflow-x:auto}
-.board{display:grid;grid-template-columns:repeat(14,38px);grid-template-rows:repeat(6,38px);gap:3px;width:max-content}
-.cell{border:1px solid #30415d;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:900}
+.board{display:grid;grid-template-columns:repeat(14,39px);grid-template-rows:repeat(6,39px);gap:3px;width:max-content}
+.cell{border:1px solid #30415d;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:21px;font-weight:900}
 .cell.B{background:#67283b}
 .cell.P{background:#164c82}
 .cell.T{background:#49346e}
-.ok{color:#42efa2}
-.fail{color:#ff334f}
+.cell.ok{color:#42efa2}
+.cell.fail{color:#ff334f}
 .model{padding:11px 3px;border-bottom:1px solid #263752}
 .modeltop{display:flex;justify-content:space-between;gap:5px;font-size:12px}
 .modeltop b{font-size:14px}
 .bar{height:7px;background:#263752;border-radius:9px;overflow:hidden;margin-top:7px}
 .fill{height:100%;background:#41c8ed}
 .metric{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
-.metric div{background:#1b2941;padding:11px;border-radius:8px}
+.metric div{background:#1b2941;padding:11px;border-radius:8px;font-size:12px}
 .metric strong{display:block;font-size:22px;margin-top:5px}
 .note{font-size:11px;line-height:1.7;color:#9eafca}
 .tag{display:inline-block;border-radius:5px;padding:4px 7px;background:#243b58;font-size:10px;color:#9bdfff}
@@ -51,15 +52,16 @@ footer{text-align:center;color:#657998;font-size:10px;padding:15px}
 </style>
 </head>
 <body>
+
 <header>
-<h1>SMART BACCARAT AI V2</h1>
-<div class="sub">STREAK · ALTERNATION · CONTEXT · ADAPTIVE ENSEMBLE</div>
+<h1>SMART BACCARAT AI V2.2</h1>
+<div class="sub">FAST FLOW DETECTION · ADAPTIVE ENSEMBLE · EXACT O/X</div>
 </header>
 
 <main>
 
 <section class="panel">
-<h2>실시간 다음 판 AI 예측</h2>
+<h2>실시간 다음 판 예측</h2>
 <div class="pick">
 <div class="note">ENSEMBLE FINAL PICK</div>
 <div class="big" id="pick">대기</div>
@@ -86,7 +88,7 @@ footer{text-align:center;color:#657998;font-size:10px;padding:15px}
 <button class="gray" onclick="undo()">↶ 마지막 취소</button>
 <button class="gray" onclick="resetAll()">전체 초기화</button>
 </div>
-<div class="note">결과 입력 즉시 다음 픽이 생성됩니다. 타이는 다음 예측을 소모하지 않습니다.</div>
+<div class="note">결과 입력 즉시 다음 픽 계산 · 타이는 O/X 판정 제외</div>
 </section>
 
 <section class="panel">
@@ -95,31 +97,31 @@ footer{text-align:center;color:#657998;font-size:10px;padding:15px}
 <div class="board" id="board"></div>
 </div>
 <div class="note" style="margin-top:10px">
-<span class="ok">O 적중</span>　<span class="red">X 미적중</span>　T 타이
+<span class="green">O 적중</span>　
+<span class="red">X 미적중</span>　
+<span class="t">T 타이</span>
 </div>
 </section>
 
 <section class="panel">
-<h2>6개 확률 분석 모델</h2>
+<h2>6개 AI 모델 비교</h2>
 <div id="models"></div>
-<div class="note">
-각 모델은 별도로 확률을 계산합니다. 검증된 Brier Score에 따라 통합 가중치가 조정됩니다.
-</div>
+<div class="note">각 모델의 실제 예측 오차를 기록하고 성능에 따라 가중치를 조정합니다.</div>
 </section>
 
 <section class="panel">
-<h2>실시간 흐름 감지</h2>
+<h2>실시간 그림 흐름 감지</h2>
 <div class="metric">
 <div>현재 연속 길이<strong id="run">-</strong></div>
-<div>현재 흐름<strong id="flow">-</strong></div>
-<div>최근 10판 줄 비율<strong id="streakRate">-</strong></div>
-<div>최근 10판 교대 비율<strong id="altRate">-</strong></div>
+<div>흐름 분류<strong id="flow">-</strong></div>
+<div>최근 10판 연결<strong id="streakRate">-</strong></div>
+<div>최근 10판 교대<strong id="altRate">-</strong></div>
 </div>
-<div class="note" id="flowNote" style="margin-top:10px"></div>
+<div id="flowNote" class="note" style="margin-top:10px"></div>
 </section>
 
 <section class="panel">
-<h2>실제 O/X 검증</h2>
+<h2>실제 적중률 검증</h2>
 <div class="metric">
 <div>전체 적중률<strong id="accuracy">-</strong></div>
 <div>검증 판수<strong id="tested">0</strong></div>
@@ -142,22 +144,26 @@ footer{text-align:center;color:#657998;font-size:10px;padding:15px}
 <div id="status" class="note"></div>
 </section>
 
-<footer>SMART BACCARAT AI V2 · PROBABILITY ENGINE</footer>
+<footer>
+SMART BACCARAT AI V2.2<br>
+LIVE PROBABILITY VALIDATION ENGINE
+</footer>
+
 </main>
 
 <script>
 "use strict";
 
-const KEY="SMART_BACCARAT_V2";
+const KEY="SMART_BACCARAT_V22";
+const OLD_KEY="SMART_BACCARAT_V2";
 const BASE=0.5068;
-
 const NAMES=[
- "기본 베이지안",
- "연속 상태 모델",
- "퐁당 교대 모델",
- "2개 문맥 모델",
- "3개 문맥 모델",
- "최근 변화 모델"
+"기본 베이지안",
+"연속 상태 모델",
+"퐁당 교대 모델",
+"2개 문맥 모델",
+"3개 문맥 모델",
+"최근 변화 모델"
 ];
 
 let results=[];
@@ -185,6 +191,10 @@ function avg(a){
  return a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
 }
 
+function percent(x){
+ return (x*100).toFixed(2)+"%";
+}
+
 function runLength(h){
  if(!h.length)return 0;
  let n=1;
@@ -195,35 +205,43 @@ function runLength(h){
  return n;
 }
 
-// 동일한 과거 문맥에서 다음 B가 나온 비율
+// 과거에 동일한 문맥이 나타났을 때의 후속 결과 계산
 function contextProbability(h,context,strength){
+ if(context.length===0)return BASE;
+
  let hits=0,total=0;
+
  for(let i=context.length;i<h.length;i++){
   let match=true;
+
   for(let j=0;j<context.length;j++){
    if(h[i-context.length+j]!==context[j]){
     match=false;
     break;
    }
   }
+
   if(match){
    total++;
    if(h[i]==="B")hits++;
   }
  }
+
  return (BASE*strength+hits)/(strength+total);
 }
 
-// 현재 연속 길이와 같은 조건을 가진 과거 사례
+// 동일한 연속 상태의 과거 후속 결과
 function streakProbability(h){
  if(!h.length)return BASE;
 
  const side=h[h.length-1];
  const length=Math.min(runLength(h),4);
+
  let hits=0,total=0;
 
  for(let i=1;i<h.length;i++){
   let oldLength=1;
+
   for(let j=i-2;j>=0;j--){
    if(h[j]===h[i-1])oldLength++;
    else break;
@@ -234,62 +252,62 @@ function streakProbability(h){
    if(h[i]==="B")hits++;
   }
  }
+
  return (BASE*15+hits)/(15+total);
 }
 
-// 퐁당 상태를 별도로 계산
-function alternationProbability(h){
- if(h.length<2)return BASE;
-
- const a=h[h.length-2];
- const b=h[h.length-1];
-
- if(a===b)return BASE;
-
- return contextProbability(h,[a,b],18);
-}
-
+// 최근 그림 상태를 별도로 분석
 function calculateModels(){
  const h=decisive();
 
- // 1. 전체 베이지안 확률
- const last40=h.slice(-40);
- const countB=last40.filter(x=>x==="B").length;
- const bayes=(BASE*25+countB)/(25+last40.length);
+ const recent=h.slice(-40);
+ const countB=recent.filter(x=>x==="B").length;
+
+ // 1. 기본 베이지안
+ const bayes=(BASE*25+countB)/(25+recent.length);
 
  // 2. 연속 상태
  const streak=streakProbability(h);
 
- // 3. 교대 문맥
- const alternation=alternationProbability(h);
-
- // 4. 직전 2개 결과
+ // 3. 퐁당 상태
  const ctx2=h.slice(-2);
+ const alternation=ctx2.length===2
+  ?contextProbability(h,ctx2,18):BASE;
+
+ // 4. 2개 문맥
  const context2=ctx2.length===2
   ?contextProbability(h,ctx2,24):BASE;
 
- // 5. 직전 3개 결과
+ // 5. 3개 문맥
  const ctx3=h.slice(-3);
  const context3=ctx3.length===3
   ?contextProbability(h,ctx3,40):BASE;
 
- // 6. 최근 12개 결과 가중
- let ema=BASE;
- h.slice(-12).forEach(x=>{
-  ema=.82*ema+.18*(x==="B"?1:0);
- });
- const adaptive=clamp(BASE+(ema-BASE)*.7);
+ // 6. 빠른 변화 감지
+ const last4=h.slice(-4);
+ const previous4=h.slice(-8,-4);
+
+ const f1=last4.length
+  ?avg(last4.map(x=>x==="B"?1:0)):BASE;
+
+ const f2=previous4.length
+  ?avg(previous4.map(x=>x==="B"?1:0)):BASE;
+
+ const change=clamp(
+  BASE+(f1-f2)*.30
+ );
 
  return {
-  "기본 베이지안":bayes,
-  "연속 상태 모델":streak,
-  "퐁당 교대 모델":alternation,
-  "2개 문맥 모델":context2,
-  "3개 문맥 모델":context3,
-  "최근 변화 모델":adaptive
+  "기본 베이지안":clamp(bayes),
+  "연속 상태 모델":clamp(streak),
+  "퐁당 교대 모델":clamp(alternation),
+  "2개 문맥 모델":clamp(context2),
+  "3개 문맥 모델":clamp(context3),
+  "최근 변화 모델":change
  };
 }
 
+// 모델별 실제 검증 성능으로 가중치 계산
 function getWeights(){
  let w={},sum=0;
 
@@ -297,32 +315,35 @@ function getWeights(){
   const m=modelLoss[n];
   const loss=m.n?m.sum/m.n:.25;
 
-  // 모델별 검증 성능에 따른 완만한 가중치
   w[n]=Math.exp(-2*(loss-.25));
   sum+=w[n];
  });
 
- NAMES.forEach(n=>w[n]/=sum||1);
+ NAMES.forEach(n=>{
+  w[n]/=sum||1;
+ });
+
  return w;
 }
 
 function calculateEnsemble(models){
- const w=getWeights();
+ const weights=getWeights();
  let b=0;
 
  NAMES.forEach(n=>{
-  b+=models[n]*w[n];
+  b+=models[n]*weights[n];
  });
 
- // 짧은 데이터에서 과도한 확률 변동 억제
+ // 짧은 표본에서 극단적 확률 방지
  b=BASE+(b-BASE)*.8;
 
  return {
   b:clamp(b),
-  weights:w
+  weights
  };
 }
 
+// 다음 판 예측을 한 번만 생성
 function makePrediction(){
  if(results.length>=80){
   pending=null;
@@ -333,16 +354,18 @@ function makePrediction(){
  const final=calculateEnsemble(models);
 
  pending={
-  models,
+  models:models,
   b:final.b,
   weights:final.weights,
-  hand:results.length+1
+  hand:results.length
  };
 }
 
+// 실제 결과를 해당 예측 기록과 직접 연결
 function scorePrediction(actual){
  if(!pending)return;
 
+ const resultIndex=results.length-1;
  const y=actual==="B"?1:0;
 
  NAMES.forEach(n=>{
@@ -351,11 +374,12 @@ function scorePrediction(actual){
   modelLoss[n].n++;
  });
 
- const pick=pending.b>=BASE?"B":"P";
+ const pick=pending.b>=0.5?"B":"P";
 
  scored.push({
-  pick,
-  actual,
+  resultIndex:resultIndex,
+  pick:pick,
+  actual:actual,
   correct:pick===actual,
   probability:pending.b,
   loss:Math.pow(pending.b-y,2)
@@ -364,16 +388,53 @@ function scorePrediction(actual){
  pending=null;
 }
 
+// 결과 입력
 function add(v){
  if(results.length>=80){
   alert("80판 입력이 완료되었습니다.");
   return;
  }
 
+ // 현재 결과 칸부터 먼저 확정
  results.push(v);
 
- if(v!=="T"){
+ if(v==="B"||v==="P"){
+  // 이전 예측을 현재 결과와 비교
   scorePrediction(v);
+
+  // 최신 그림으로 즉시 다음 픽 생성
+  if(results.length<80){
+   makePrediction();
+  }
+ }
+
+ // 타이는 기존 pending을 유지
+ render();
+ save();
+}
+
+// 마지막 결과 취소 후 전체 예측 재구성
+function undo(){
+ if(!results.length)return;
+
+ const old=results.slice();
+ fresh();
+
+ old.pop();
+
+ old.forEach(v=>{
+  results.push(v);
+
+  if(v==="B"||v==="P"){
+   scorePrediction(v);
+
+   if(results.length<80){
+    makePrediction();
+   }
+  }
+ });
+
+ if(!pending&&results.length<80){
   makePrediction();
  }
 
@@ -381,68 +442,108 @@ function add(v){
  save();
 }
 
-function undo(){
- if(!results.length)return;
- results.pop();
- rebuild();
- render();
- save();
-}
-
-function rebuild(){
- const old=results.slice();
+// 과거 기록을 새 엔진으로 재검증
+function rebuild(old){
  fresh();
 
  old.forEach(v=>{
   results.push(v);
-  if(v!=="T"){
+
+  if(v==="B"||v==="P"){
    scorePrediction(v);
-   makePrediction();
+
+   if(results.length<80){
+    makePrediction();
+   }
   }
  });
+
+ if(!pending&&results.length<80){
+  makePrediction();
+ }
 }
 
 function resetAll(){
- if(!confirm("모든 결과와 검증 기록을 초기화할까요?"))return;
+ if(!confirm("모든 입력과 검증 데이터를 초기화할까요?"))return;
+
  fresh();
- localStorage.removeItem(KEY);
  makePrediction();
+
+ localStorage.removeItem(KEY);
+ localStorage.removeItem(OLD_KEY);
+
  render();
+ save();
 }
 
 function save(){
  try{
   localStorage.setItem(KEY,JSON.stringify({
-   results,scored,pending,modelLoss
+   version:2.2,
+   results:results,
+   scored:scored,
+   pending:pending,
+   modelLoss:modelLoss
   }));
- }catch(e){}
+ }catch(e){
+  console.log("저장 실패");
+ }
 }
 
 function load(){
  try{
-  const d=JSON.parse(localStorage.getItem(KEY));
-  if(!d)return;
-  results=d.results||[];
-  scored=d.scored||[];
-  pending=d.pending||null;
-  modelLoss=d.modelLoss||{};
+  const current=localStorage.getItem(KEY);
 
-  NAMES.forEach(n=>{
-   if(!modelLoss[n])modelLoss[n]={sum:0,n:0};
-  });
+  if(current){
+   const d=JSON.parse(current);
+   results=d.results||[];
+   scored=d.scored||[];
+   pending=d.pending||null;
+   modelLoss=d.modelLoss||{};
+
+   NAMES.forEach(n=>{
+    if(!modelLoss[n]){
+     modelLoss[n]={sum:0,n:0};
+    }
+   });
+
+   // 저장된 예측과 칸 위치가 일치하는지 검사
+   let valid=scored.every(x=>
+    Number.isInteger(x.resultIndex)&&
+    x.resultIndex>=0&&
+    x.resultIndex<results.length&&
+    (results[x.resultIndex]==="B"||
+     results[x.resultIndex]==="P")&&
+    x.actual===results[x.resultIndex]
+   );
+
+   if(!valid){
+    const old=results.slice();
+    rebuild(old);
+   }
+
+   return;
+  }
+
+  // V2의 결과만 가져와서 새로운 엔진으로 재검증
+  const oldData=localStorage.getItem(OLD_KEY);
+
+  if(oldData){
+   const d=JSON.parse(oldData);
+   const old=d.results||[];
+   rebuild(old.slice(0,80));
+   save();
+   return;
+  }
+
+  fresh();
+
  }catch(e){
   fresh();
  }
 }
 
-function percent(x){
- return (x*100).toFixed(2)+"%";
-}
-
-function accuracy(a){
- return a.length?a.filter(x=>x.correct).length/a.length:null;
-}
-
+// 입력판의 칸 번호와 O/X 예측 번호를 직접 대조
 function renderBoard(){
  const board=document.getElementById("board");
  board.innerHTML="";
@@ -454,45 +555,44 @@ function renderBoard(){
    el.className="cell";
 
    if(results[i]){
-    const v=results[i];
-    el.classList.add(v);
+    const actual=results[i];
+    el.classList.add(actual);
 
-    if(v==="T"){
+    if(actual==="T"){
      el.textContent="T";
     }else{
-     const index=decisiveIndex(i);
-     if(scored[index]){
-      el.textContent=scored[index].correct?"O":"X";
-      el.classList.add(scored[index].correct?"ok":"fail");
+     const record=scored.find(x=>
+      x.resultIndex===i
+     );
+
+     if(record){
+      el.textContent=record.correct?"O":"X";
+      el.classList.add(
+       record.correct?"ok":"fail"
+      );
      }else{
-      el.textContent=v;
+      el.textContent="-";
      }
     }
    }
+
    board.appendChild(el);
   }
  }
+
  document.getElementById("count").textContent=
   results.length+" / 80";
-}
-
-function decisiveIndex(i){
- let n=0;
- for(let j=0;j<i;j++){
-  if(results[j]==="B"||results[j]==="P")n++;
- }
- return n-1;
 }
 
 function renderModels(models){
  const box=document.getElementById("models");
  box.innerHTML="";
- const weights=pending?pending.weights:getWeights();
+
+ const weights=pending
+  ?pending.weights:getWeights();
 
  NAMES.forEach(n=>{
   const b=models[n];
-  const p=1-b;
-
   const row=document.createElement("div");
   row.className="model";
 
@@ -503,8 +603,10 @@ function renderModels(models){
   name.textContent=n;
 
   const probs=document.createElement("span");
-  probs.innerHTML="<span class='b'>B "+percent(b)+
-   "</span> / <span class='p'>P "+percent(p)+"</span>";
+  probs.innerHTML=
+   "<span class='b'>B "+percent(b)+
+   "</span> / <span class='p'>P "+
+   percent(1-b)+"</span>";
 
   top.append(name,probs);
 
@@ -518,7 +620,8 @@ function renderModels(models){
 
   const foot=document.createElement("div");
   foot.className="note";
-  foot.textContent="앙상블 가중치 "+(weights[n]*100).toFixed(1)+"%";
+  foot.textContent=
+   "모델 가중치 "+(weights[n]*100).toFixed(1)+"%";
 
   row.append(top,bar,foot);
   box.appendChild(row);
@@ -531,38 +634,53 @@ function renderFlow(){
  const run=runLength(h);
 
  let same=0,change=0;
+
  for(let i=1;i<last.length;i++){
   if(last[i]===last[i-1])same++;
   else change++;
  }
 
+ let flow="데이터 부족";
+
+ if(last.length>=4){
+  if(same>=change+2)flow="연속 성향";
+  else if(change>=same+2)flow="교대 성향";
+  else flow="혼합 상태";
+ }
+
  document.getElementById("run").textContent=
   run?run+"연속":"없음";
 
- document.getElementById("flow").textContent=
-  !h.length?"대기":
-  run>=2?"연속 상태":
-  last.length>=3&&change>=same?"교대 성향":"혼합 상태";
+ document.getElementById("flow").textContent=flow;
 
  document.getElementById("streakRate").textContent=
-  last.length>=2?(same/(last.length-1)*100).toFixed(0)+"%":"-";
+  last.length>=2
+  ?(same/(last.length-1)*100).toFixed(0)+"%"
+  :"-";
 
  document.getElementById("altRate").textContent=
-  last.length>=2?(change/(last.length-1)*100).toFixed(0)+"%":"-";
+  last.length>=2
+  ?(change/(last.length-1)*100).toFixed(0)+"%"
+  :"-";
 
  document.getElementById("flowNote").textContent=
-  "최근 "+last.length+"판에서 동일 방향 연결 "+same+
-  "회, 방향 교체 "+change+"회. 흐름 분류는 현재 데이터의 기술적 설명이며 다음 결과의 확정 예측은 아닙니다.";
+  "최근 "+last.length+"판 기준: 연결 "+same+
+  "회 / 교대 "+change+
+  "회. 그림 분류는 기술적 상태 표시이며 다음 결과를 보장하지 않습니다.";
 }
 
 function render(){
  renderBoard();
 
  const models=calculateModels();
- const final=pending?pending.b:calculateEnsemble(models).b;
 
- // 기본 바카라 확률 50.68%를 기준으로 방향 선택
- const pick=final>=BASE?"B":"P";
+ const b=pending
+  ?pending.b
+  :calculateEnsemble(models).b;
+
+ // 뱅커 확률이 플레이어 확률보다 크면 B
+ const pick=b>=0.5?"B":"P";
+ const selected=Math.max(b,1-b);
 
  document.getElementById("pick").textContent=
   results.length>=80?"완료":pick;
@@ -571,48 +689,72 @@ function render(){
   "big "+(pick==="B"?"b":"p");
 
  document.getElementById("pickProb").textContent=
-  results.length>=80?"새 슈를 시작하세요":
-  "선택 방향 확률 "+percent(Math.max(final,1-final));
+  results.length>=80
+  ?"80판 완료"
+  :"선택 방향 확률 "+percent(selected);
 
  document.getElementById("confidence").textContent=
-  "기준 확률과 차이 "+(Math.abs(final-BASE)*100).toFixed(2)+"%p";
+  "기본 확률 대비 차이 "+
+  (Math.abs(b-BASE)*100).toFixed(2)+"%p";
 
- document.getElementById("bprob").textContent=percent(final);
- document.getElementById("pprob").textContent=percent(1-final);
+ document.getElementById("bprob").textContent=percent(b);
+ document.getElementById("pprob").textContent=percent(1-b);
+
  document.getElementById("margin").textContent=
-  (Math.abs(final-(1-final))*100).toFixed(2)+"%p";
+  (Math.abs(b-(1-b))*100).toFixed(2)+"%p";
 
  renderModels(models);
  renderFlow();
 
  const total=scored.length;
- const acc=accuracy(scored);
+ const acc=total
+  ?scored.filter(x=>x.correct).length/total
+  :null;
 
  document.getElementById("accuracy").textContent=
   acc===null?"-":percent(acc);
- document.getElementById("tested").textContent=total;
- document.getElementById("brier").textContent=
-  total?avg(scored.map(x=>x.loss)).toFixed(4):"-";
 
- document.getElementById("goal").textContent=
-  total<100?"검증 중":acc>=.60?"60% 이상":"60% 미달";
+ document.getElementById("tested").textContent=total;
+
+ document.getElementById("brier").textContent=
+  total
+  ?avg(scored.map(x=>x.loss)).toFixed(4)
+  :"-";
+
+ const goal=document.getElementById("goal");
+
+ if(total<100){
+  goal.textContent="검증 중";
+ }else{
+  goal.textContent=acc>=0.60?"60% 이상":"60% 미달";
+ }
+
+ goal.className=
+  total>=100&&acc>=0.60?"green":"";
 
  [20,50,100].forEach(k=>{
-  const a=accuracy(scored.slice(-k));
+  const data=scored.slice(-k);
+
+  const a=data.length
+   ?data.filter(x=>x.correct).length/data.length
+   :null;
+
   document.getElementById("a"+k).textContent=
    a===null?"-":percent(a);
  });
 
  document.getElementById("status").innerHTML=
-  "입력 결과: "+results.length+" / 80<br>"+
+  "입력 결과: "+results.length+"/80<br>"+
   "B/P 분석 대상: "+decisive().length+"<br>"+
   "실제 O/X 검증: "+total+"판<br>"+
-  "분석 모델: 6개<br>"+
-  "현재 연속 길이: "+runLength(decisive())+"<br>"+
-  "현재 픽: "+(results.length>=80?"슈 완료":pick)+"<br>"+
-  "저장 상태: 브라우저 로컬 저장";
+  "모델: 6개<br>"+
+  "현재 픽: "+(results.length>=80?"완료":pick)+"<br>"+
+  "예측 위치: "+(pending?pending.hand:"없음")+"<br>"+
+  "O/X 연결: 실제 입력 칸 번호 기준<br>"+
+  "타이: 판정 제외 및 예측 유지";
 }
 
+// 시작
 load();
 
 if(!pending&&results.length<80){
@@ -620,6 +762,8 @@ if(!pending&&results.length<80){
 }
 
 render();
+save();
+
 </script>
 </body>
 </html>
