@@ -4,67 +4,69 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SMART BACCARAT AI</title>
+<title>SMART BACCARAT AI V2</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#080d18;color:#eef3ff;font-family:Arial,sans-serif}
-header{padding:17px;background:#101a2d;border-bottom:1px solid #293b5d}
+header{padding:16px;background:#101a2d;border-bottom:1px solid #293b5d}
 h1{font-size:22px;margin:0;color:#54d9ff}
 .sub{font-size:11px;color:#91a5c8;margin-top:6px}
-main{padding:12px;max-width:850px;margin:auto}
-.panel{background:#111b2e;border:1px solid #263956;border-radius:13px;padding:13px;margin-bottom:12px}
+main{padding:11px;max-width:850px;margin:auto}
+.panel{background:#111b2e;border:1px solid #263956;border-radius:13px;padding:13px;margin-bottom:11px}
 h2{font-size:15px;margin:0 0 12px;color:#a9c9ff}
 .pick{background:#17243a;border-radius:12px;padding:17px;text-align:center;margin-bottom:12px}
-.pick small{color:#9eb1d0}
-.big{font-size:43px;font-weight:900;margin:8px}
+.big{font-size:45px;font-weight:900;margin:8px}
 .b{color:#ff637c}.p{color:#4ca8ff}.t{color:#b6a0ff}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
-.stat{background:#1b2941;padding:10px 5px;border-radius:9px;text-align:center}
-.stat strong{display:block;font-size:21px;margin-bottom:4px}
+.stat{background:#1b2941;padding:10px 4px;border-radius:9px;text-align:center}
+.stat strong{display:block;font-size:20px;margin-bottom:4px}
 .stat small{font-size:10px;color:#9fb1cf}
-.buttons{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
-button{border:0;border-radius:10px;padding:15px 5px;font-size:17px;font-weight:bold;color:white;cursor:pointer}
-button:active{transform:scale(.97)}
+.buttons{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+button{border:0;border-radius:10px;padding:15px 4px;font-size:17px;font-weight:bold;color:white;cursor:pointer}
 .btnB{background:#c52e4b}.btnP{background:#176bc5}.btnT{background:#7253b6}
-.gray{background:#33425b;font-size:13px;padding:11px}
+.gray{background:#33425b;font-size:13px;padding:12px}
 .actions{display:flex;gap:8px;margin-top:9px}
 .actions button{flex:1}
-.gridwrap{overflow-x:auto;padding-bottom:5px}
-.board{display:grid;grid-template-columns:repeat(14,35px);grid-template-rows:repeat(6,35px);gap:3px;width:max-content}
-.cell{border:1px solid #30415d;border-radius:5px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:15px;color:#71829e}
-.cell.B{background:#67283b;color:#fff;border-color:#dc4868}
-.cell.P{background:#164c82;color:#fff;border-color:#3796e9}
-.cell.T{background:#49346e;color:#fff;border-color:#a38ae5}
-.model{display:grid;grid-template-columns:1fr auto auto;gap:9px;align-items:center;padding:10px 3px;border-bottom:1px solid #263752;font-size:12px}
-.model:last-child{border:0}
-.model b{font-size:15px}
-.muted{color:#8ea2c2}
-.bar{height:8px;background:#263752;border-radius:9px;overflow:hidden;margin-top:5px}
+.gridwrap{overflow-x:auto}
+.board{display:grid;grid-template-columns:repeat(14,38px);grid-template-rows:repeat(6,38px);gap:3px;width:max-content}
+.cell{border:1px solid #30415d;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:900}
+.cell.B{background:#67283b}
+.cell.P{background:#164c82}
+.cell.T{background:#49346e}
+.ok{color:#42efa2}
+.fail{color:#ff334f}
+.model{padding:11px 3px;border-bottom:1px solid #263752}
+.modeltop{display:flex;justify-content:space-between;gap:5px;font-size:12px}
+.modeltop b{font-size:14px}
+.bar{height:7px;background:#263752;border-radius:9px;overflow:hidden;margin-top:7px}
 .fill{height:100%;background:#41c8ed}
-.prob{font-size:12px;text-align:right;min-width:90px}
 .metric{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 .metric div{background:#1b2941;padding:11px;border-radius:8px}
 .metric strong{display:block;font-size:22px;margin-top:5px}
-.note{font-size:11px;line-height:1.6;color:#9eafca}
+.note{font-size:11px;line-height:1.7;color:#9eafca}
 .tag{display:inline-block;border-radius:5px;padding:4px 7px;background:#243b58;font-size:10px;color:#9bdfff}
 .green{color:#4de1a2}
+.red{color:#ff647c}
 footer{text-align:center;color:#657998;font-size:10px;padding:15px}
 </style>
 </head>
 <body>
 <header>
-<h1>SMART BACCARAT AI</h1>
-<div class="sub">MULTI MODEL · BAYESIAN · ENSEMBLE · WALK-FORWARD TEST</div>
+<h1>SMART BACCARAT AI V2</h1>
+<div class="sub">STREAK · ALTERNATION · CONTEXT · ADAPTIVE ENSEMBLE</div>
 </header>
+
 <main>
 
 <section class="panel">
-<h2>실시간 다음 판 예측</h2>
+<h2>실시간 다음 판 AI 예측</h2>
 <div class="pick">
-<small>ENSEMBLE AI 예상 방향</small>
+<div class="note">ENSEMBLE FINAL PICK</div>
 <div class="big" id="pick">대기</div>
-<div id="pickProb">결과를 입력하세요</div>
-<div style="margin-top:9px"><span class="tag" id="confidence">분석 대기</span></div>
+<div id="pickProb">결과 입력 대기</div>
+<div style="margin-top:10px">
+<span class="tag" id="confidence">분석 대기</span>
+</div>
 </div>
 <div class="stats">
 <div class="stat"><strong id="bprob" class="b">50.68%</strong><small>뱅커 확률</small></div>
@@ -84,95 +86,91 @@ footer{text-align:center;color:#657998;font-size:10px;padding:15px}
 <button class="gray" onclick="undo()">↶ 마지막 취소</button>
 <button class="gray" onclick="resetAll()">전체 초기화</button>
 </div>
-<p class="note">타이는 입력판에 표시하지만 승률 및 예측 적중률 계산에서는 제외합니다.</p>
+<div class="note">결과 입력 즉시 다음 픽이 생성됩니다. 타이는 다음 예측을 소모하지 않습니다.</div>
 </section>
 
 <section class="panel">
-<h2>80판 슈 입력판 <span class="tag" id="count">0 / 80</span></h2>
+<h2>80판 입력판 <span class="tag" id="count">0 / 80</span></h2>
 <div class="gridwrap">
 <div class="board" id="board"></div>
 </div>
-</section>
-
-<section class="panel">
-<h2>복수 AI 모델 확률 비교</h2>
-<div id="models"></div>
-<p class="note">각 모델의 예측은 실제 결과가 나오기 전에 저장됩니다. 모델별 Brier Score를 이용해 앙상블 가중치를 조정합니다.</p>
-</section>
-
-<section class="panel">
-<h2>실제 적중률 검증</h2>
-<div class="metric">
-<div><small class="muted">전체 적중률</small><strong id="accuracy">-</strong></div>
-<div><small class="muted">검증 완료 판수</small><strong id="tested">0</strong></div>
-<div><small class="muted">전체 Brier Score</small><strong id="brier">-</strong></div>
-<div><small class="muted">목표 60% 달성 여부</small><strong id="goal">검증 중</strong></div>
+<div class="note" style="margin-top:10px">
+<span class="ok">O 적중</span>　<span class="red">X 미적중</span>　T 타이
 </div>
 </section>
 
 <section class="panel">
-<h2>최근 성능 분석</h2>
+<h2>6개 확률 분석 모델</h2>
+<div id="models"></div>
+<div class="note">
+각 모델은 별도로 확률을 계산합니다. 검증된 Brier Score에 따라 통합 가중치가 조정됩니다.
+</div>
+</section>
+
+<section class="panel">
+<h2>실시간 흐름 감지</h2>
+<div class="metric">
+<div>현재 연속 길이<strong id="run">-</strong></div>
+<div>현재 흐름<strong id="flow">-</strong></div>
+<div>최근 10판 줄 비율<strong id="streakRate">-</strong></div>
+<div>최근 10판 교대 비율<strong id="altRate">-</strong></div>
+</div>
+<div class="note" id="flowNote" style="margin-top:10px"></div>
+</section>
+
+<section class="panel">
+<h2>실제 O/X 검증</h2>
+<div class="metric">
+<div>전체 적중률<strong id="accuracy">-</strong></div>
+<div>검증 판수<strong id="tested">0</strong></div>
+<div>Brier Score<strong id="brier">-</strong></div>
+<div>60% 목표<strong id="goal">검증 중</strong></div>
+</div>
+</section>
+
+<section class="panel">
+<h2>최근 적중률</h2>
 <div class="stats">
 <div class="stat"><strong id="a20">-</strong><small>최근 20판</small></div>
 <div class="stat"><strong id="a50">-</strong><small>최근 50판</small></div>
 <div class="stat"><strong id="a100">-</strong><small>최근 100판</small></div>
 </div>
-<div id="history" class="note" style="margin-top:12px">아직 검증 데이터가 없습니다.</div>
 </section>
 
 <section class="panel">
-<h2>AI 분석 상태</h2>
-<div id="status" class="note">결과 입력을 기다리고 있습니다.</div>
+<h2>엔진 상태</h2>
+<div id="status" class="note"></div>
 </section>
 
-<footer>
-SMART BACCARAT AI · PROBABILITY ENGINE V1.0<br>
-확률 추정 및 과거 입력 데이터의 순차 검증 도구
-</footer>
+<footer>SMART BACCARAT AI V2 · PROBABILITY ENGINE</footer>
 </main>
 
 <script>
 "use strict";
 
-const KEY="SMART_BACCARAT_AI_V1";
+const KEY="SMART_BACCARAT_V2";
 const BASE=0.5068;
-const MODEL_NAMES=["베이지안","최근 빈도","지수 이동평균","전이 확률","변화 감지"];
+
+const NAMES=[
+ "기본 베이지안",
+ "연속 상태 모델",
+ "퐁당 교대 모델",
+ "2개 문맥 모델",
+ "3개 문맥 모델",
+ "최근 변화 모델"
+];
+
 let results=[];
-let predictions=[];
-let pending=null;
 let scored=[];
+let pending=null;
 let modelLoss={};
 
 function fresh(){
  results=[];
- predictions=[];
- pending=null;
  scored=[];
+ pending=null;
  modelLoss={};
- MODEL_NAMES.forEach(n=>modelLoss[n]={sum:0,n:0});
-}
-
-function save(){
- try{
- localStorage.setItem(KEY,JSON.stringify({
- results,predictions,scored,modelLoss,pending
- }));
- }catch(e){}
-}
-
-function load(){
- try{
- let d=JSON.parse(localStorage.getItem(KEY));
- if(!d)return;
- results=d.results||[];
- predictions=d.predictions||[];
- scored=d.scored||[];
- modelLoss=d.modelLoss||{};
- pending=d.pending||null;
- MODEL_NAMES.forEach(n=>{
- if(!modelLoss[n])modelLoss[n]={sum:0,n:0};
- });
- }catch(e){fresh();}
+ NAMES.forEach(n=>modelLoss[n]={sum:0,n:0});
 }
 
 function decisive(){
@@ -183,137 +181,202 @@ function clamp(x){
  return Math.max(.01,Math.min(.99,x));
 }
 
-function average(arr){
- return arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:0;
+function avg(a){
+ return a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
 }
 
-function calcModels(){
- const h=decisive();
- const n=h.length;
- const last=h.slice(-40);
- const b=last.filter(x=>x==="B").length;
- const p=last.length-b;
+function runLength(h){
+ if(!h.length)return 0;
+ let n=1;
+ for(let i=h.length-2;i>=0;i--){
+  if(h[i]===h[h.length-1])n++;
+  else break;
+ }
+ return n;
+}
 
- // 1. Bayesian model: prior smoothing
- const bayes=(BASE*20+b)/(20+last.length);
-
- // 2. Recent frequency: shrink small samples
- const recent=h.slice(-12);
- const recentB=recent.filter(x=>x==="B").length;
- const frequency=(BASE*12+recentB)/(12+recent.length);
-
- // 3. Exponential moving average
- let ema=BASE;
- h.forEach(x=>{
-  ema=.88*ema+.12*(x==="B"?1:0);
- });
- const emaModel=clamp(BASE+(ema-BASE)*.65);
-
- // 4. First-order transition model
- let bb=0,bp=0,pb=0,pp=0;
- for(let i=1;i<h.length;i++){
-  if(h[i-1]==="B"){
-   if(h[i]==="B")bb++;else bp++;
-  }else{
-   if(h[i]==="B")pb++;else pp++;
+// 동일한 과거 문맥에서 다음 B가 나온 비율
+function contextProbability(h,context,strength){
+ let hits=0,total=0;
+ for(let i=context.length;i<h.length;i++){
+  let match=true;
+  for(let j=0;j<context.length;j++){
+   if(h[i-context.length+j]!==context[j]){
+    match=false;
+    break;
+   }
+  }
+  if(match){
+   total++;
+   if(h[i]==="B")hits++;
   }
  }
- let markov=BASE;
- if(n>=2){
-  const prev=h[n-1];
-  if(prev==="B")markov=(BASE*10+bb)/(10+bb+bp);
-  else markov=(BASE*10+pb)/(10+pb+pp);
- }
- markov=clamp(BASE+(markov-BASE)*.55);
+ return (BASE*strength+hits)/(strength+total);
+}
 
- // 5. Change detector: recent vs previous window
- const r1=h.slice(-6);
- const r2=h.slice(-18,-6);
- const f1=r1.length?average(r1.map(x=>x==="B"?1:0)):BASE;
- const f2=r2.length?average(r2.map(x=>x==="B"?1:0)):BASE;
- const change=clamp(BASE+(f1-f2)*.22);
+// 현재 연속 길이와 같은 조건을 가진 과거 사례
+function streakProbability(h){
+ if(!h.length)return BASE;
+
+ const side=h[h.length-1];
+ const length=Math.min(runLength(h),4);
+ let hits=0,total=0;
+
+ for(let i=1;i<h.length;i++){
+  let oldLength=1;
+  for(let j=i-2;j>=0;j--){
+   if(h[j]===h[i-1])oldLength++;
+   else break;
+  }
+
+  if(h[i-1]===side && Math.min(oldLength,4)===length){
+   total++;
+   if(h[i]==="B")hits++;
+  }
+ }
+ return (BASE*15+hits)/(15+total);
+}
+
+// 퐁당 상태를 별도로 계산
+function alternationProbability(h){
+ if(h.length<2)return BASE;
+
+ const a=h[h.length-2];
+ const b=h[h.length-1];
+
+ if(a===b)return BASE;
+
+ return contextProbability(h,[a,b],18);
+}
+
+function calculateModels(){
+ const h=decisive();
+
+ // 1. 전체 베이지안 확률
+ const last40=h.slice(-40);
+ const countB=last40.filter(x=>x==="B").length;
+ const bayes=(BASE*25+countB)/(25+last40.length);
+
+ // 2. 연속 상태
+ const streak=streakProbability(h);
+
+ // 3. 교대 문맥
+ const alternation=alternationProbability(h);
+
+ // 4. 직전 2개 결과
+ const ctx2=h.slice(-2);
+ const context2=ctx2.length===2
+  ?contextProbability(h,ctx2,24):BASE;
+
+ // 5. 직전 3개 결과
+ const ctx3=h.slice(-3);
+ const context3=ctx3.length===3
+  ?contextProbability(h,ctx3,40):BASE;
+
+ // 6. 최근 12개 결과 가중
+ let ema=BASE;
+ h.slice(-12).forEach(x=>{
+  ema=.82*ema+.18*(x==="B"?1:0);
+ });
+ const adaptive=clamp(BASE+(ema-BASE)*.7);
 
  return {
- "베이지안":clamp(bayes),
- "최근 빈도":clamp(frequency),
- "지수 이동평균":emaModel,
- "전이 확률":markov,
- "변화 감지":change
+  "기본 베이지안":bayes,
+  "연속 상태 모델":streak,
+  "퐁당 교대 모델":alternation,
+  "2개 문맥 모델":context2,
+  "3개 문맥 모델":context3,
+  "최근 변화 모델":adaptive
  };
 }
 
-function weights(){
- let w={};
- let sum=0;
- MODEL_NAMES.forEach(n=>{
+function getWeights(){
+ let w={},sum=0;
+
+ NAMES.forEach(n=>{
   const m=modelLoss[n];
-  const avg=m.n?m.sum/m.n:.25;
-  w[n]=Math.exp(-2.5*(avg-.25));
+  const loss=m.n?m.sum/m.n:.25;
+
+  // 모델별 검증 성능에 따른 완만한 가중치
+  w[n]=Math.exp(-2*(loss-.25));
   sum+=w[n];
  });
- MODEL_NAMES.forEach(n=>w[n]/=sum||1);
+
+ NAMES.forEach(n=>w[n]/=sum||1);
  return w;
 }
 
-function ensemble(models){
- const w=weights();
- let value=0;
- MODEL_NAMES.forEach(n=>value+=models[n]*w[n]);
+function calculateEnsemble(models){
+ const w=getWeights();
+ let b=0;
 
- // Shrink ensemble toward known baccarat baseline.
- // This limits overreaction to short noisy sequences.
- value=BASE+(value-BASE)*.75;
- return {value:clamp(value),weights:w};
+ NAMES.forEach(n=>{
+  b+=models[n]*w[n];
+ });
+
+ // 짧은 데이터에서 과도한 확률 변동 억제
+ b=BASE+(b-BASE)*.8;
+
+ return {
+  b:clamp(b),
+  weights:w
+ };
 }
 
 function makePrediction(){
- if(decisive().length>=80){
+ if(results.length>=80){
   pending=null;
   return;
  }
- const models=calcModels();
- const ens=ensemble(models);
+
+ const models=calculateModels();
+ const final=calculateEnsemble(models);
+
  pending={
- models,
- ensemble:ens.value,
- weights:ens.weights,
- hand:decisive().length+1
+  models,
+  b:final.b,
+  weights:final.weights,
+  hand:results.length+1
  };
- predictions.push(pending);
 }
 
-function scorePending(result){
+function scorePrediction(actual){
  if(!pending)return;
- const actual=result==="B"?1:0;
 
- MODEL_NAMES.forEach(n=>{
-  const prob=pending.models[n];
-  const loss=Math.pow(prob-actual,2);
-  modelLoss[n].sum+=loss;
+ const y=actual==="B"?1:0;
+
+ NAMES.forEach(n=>{
+  const error=Math.pow(pending.models[n]-y,2);
+  modelLoss[n].sum+=error;
   modelLoss[n].n++;
  });
 
- const loss=Math.pow(pending.ensemble-actual,2);
+ const pick=pending.b>=BASE?"B":"P";
+
  scored.push({
-  pick:pending.ensemble>=.5?"B":"P",
-  actual:result,
-  correct:(pending.ensemble>=.5?"B":"P")===result,
-  probability:pending.ensemble,
-  loss
+  pick,
+  actual,
+  correct:pick===actual,
+  probability:pending.b,
+  loss:Math.pow(pending.b-y,2)
  });
+
  pending=null;
 }
 
-function add(value){
- if(decisive().length>=80){
+function add(v){
+ if(results.length>=80){
   alert("80판 입력이 완료되었습니다.");
   return;
  }
- results.push(value);
- if(value!=="T"){
-  scorePending(value);
+
+ results.push(v);
+
+ if(v!=="T"){
+  scorePrediction(v);
   makePrediction();
  }
+
  render();
  save();
 }
@@ -329,113 +392,210 @@ function undo(){
 function rebuild(){
  const old=results.slice();
  fresh();
+
  old.forEach(v=>{
   results.push(v);
   if(v!=="T"){
-   scorePending(v);
+   scorePrediction(v);
    makePrediction();
   }
  });
 }
 
 function resetAll(){
- if(!confirm("현재 입력 결과와 검증 기록을 모두 초기화할까요?"))return;
+ if(!confirm("모든 결과와 검증 기록을 초기화할까요?"))return;
  fresh();
  localStorage.removeItem(KEY);
+ makePrediction();
  render();
 }
 
-function percent(v){
- return (v*100).toFixed(2)+"%";
+function save(){
+ try{
+  localStorage.setItem(KEY,JSON.stringify({
+   results,scored,pending,modelLoss
+  }));
+ }catch(e){}
 }
 
-function accuracy(list){
- if(!list.length)return null;
- return list.filter(x=>x.correct).length/list.length;
+function load(){
+ try{
+  const d=JSON.parse(localStorage.getItem(KEY));
+  if(!d)return;
+  results=d.results||[];
+  scored=d.scored||[];
+  pending=d.pending||null;
+  modelLoss=d.modelLoss||{};
+
+  NAMES.forEach(n=>{
+   if(!modelLoss[n])modelLoss[n]={sum:0,n:0};
+  });
+ }catch(e){
+  fresh();
+ }
+}
+
+function percent(x){
+ return (x*100).toFixed(2)+"%";
+}
+
+function accuracy(a){
+ return a.length?a.filter(x=>x.correct).length/a.length:null;
 }
 
 function renderBoard(){
  const board=document.getElementById("board");
  board.innerHTML="";
+
  for(let r=0;r<6;r++){
   for(let c=0;c<14;c++){
    const i=c*6+r;
    const el=document.createElement("div");
    el.className="cell";
+
    if(results[i]){
-    el.textContent=results[i];
-    el.classList.add(results[i]);
-   }else{
-    el.textContent="";
+    const v=results[i];
+    el.classList.add(v);
+
+    if(v==="T"){
+     el.textContent="T";
+    }else{
+     const index=decisiveIndex(i);
+     if(scored[index]){
+      el.textContent=scored[index].correct?"O":"X";
+      el.classList.add(scored[index].correct?"ok":"fail");
+     }else{
+      el.textContent=v;
+     }
+    }
    }
    board.appendChild(el);
   }
  }
- document.getElementById("count").textContent=decisive().length+" / 80";
+ document.getElementById("count").textContent=
+  results.length+" / 80";
+}
+
+function decisiveIndex(i){
+ let n=0;
+ for(let j=0;j<i;j++){
+  if(results[j]==="B"||results[j]==="P")n++;
+ }
+ return n-1;
 }
 
 function renderModels(models){
  const box=document.getElementById("models");
  box.innerHTML="";
- const w=pending?pending.weights:weights();
- MODEL_NAMES.forEach(n=>{
-  const v=models[n];
+ const weights=pending?pending.weights:getWeights();
+
+ NAMES.forEach(n=>{
+  const b=models[n];
+  const p=1-b;
+
   const row=document.createElement("div");
   row.className="model";
-  const label=document.createElement("div");
-  label.innerHTML="<b>"+n+"</b><div class='bar'><div class='fill' style='width:"+
-   (v*100)+"%'></div></div>";
-  const prob=document.createElement("div");
-  prob.className="prob";
-  prob.innerHTML="<span class='b'>B "+percent(v)+"</span><br><span class='p'>P "+percent(1-v)+"</span>";
-  const weight=document.createElement("div");
-  weight.className="muted";
-  weight.textContent=(w[n]*100).toFixed(1)+"%";
-  row.append(label,prob,weight);
+
+  const top=document.createElement("div");
+  top.className="modeltop";
+
+  const name=document.createElement("b");
+  name.textContent=n;
+
+  const probs=document.createElement("span");
+  probs.innerHTML="<span class='b'>B "+percent(b)+
+   "</span> / <span class='p'>P "+percent(p)+"</span>";
+
+  top.append(name,probs);
+
+  const bar=document.createElement("div");
+  bar.className="bar";
+
+  const fill=document.createElement("div");
+  fill.className="fill";
+  fill.style.width=(b*100)+"%";
+  bar.appendChild(fill);
+
+  const foot=document.createElement("div");
+  foot.className="note";
+  foot.textContent="앙상블 가중치 "+(weights[n]*100).toFixed(1)+"%";
+
+  row.append(top,bar,foot);
   box.appendChild(row);
  });
+}
+
+function renderFlow(){
+ const h=decisive();
+ const last=h.slice(-10);
+ const run=runLength(h);
+
+ let same=0,change=0;
+ for(let i=1;i<last.length;i++){
+  if(last[i]===last[i-1])same++;
+  else change++;
+ }
+
+ document.getElementById("run").textContent=
+  run?run+"연속":"없음";
+
+ document.getElementById("flow").textContent=
+  !h.length?"대기":
+  run>=2?"연속 상태":
+  last.length>=3&&change>=same?"교대 성향":"혼합 상태";
+
+ document.getElementById("streakRate").textContent=
+  last.length>=2?(same/(last.length-1)*100).toFixed(0)+"%":"-";
+
+ document.getElementById("altRate").textContent=
+  last.length>=2?(change/(last.length-1)*100).toFixed(0)+"%":"-";
+
+ document.getElementById("flowNote").textContent=
+  "최근 "+last.length+"판에서 동일 방향 연결 "+same+
+  "회, 방향 교체 "+change+"회. 흐름 분류는 현재 데이터의 기술적 설명이며 다음 결과의 확정 예측은 아닙니다.";
 }
 
 function render(){
  renderBoard();
 
- const n=decisive().length;
- const models=calcModels();
- const ens=pending?pending.ensemble:ensemble(models).value;
- const b=ens;
- const p=1-ens;
- const direction=b>=.5?"B":"P";
+ const models=calculateModels();
+ const final=pending?pending.b:calculateEnsemble(models).b;
+
+ // 기본 바카라 확률 50.68%를 기준으로 방향 선택
+ const pick=final>=BASE?"B":"P";
 
  document.getElementById("pick").textContent=
-  n>=80?"80판 완료":direction;
+  results.length>=80?"완료":pick;
+
  document.getElementById("pick").className=
-  "big "+(direction==="B"?"b":"p");
+  "big "+(pick==="B"?"b":"p");
+
  document.getElementById("pickProb").textContent=
-  n>=80?"새 슈를 시작하세요":
-  "예상 방향 확률 "+percent(Math.max(b,p));
+  results.length>=80?"새 슈를 시작하세요":
+  "선택 방향 확률 "+percent(Math.max(final,1-final));
+
  document.getElementById("confidence").textContent=
-  "기준 확률 대비 차이 "+(Math.abs(b-BASE)*100).toFixed(2)+"%p";
- document.getElementById("bprob").textContent=percent(b);
- document.getElementById("pprob").textContent=percent(p);
+  "기준 확률과 차이 "+(Math.abs(final-BASE)*100).toFixed(2)+"%p";
+
+ document.getElementById("bprob").textContent=percent(final);
+ document.getElementById("pprob").textContent=percent(1-final);
  document.getElementById("margin").textContent=
-  (Math.abs(b-p)*100).toFixed(2)+"%p";
+  (Math.abs(final-(1-final))*100).toFixed(2)+"%p";
 
  renderModels(models);
+ renderFlow();
 
  const total=scored.length;
  const acc=accuracy(scored);
- const avgLoss=average(scored.map(x=>x.loss));
+
  document.getElementById("accuracy").textContent=
   acc===null?"-":percent(acc);
  document.getElementById("tested").textContent=total;
  document.getElementById("brier").textContent=
-  total?avgLoss.toFixed(4):"-";
+  total?avg(scored.map(x=>x.loss)).toFixed(4):"-";
 
- let goal="검증 중";
- if(total>=100)goal=acc>=.60?"60% 이상":"60% 미달";
- document.getElementById("goal").textContent=goal;
- document.getElementById("goal").className=
-  acc!==null&&total>=100&&acc>=.60?"green":"";
+ document.getElementById("goal").textContent=
+  total<100?"검증 중":acc>=.60?"60% 이상":"60% 미달";
 
  [20,50,100].forEach(k=>{
   const a=accuracy(scored.slice(-k));
@@ -443,24 +603,22 @@ function render(){
    a===null?"-":percent(a);
  });
 
- document.getElementById("history").textContent=
-  total
-  ? "최근 검증 "+Math.min(20,total)+"판 기준 · "+
-    (accuracy(scored.slice(-20))*100).toFixed(1)+
-    "% 적중 · 검증 데이터 "+total+"판"
-  : "예측을 생성하고 다음 실제 결과를 입력하면 검증이 시작됩니다.";
-
  document.getElementById("status").innerHTML=
-  "입력된 결과: "+results.length+"판<br>"+
-  "승패 분석 대상: "+n+"판<br>"+
-  "검증 완료: "+total+"판<br>"+
-  "현재 모델: 5개 개별 모델 + 앙상블 통합<br>"+
-  "운영 정책: PASS 최소화 / 매 판 방향 제시<br>"+
-  "타이: 확률 및 적중률 계산에서 제외";
+  "입력 결과: "+results.length+" / 80<br>"+
+  "B/P 분석 대상: "+decisive().length+"<br>"+
+  "실제 O/X 검증: "+total+"판<br>"+
+  "분석 모델: 6개<br>"+
+  "현재 연속 길이: "+runLength(decisive())+"<br>"+
+  "현재 픽: "+(results.length>=80?"슈 완료":pick)+"<br>"+
+  "저장 상태: 브라우저 로컬 저장";
 }
 
 load();
-if(!pending && decisive().length<80)makePrediction();
+
+if(!pending&&results.length<80){
+ makePrediction();
+}
+
 render();
 </script>
 </body>
