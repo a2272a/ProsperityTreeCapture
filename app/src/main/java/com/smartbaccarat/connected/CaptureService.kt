@@ -14,6 +14,7 @@ import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.util.DisplayMetrics
 import kotlin.math.max
 
 class CaptureService : Service() {
@@ -29,10 +30,11 @@ class CaptureService : Service() {
         const val CHANNEL_ID = "baccarat_capture"
 
         // 폴드 분할 화면에서 오른쪽 게임창의 결과판 영역
-        private const val BOARD_LEFT = 0.450f
-        private const val BOARD_WIDTH = 0.420f
-        private const val BOARD_TOP = 0.395f
-        private const val BOARD_HEIGHT = 0.180f
+        // Fold 분할 화면 실제 결과판 위치(전체 화면 기준 비율)
+        private const val BOARD_LEFT = 0.508f
+        private const val BOARD_WIDTH = 0.482f
+        private const val BOARD_TOP = 0.336f
+        private const val BOARD_HEIGHT = 0.153f
         private const val BOARD_ROWS = 6
         private const val BOARD_COLUMNS = 14
     }
@@ -141,7 +143,12 @@ class CaptureService : Service() {
                 data
             )
 
-            val metrics = resources.displayMetrics
+            // 분할 화면 앱 창 크기가 아니라 기기 전체 화면 크기로 캡처
+            val metrics = DisplayMetrics()
+            @Suppress("DEPRECATION")
+            (getSystemService(DISPLAY_SERVICE) as DisplayManager)
+                .getDisplay(android.view.Display.DEFAULT_DISPLAY)
+                ?.getRealMetrics(metrics)
 
             val width = metrics.widthPixels
             val height = metrics.heightPixels
