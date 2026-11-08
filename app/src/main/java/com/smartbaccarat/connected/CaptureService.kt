@@ -280,10 +280,10 @@ class CaptureService : Service() {
 
     private fun readBoard(bitmap: Bitmap): String {
         // 분할 화면의 게임 영역 오른쪽 절반에서 결과판 세로 구간만 탐색
-        val left = (bitmap.width * 0.49f).toInt().coerceIn(0, bitmap.width - 1)
-        val right = bitmap.width
-        val top = (bitmap.height * 0.365f).toInt().coerceIn(0, bitmap.height - 1)
-        val bottom = (bitmap.height * 0.615f).toInt().coerceIn(top + 1, bitmap.height)
+        val left = (bitmap.width * 0.44f).toInt().coerceIn(0, bitmap.width - 1)
+        val right = (bitmap.width * 0.88f).toInt().coerceIn(left + 1, bitmap.width)
+        val top = (bitmap.height * 0.325f).toInt().coerceIn(0, bitmap.height - 1)
+        val bottom = (bitmap.height * 0.535f).toInt().coerceIn(top + 1, bitmap.height)
 
         val w = right - left
         val h = bottom - top
