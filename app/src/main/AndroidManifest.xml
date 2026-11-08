@@ -7,7 +7,7 @@
 
     <application
         android:theme="@style/AppTheme"
-        android:label="SMART BACCARAT AI V4.2"
+        android:label="SMART BACCARAT AI V4.3"
         android:allowBackup="false"
         android:supportsRtl="true">
 
