@@ -267,166 +267,172 @@ class CaptureService : Service() {
     }
 
     /*
-     * 6행 결과판 판독
-     *
-     * 세로 방향으로 6칸을 읽고
-     * 다음 열로 이동한다.
-     *
-     * 빈칸이 나오면 즉시 판독을 멈춘다.
-     * 빈칸을 건너뛰면 결과 순서가 틀어지기 때문이다.
+     * 화면 안의 실제 색상 원을 찾아 결과판을 자동 검출한다.
+     * 좌표 격자를 고정하지 않고 색상 픽셀 연결요소로 원의 중심을 계산한다.
      */
+    private data class DetectedCell(
+        val x: Float,
+        val y: Float,
+        val value: Char,
+        val area: Int,
+        val diameter: Float
+    )
 
     private fun readBoard(bitmap: Bitmap): String {
+        // 분할 화면의 게임 영역 오른쪽 절반에서 결과판 세로 구간만 탐색
+        val left = (bitmap.width * 0.49f).toInt().coerceIn(0, bitmap.width - 1)
+        val right = bitmap.width
+        val top = (bitmap.height * 0.365f).toInt().coerceIn(0, bitmap.height - 1)
+        val bottom = (bitmap.height * 0.615f).toInt().coerceIn(top + 1, bitmap.height)
 
-        val result = StringBuilder()
+        val w = right - left
+        val h = bottom - top
+        val mask = BooleanArray(w * h)
 
-        val boardLeft = bitmap.width * BOARD_LEFT
-        val boardWidth = bitmap.width * BOARD_WIDTH
-        val top = bitmap.height * BOARD_TOP
-
-        val cellWidth = boardWidth / BOARD_COLUMNS
-        val cellHeight = bitmap.height * BOARD_HEIGHT / BOARD_ROWS
-
-        for (col in 0 until BOARD_COLUMNS) {
-
-            for (row in 0 until BOARD_ROWS) {
-
-                val centerX =
-                    (boardLeft + (col + 0.5f) * cellWidth).toInt()
-
-                val centerY =
-                    (top + (row + 0.5f) * cellHeight).toInt()
-
-                val value = classifyCell(
-                    bitmap,
-                    centerX,
-                    centerY,
-                    cellWidth,
-                    cellHeight
-                )
-
-                if (value == '.') {
-
-                    return result.toString()
-                }
-
-                result.append(value)
-
-                if (result.length >= 80) {
-                    return result.toString()
-                }
+        // 결과 원의 파랑/빨강/초록 픽셀만 마스크로 만든다.
+        for (y in 0 until h) {
+            val sy = top + y
+            val row = y * w
+            for (x in 0 until w) {
+                mask[row + x] = colorClass(bitmap.getPixel(left + x, sy)) != '.'
             }
         }
 
-        return result.toString()
+        val visited = BooleanArray(w * h)
+        val queue = IntArray(w * h)
+        val cells = ArrayList<DetectedCell>()
+
+        for (i in mask.indices) {
+            if (!mask[i] || visited[i]) continue
+
+            var head = 0
+            var tail = 0
+            queue[tail++] = i
+            visited[i] = true
+
+            var minX = w
+            var maxX = 0
+            var minY = h
+            var maxY = 0
+            var sumX = 0L
+            var sumY = 0L
+            var count = 0
+            var blue = 0
+            var red = 0
+            var green = 0
+
+            while (head < tail) {
+                val p = queue[head++]
+                val px = p % w
+                val py = p / w
+                val sx = left + px
+                val sy = top + py
+                val c = colorClass(bitmap.getPixel(sx, sy))
+
+                minX = minOf(minX, px)
+                maxX = maxOf(maxX, px)
+                minY = minOf(minY, py)
+                maxY = maxOf(maxY, py)
+                sumX += px
+                sumY += py
+                count++
+                when (c) {
+                    'P' -> blue++
+                    'B' -> red++
+                    'T' -> green++
+                }
+
+                for (dy in -1..1) {
+                    for (dx in -1..1) {
+                        if (dx == 0 && dy == 0) continue
+                        val nx = px + dx
+                        val ny = py + dy
+                        if (nx !in 0 until w || ny !in 0 until h) continue
+                        val ni = ny * w + nx
+                        if (mask[ni] && !visited[ni]) {
+                            visited[ni] = true
+                            if (tail < queue.size) queue[tail++] = ni
+                        }
+                    }
+                }
+            }
+
+            val bw = maxX - minX + 1
+            val bh = maxY - minY + 1
+            val diameter = (bw + bh) / 2f
+            val aspect = bw.toFloat() / bh.coerceAtLeast(1)
+
+            // 원형 결과 마커 크기만 통과시켜 작은 점/문자/장식은 제외
+            if (count < 85 || bw !in 15..52 || bh !in 15..52 ||
+                aspect !in 0.62f..1.48f) continue
+
+            val strongest = maxOf(blue, red, green)
+            if (strongest < count * 0.28f) continue
+            val value = when {
+                blue == strongest -> 'P'
+                red == strongest -> 'B'
+                else -> 'T'
+            }
+
+            cells.add(
+                DetectedCell(
+                    left + sumX.toFloat() / count,
+                    top + sumY.toFloat() / count,
+                    value,
+                    count,
+                    diameter
+                )
+            )
+        }
+
+        if (cells.size < 4) return ""
+
+        // 원 중심의 실제 간격으로 행/열을 묶는다. 기기 배율 변화에 대응한다.
+        val typicalDiameter = cells.map { it.diameter }.sorted()[cells.size / 2]
+        val tolerance = (typicalDiameter * 0.58f).coerceIn(9f, 23f)
+
+        fun cluster(values: List<Float>): List<Float> {
+            val sorted = values.sorted()
+            val groups = ArrayList<MutableList<Float>>()
+            for (v in sorted) {
+                val last = groups.lastOrNull()
+                if (last == null || v - last.average().toFloat() > tolerance) {
+                    groups.add(mutableListOf(v))
+                } else {
+                    last.add(v)
+                }
+            }
+            return groups.map { it.average().toFloat() }
+        }
+
+        val rowCenters = cluster(cells.map { it.y })
+        val colCenters = cluster(cells.map { it.x })
+
+        // 결과판의 진행 순서: 왼쪽 열부터 위→아래, 다음 열로 이동
+        val ordered = cells.sortedWith(
+            compareBy<DetectedCell> {
+                colCenters.indices.minByOrNull { idx ->
+                    kotlin.math.abs(colCenters[idx] - it.x)
+                } ?: 0
+            }.thenBy {
+                rowCenters.indices.minByOrNull { idx ->
+                    kotlin.math.abs(rowCenters[idx] - it.y)
+                } ?: 0
+            }
+        )
+
+        return ordered.take(80).joinToString("") { it.value.toString() }
     }
 
-    /*
-     * 색상 판독
-     *
-     * 파랑 = 플레이어 P
-     * 빨강 = 뱅커 B
-     * 초록 = 타이 T
-     */
-
-    private fun classifyCell(
-        bitmap: Bitmap,
-        centerX: Int,
-        centerY: Int,
-        cellWidth: Float,
-        cellHeight: Float
-    ): Char {
-
-        var blue = 0
-        var red = 0
-        var green = 0
-        var samples = 0
-
-        val radiusX = max(
-            2,
-            (cellWidth * 0.16f).toInt()
-        )
-
-        val radiusY = max(
-            2,
-            (cellHeight * 0.16f).toInt()
-        )
-
-        val stepX = max(2, radiusX / 3)
-        val stepY = max(2, radiusY / 3)
-
-        for (dy in -radiusY..radiusY step stepY) {
-
-            for (dx in -radiusX..radiusX step stepX) {
-
-                val x = centerX + dx
-                val y = centerY + dy
-
-                if (
-                    x !in 0 until bitmap.width ||
-                    y !in 0 until bitmap.height
-                ) continue
-
-                val pixel = bitmap.getPixel(x, y)
-
-                val r = Color.red(pixel)
-                val g = Color.green(pixel)
-                val b = Color.blue(pixel)
-
-                // 플레이어 파란색
-                if (
-                    b > 105 &&
-                    b > r * 1.35f &&
-                    b > g * 1.12f
-                ) {
-
-                    blue++
-
-                }
-
-                // 뱅커 빨간색
-                else if (
-                    r > 115 &&
-                    r > b * 1.30f &&
-                    r > g * 1.12f
-                ) {
-
-                    red++
-
-                }
-
-                // 타이 초록색
-                else if (
-                    g > 85 &&
-                    g > r * 1.12f &&
-                    g > b * 1.08f
-                ) {
-
-                    green++
-                }
-
-                samples++
-            }
-        }
-
-        if (samples == 0) return '.'
-
-        val threshold = max(2, samples / 7)
+    private fun colorClass(pixel: Int): Char {
+        val r = Color.red(pixel)
+        val g = Color.green(pixel)
+        val b = Color.blue(pixel)
 
         return when {
-
-            blue >= threshold &&
-            blue > red &&
-            blue > green -> 'P'
-
-            red >= threshold &&
-            red > blue &&
-            red > green -> 'B'
-
-            green >= threshold &&
-            green > blue &&
-            green > red -> 'T'
-
+            b > 105 && b > r * 1.30f && b > g * 1.08f -> 'P'
+            r > 110 && r > b * 1.25f && r > g * 1.10f -> 'B'
+            g > 80 && g > r * 1.12f && g > b * 1.05f -> 'T'
             else -> '.'
         }
     }
