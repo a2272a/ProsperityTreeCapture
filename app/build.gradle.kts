@@ -18,8 +18,8 @@ kotlinOptions {
         applicationId = "com.smartbaccarat.connected"
         minSdk = 26
         targetSdk = 35
-        versionCode = 5
-        versionName = "3.3"
+        versionCode = 6
+        versionName = "3.4"
     }
 
     buildFeatures {
