@@ -159,15 +159,7 @@ button:active{transform:scale(.97)}
   </div>
   <div class="note" style="margin-top:8px">게임 결과판을 확인하고 아래 P/B/T 버튼으로 입력하세요. 입력 즉시 보드·확률·시나리오·적중 기록이 갱신됩니다. 인터넷 서버 분석은 서버 주소 연결 후 활성화됩니다.</div>
 </section>
-<section class="panel">
-  <div class="panel-title">게임 화면 자동 따라가기</div>
-  <div class="info"><small>화면 인식 상태</small><strong id="captureStatus" class="warn">화면 공유 대기</strong></div>
-  <div class="subcontrols">
-    <button class="btnSub" onclick="startScreenCapture()">화면 따라가기 시작</button>
-    <button class="btnSub" onclick="stopScreenCapture()">인식 중지</button>
-  </div>
-  <div class="note" style="margin-top:8px">화면 공유를 허용하면 게임 결과판의 B/P/T를 읽습니다. 기존 입력과 순서가 다르면 자동으로 덮어쓰지 않고 불일치로 알립니다.</div>
-</section>  <section class="panel">  
+  <section class="panel">  
   <section class="panel">
   <div class="panel-title">인터넷 분석 서버</div>
   <div class="info">
@@ -958,47 +950,6 @@ function resetAll(){
   rebuild();  
 }  
   
-/* Android 화면 인식 ↔ 분석기 연결 */
-function setCaptureStatus(message,kind){
-  const el=$("captureStatus"); if(!el)return;
-  el.textContent=message; el.className=kind||"warn";
-}
-function startScreenCapture(){
-  if(!window.AndroidCapture || !AndroidCapture.start){
-    setCaptureStatus("Android 캡처 연결을 찾을 수 없습니다.","bad"); return;
-  }
-  setCaptureStatus("화면 공유 권한 요청 중…","warn");
-  AndroidCapture.start();
-}
-function stopScreenCapture(){
-  if(window.AndroidCapture && AndroidCapture.stop) AndroidCapture.stop();
-  setCaptureStatus("화면 인식 중지","warn");
-}
-window.ScreenBridge={
-  onCaptureStatus:function(message){
-    const ok=message.includes("연결 완료")||message.includes("결과 감지");
-    const bad=message.includes("오류")||message.includes("없습니다");
-    setCaptureStatus(message,ok?"good":bad?"bad":"warn");
-  },
-  onScreenSequence:function(sequence){
-    const incoming=String(sequence||"").replace(/[^BPT]/g,"").slice(0,MAX_HANDS);
-    if(!incoming)return;
-    const current=results.join("");
-    if(current===incoming){
-      setCaptureStatus("인식 정상 · "+incoming.length+"판 · 변경 없음","good"); return;
-    }
-    if(current && !incoming.startsWith(current)){
-      setCaptureStatus("배열 불일치 · 입력 "+current.length+"판 / 인식 "+incoming.length+"판 · 자동 덮어쓰기 보류","bad"); return;
-    }
-    const additions=incoming.slice(current.length);
-    for(const value of additions){
-      if(results.length>=MAX_HANDS)break;
-      addResult(value);
-    }
-    setCaptureStatus("자동 따라가는 중 · "+results.length+"/80판 · 신규 "+additions.length+"개","good");
-  }
-};
-
 /* ===============================
    원격 분석 서버 연결
 ================================ */
