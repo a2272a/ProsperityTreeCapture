@@ -28,11 +28,13 @@ class CaptureService : Service() {
         const val BROADCAST_SEQUENCE = "BACCARAT_CAPTURE_SEQUENCE"
         const val CHANNEL_ID = "baccarat_capture"
 
-        // 실제 게임 스크린샷 기준 임시 보드 좌표
-        private const val BOARD_TOP = 0.440f
-        private const val BOARD_HEIGHT = 0.150f
+        // 폴드 분할 화면에서 오른쪽 게임창의 결과판 영역
+        private const val BOARD_LEFT = 0.505f
+        private const val BOARD_WIDTH = 0.490f
+        private const val BOARD_TOP = 0.378f
+        private const val BOARD_HEIGHT = 0.185f
         private const val BOARD_ROWS = 6
-        private const val BOARD_COLUMNS = 15
+        private const val BOARD_COLUMNS = 14
     }
 
     private var projection: MediaProjection? = null
@@ -271,21 +273,19 @@ class CaptureService : Service() {
 
         val result = StringBuilder()
 
-        val cellWidth =
-            bitmap.width.toFloat() / BOARD_COLUMNS
+        val boardLeft = bitmap.width * BOARD_LEFT
+        val boardWidth = bitmap.width * BOARD_WIDTH
+        val top = bitmap.height * BOARD_TOP
 
-        val cellHeight =
-            bitmap.height * BOARD_HEIGHT / BOARD_ROWS
-
-        val top =
-            bitmap.height * BOARD_TOP
+        val cellWidth = boardWidth / BOARD_COLUMNS
+        val cellHeight = bitmap.height * BOARD_HEIGHT / BOARD_ROWS
 
         for (col in 0 until BOARD_COLUMNS) {
 
             for (row in 0 until BOARD_ROWS) {
 
                 val centerX =
-                    ((col + 0.5f) * cellWidth).toInt()
+                    (boardLeft + (col + 0.5f) * cellWidth).toInt()
 
                 val centerY =
                     (top + (row + 0.5f) * cellHeight).toInt()
