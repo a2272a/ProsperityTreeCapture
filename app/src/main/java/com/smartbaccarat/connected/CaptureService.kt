@@ -1,9 +1,9 @@
-
 package com.smartbaccarat.connected
 
 import android.app.*
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.PixelFormat
 import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
@@ -11,11 +11,10 @@ import android.media.ImageReader
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
 import android.os.Build
-import android.os.IBinder
-import android.graphics.Color
 import android.os.Handler
+import android.os.IBinder
 import android.os.Looper
-import kotlin.math.abs
+import kotlin.math.max
 
 class CaptureService : Service() {
 
@@ -27,8 +26,13 @@ class CaptureService : Service() {
 
         const val BROADCAST_STATUS = "BACCARAT_CAPTURE_STATUS"
         const val BROADCAST_SEQUENCE = "BACCARAT_CAPTURE_SEQUENCE"
-
         const val CHANNEL_ID = "baccarat_capture"
+
+        // 실제 게임 스크린샷 기준 임시 보드 좌표
+        private const val BOARD_TOP = 0.440f
+        private const val BOARD_HEIGHT = 0.150f
+        private const val BOARD_ROWS = 6
+        private const val BOARD_COLUMNS = 15
     }
 
     private var projection: MediaProjection? = null
@@ -48,11 +52,16 @@ class CaptureService : Service() {
         flags: Int,
         startId: Int
     ): Int {
+
         when (intent?.action) {
+
             ACTION_START -> {
                 startForegroundNotification()
 
-                val code = intent.getIntExtra(EXTRA_RESULT_CODE, 0)
+                val code = intent.getIntExtra(
+                    EXTRA_RESULT_CODE,
+                    0
+                )
 
                 val data = if (Build.VERSION.SDK_INT >= 33) {
                     intent.getParcelableExtra(
@@ -64,7 +73,12 @@ class CaptureService : Service() {
                     intent.getParcelableExtra(EXTRA_DATA)
                 }
 
-                if (data != null) startCapture(code, data)
+                if (data != null) {
+                    startCapture(code, data)
+                } else {
+                    sendStatus("화면 캡처 권한 데이터가 없습니다.")
+                    stopCapture()
+                }
             }
 
             ACTION_STOP -> stopCapture()
@@ -74,7 +88,9 @@ class CaptureService : Service() {
     }
 
     private fun startForegroundNotification() {
+
         if (Build.VERSION.SDK_INT >= 26) {
+
             val channel = NotificationChannel(
                 CHANNEL_ID,
                 "바카라 화면 인식",
@@ -85,28 +101,46 @@ class CaptureService : Service() {
                 .createNotificationChannel(channel)
         }
 
-        val notification = if (Build.VERSION.SDK_INT >= 26) {
+        val builder = if (Build.VERSION.SDK_INT >= 26) {
+
             Notification.Builder(this, CHANNEL_ID)
+
         } else {
+
             @Suppress("DEPRECATION")
             Notification.Builder(this)
-        }.setContentTitle("BACCARAT LIVE AI")
-            .setContentText("화면 인식 실행 중")
-            .setSmallIcon(android.R.drawable.ic_menu_view)
-            .build()
+        }
 
-        startForeground(10, notification)
+        startForeground(
+            10,
+            builder
+                .setContentTitle("BACCARAT LIVE AI")
+                .setContentText("게임 결과판 화면 인식 중")
+                .setSmallIcon(android.R.drawable.ic_menu_view)
+                .build()
+        )
     }
 
-    private fun startCapture(resultCode: Int, data: Intent) {
+    private fun startCapture(
+        resultCode: Int,
+        data: Intent
+    ) {
+
         try {
+
+            releaseCaptureResources()
+
             val manager = getSystemService(
                 MEDIA_PROJECTION_SERVICE
             ) as MediaProjectionManager
 
-            projection = manager.getMediaProjection(resultCode, data)
+            projection = manager.getMediaProjection(
+                resultCode,
+                data
+            )
 
             val metrics = resources.displayMetrics
+
             val width = metrics.widthPixels
             val height = metrics.heightPixels
             val density = metrics.densityDpi
@@ -120,9 +154,12 @@ class CaptureService : Service() {
 
             projection?.registerCallback(
                 object : MediaProjection.Callback() {
+
                     override fun onStop() {
+                        sendStatus("화면 공유가 종료되었습니다.")
                         stopCapture()
                     }
+
                 },
                 handler
             )
@@ -138,91 +175,138 @@ class CaptureService : Service() {
                 handler
             )
 
-            imageReader?.setOnImageAvailableListener({ reader ->
-                val image = reader.acquireLatestImage() ?: return@setOnImageAvailableListener
+            imageReader?.setOnImageAvailableListener(
+                { reader ->
 
-                try {
-                    val plane = image.planes[0]
-                    val buffer = plane.buffer
-                    val pixelStride = plane.pixelStride
-                    val rowStride = plane.rowStride
+                    val image = reader.acquireLatestImage()
+                        ?: return@setOnImageAvailableListener
 
-                    val bitmapWidth =
-                        image.width + (rowStride - pixelStride * image.width) / pixelStride
+                    try {
 
-                    val bitmap = Bitmap.createBitmap(
-                        bitmapWidth,
-                        image.height,
-                        Bitmap.Config.ARGB_8888
-                    )
+                        val plane = image.planes[0]
+                        val buffer = plane.buffer
 
-                    buffer.rewind()
-                    bitmap.copyPixelsFromBuffer(buffer)
+                        val pixelStride = plane.pixelStride
+                        val rowStride = plane.rowStride
 
-                    val sequence = readBoard(bitmap)
+                        val bitmapWidth =
+                            image.width +
+                            (rowStride - pixelStride * image.width) /
+                            pixelStride
 
-                    if (sequence.length >= 4) {
-                        if (sequence == candidateSequence) {
-                            stableFrames++
-                        } else {
-                            candidateSequence = sequence
-                            stableFrames = 1
+                        val bitmap = Bitmap.createBitmap(
+                            bitmapWidth,
+                            image.height,
+                            Bitmap.Config.ARGB_8888
+                        )
+
+                        buffer.rewind()
+                        bitmap.copyPixelsFromBuffer(buffer)
+
+                        val sequence = readBoard(bitmap)
+
+                        bitmap.recycle()
+
+                        // 두 번 연속 같은 결과일 때만 전송
+                        if (sequence.length >= 4) {
+
+                            if (sequence == candidateSequence) {
+
+                                stableFrames++
+
+                            } else {
+
+                                candidateSequence = sequence
+                                stableFrames = 1
+                            }
+
+                            if (
+                                stableFrames >= 2 &&
+                                sequence != lastSequence
+                            ) {
+
+                                lastSequence = sequence
+                                sendSequence(sequence)
+                            }
                         }
 
-                        if (stableFrames >= 2 &&
-                            sequence != lastSequence
-                        ) {
-                            lastSequence = sequence
-                            sendSequence(sequence)
-                        }
+                    } catch (e: Exception) {
+
+                        sendStatus(
+                            "화면 판독 오류: ${e.message ?: "알 수 없는 오류"}"
+                        )
+
+                    } finally {
+
+                        image.close()
                     }
 
-                    bitmap.recycle()
-                } catch (e: Exception) {
-                    sendStatus("판독 오류: ${e.message}")
-                } finally {
-                    image.close()
-                }
-            }, handler)
+                },
+                handler
+            )
 
-            sendStatus("화면 캡처 연결 완료")
+            sendStatus("화면 캡처 연결 완료 · 결과판을 읽는 중")
 
         } catch (e: Exception) {
-            sendStatus("캡처 오류: ${e.message}")
+
+            sendStatus(
+                "캡처 시작 오류: ${e.message ?: "알 수 없는 오류"}"
+            )
+
             stopCapture()
         }
     }
 
     /*
-     * 현재 판독 영역은 임시 비율이다.
-     * 실제 게임 화면에 맞춰 보드 위치를 보정해야 한다.
+     * 6행 결과판 판독
+     *
+     * 세로 방향으로 6칸을 읽고
+     * 다음 열로 이동한다.
+     *
+     * 빈칸이 나오면 즉시 판독을 멈춘다.
+     * 빈칸을 건너뛰면 결과 순서가 틀어지기 때문이다.
      */
+
     private fun readBoard(bitmap: Bitmap): String {
+
         val result = StringBuilder()
 
-        val columns = 14
-        val rows = 6
+        val cellWidth =
+            bitmap.width.toFloat() / BOARD_COLUMNS
 
-        val left = 0.52f
-        val top = 0.40f
-        val boardWidth = 0.46f
-        val boardHeight = 0.34f
+        val cellHeight =
+            bitmap.height * BOARD_HEIGHT / BOARD_ROWS
 
-        val cellWidth = boardWidth / columns
-        val cellHeight = boardHeight / rows
+        val top =
+            bitmap.height * BOARD_TOP
 
-        for (col in 0 until columns) {
-            for (row in 0 until rows) {
-                val x = (bitmap.width *
-                    (left + cellWidth * (col + 0.5f))).toInt()
+        for (col in 0 until BOARD_COLUMNS) {
 
-                val y = (bitmap.height *
-                    (top + cellHeight * (row + 0.5f))).toInt()
+            for (row in 0 until BOARD_ROWS) {
 
-                val value = classifyCell(bitmap, x, y)
+                val centerX =
+                    ((col + 0.5f) * cellWidth).toInt()
 
-                if (value != '.') {
-                    result.append(value)
+                val centerY =
+                    (top + (row + 0.5f) * cellHeight).toInt()
+
+                val value = classifyCell(
+                    bitmap,
+                    centerX,
+                    centerY,
+                    cellWidth,
+                    cellHeight
+                )
+
+                if (value == '.') {
+
+                    return result.toString()
+                }
+
+                result.append(value)
+
+                if (result.length >= 80) {
+                    return result.toString()
                 }
             }
         }
@@ -230,22 +314,49 @@ class CaptureService : Service() {
         return result.toString()
     }
 
+    /*
+     * 색상 판독
+     *
+     * 파랑 = 플레이어 P
+     * 빨강 = 뱅커 B
+     * 초록 = 타이 T
+     */
+
     private fun classifyCell(
         bitmap: Bitmap,
         centerX: Int,
-        centerY: Int
+        centerY: Int,
+        cellWidth: Float,
+        cellHeight: Float
     ): Char {
+
         var blue = 0
         var red = 0
         var green = 0
-        var sampled = 0
+        var samples = 0
 
-        for (dx in -5..5 step 2) {
-            for (dy in -5..5 step 2) {
+        val radiusX = max(
+            2,
+            (cellWidth * 0.16f).toInt()
+        )
+
+        val radiusY = max(
+            2,
+            (cellHeight * 0.16f).toInt()
+        )
+
+        val stepX = max(2, radiusX / 3)
+        val stepY = max(2, radiusY / 3)
+
+        for (dy in -radiusY..radiusY step stepY) {
+
+            for (dx in -radiusX..radiusX step stepX) {
+
                 val x = centerX + dx
                 val y = centerY + dy
 
-                if (x !in 0 until bitmap.width ||
+                if (
+                    x !in 0 until bitmap.width ||
                     y !in 0 until bitmap.height
                 ) continue
 
@@ -255,31 +366,66 @@ class CaptureService : Service() {
                 val g = Color.green(pixel)
                 val b = Color.blue(pixel)
 
-                if (b > r * 1.25f && b > g * 1.12f && b > 90) {
+                // 플레이어 파란색
+                if (
+                    b > 105 &&
+                    b > r * 1.35f &&
+                    b > g * 1.12f
+                ) {
+
                     blue++
-                } else if (r > b * 1.25f && r > g * 1.10f && r > 100) {
+
+                }
+
+                // 뱅커 빨간색
+                else if (
+                    r > 115 &&
+                    r > b * 1.30f &&
+                    r > g * 1.12f
+                ) {
+
                     red++
-                } else if (g > r * 1.15f && g > b * 1.05f && g > 90) {
+
+                }
+
+                // 타이 초록색
+                else if (
+                    g > 85 &&
+                    g > r * 1.12f &&
+                    g > b * 1.08f
+                ) {
+
                     green++
                 }
 
-                sampled++
+                samples++
             }
         }
 
-        if (sampled == 0) return '.'
+        if (samples == 0) return '.'
 
-        val threshold = 4
+        val threshold = max(2, samples / 7)
 
         return when {
-            blue >= threshold && blue > red && blue > green -> 'B'
-            red >= threshold && red > blue && red > green -> 'P'
-            green >= threshold && green > blue && green > red -> 'T'
+
+            blue >= threshold &&
+            blue > red &&
+            blue > green -> 'P'
+
+            red >= threshold &&
+            red > blue &&
+            red > green -> 'B'
+
+            green >= threshold &&
+            green > blue &&
+            green > red -> 'T'
+
             else -> '.'
         }
     }
 
     private fun sendStatus(message: String) {
+
         sendBroadcast(
             Intent(BROADCAST_STATUS)
                 .setPackage(packageName)
@@ -288,36 +434,61 @@ class CaptureService : Service() {
     }
 
     private fun sendSequence(sequence: String) {
+
         sendBroadcast(
             Intent(BROADCAST_SEQUENCE)
                 .setPackage(packageName)
                 .putExtra("sequence", sequence)
         )
 
-        sendStatus("결과 감지: ${sequence.length}개")
+        sendStatus("결과 감지: ${sequence.length}판")
     }
 
-    private fun stopCapture() {
+    private fun releaseCaptureResources() {
+
         try {
+
             virtualDisplay?.release()
             virtualDisplay = null
 
-            imageReader?.setOnImageAvailableListener(null, null)
+            imageReader?.setOnImageAvailableListener(
+                null,
+                null
+            )
+
             imageReader?.close()
             imageReader = null
 
             projection?.stop()
             projection = null
+
         } catch (_: Exception) {
         }
+    }
 
-        stopForeground(STOP_FOREGROUND_REMOVE)
+    private fun stopCapture() {
+
+        releaseCaptureResources()
+
+        if (Build.VERSION.SDK_INT >= 24) {
+
+            stopForeground(STOP_FOREGROUND_REMOVE)
+
+        } else {
+
+            @Suppress("DEPRECATION")
+            stopForeground(true)
+        }
+
         stopSelf()
+
         sendStatus("화면 인식 중지")
     }
 
     override fun onDestroy() {
-        stopCapture()
+
+        releaseCaptureResources()
+
         super.onDestroy()
     }
 }
