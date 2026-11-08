@@ -537,34 +537,39 @@ function clamp(v,min,max){
   return Math.max(min,Math.min(max,v));  
 }  
   
-function probabilityModel(data){  
-  const n=data.length;  
-  if(n===0)return {b:BASE_B,p:1-BASE_B};  
-  
-  const recent=data.slice(-12);  
-  const bCount=recent.filter(x=>x==="B").length;  
-  const pCount=recent.length-bCount;  
-  
-  // 작은 표본의 극단적 편향을 줄이는 사전분포  
-  const alpha=8;  
-  const raw=(bCount+alpha*BASE_B)/(recent.length+alpha);  
-  
-  const state=stateFeatures(data);  
-  const streakDamp=1/(1+Math.max(0,state.streak-2)*0.45);  
-  const changeDamp=state.change?0.65:1;  
-  
-  let b=BASE_B+(raw-BASE_B)*streakDamp*changeDamp;  
-  
-  // 이 엔진은 과거 결과만으로 큰 확률 편향을 만들지 않음  
-  b=clamp(b,BASE_B-0.025,BASE_B+0.025);  
-  
-  return {b,p:1-b};  
-}  
-  
-/* ===============================  
-   HMM 스타일 상태 추정  
-   실제 학습 모델이 아닌 확률 상태 모델  
-================================ */  
+function probabilityModel(data){
+  // 최근 3·5·8·12개의 짧은 창을 동시에 읽어 현재 그림의 변화를 매판 재계산한다.
+  const d=data.filter(x=>x==="B"||x==="P");
+  if(!d.length) return {b:0.5068,p:0.4932,parts:[],signal:"초기 기준"};
+  const windows=[3,5,8,12], weights=[0.34,0.28,0.23,0.15];
+  const parts=[];
+  let bScore=0,totalWeight=0;
+  for(let k=0;k<windows.length;k++){
+    const sample=d.slice(-windows[k]);
+    if(!sample.length) continue;
+    const countB=sample.filter(x=>x==="B").length;
+    const prior=[1.5,2.5,4,4][k];
+    const pB=(countB+prior*0.5068)/(sample.length+prior);
+    parts.push({window:windows[k],b:pB,p:1-pB,count:sample.length});
+    bScore+=pB*weights[k];
+    totalWeight+=weights[k];
+  }
+  let b=totalWeight?bScore/totalWeight:0.5068;
+  const last=d[d.length-1], transitions=[];
+  for(let i=1;i<d.length;i++) if(d[i-1]===last) transitions.push(d[i]);
+  let transitionB=null;
+  if(transitions.length>=2){
+    const countB=transitions.filter(x=>x==="B").length;
+    transitionB=(countB+2*0.5068)/(transitions.length+2);
+    b=b*0.78+transitionB*0.22;
+  }
+  // 넓은 고정 상한을 두지 않고, 소표본 극단치만 완충한다.
+  b=clamp(b,0.35,0.65);
+  return {b,p:1-b,parts,transitionB,last,
+    signal:Math.abs(b-0.5)>=0.035?"상대 우세 신호":"우세 신호 약함",
+    recentFlip:flipRatio(d.slice(-5))};
+}
+
 function hiddenStateEstimate(data){  
   if(data.length<4)return {  
     name:"데이터 부족",continuation:0.5,transition:0.5  
@@ -617,24 +622,18 @@ function beamSearch(data,depth=3,width=12){
 /* ===============================  
    분석 실행  
 ================================ */  
-function calculate(){  
-  const data=decisive();  
-  const probability=probabilityModel(data);  
-  const state=stateFeatures(data);  
-  const spatial=spatialFeatures(results);  
-  const hidden=hiddenStateEstimate(data);  
-  const scenarios=beamSearch(data,3,12);  
-  
-  const pick=probability.b>=probability.p?"B":"P";  
-  const confidence=Math.max(probability.b,probability.p);  
-  
-  return {  
-    probability,state,spatial,hidden,scenarios,pick,  
-    confidence,  
-    boardVersion  
-  };  
-}  
-  
+function calculate(){
+  const data=decisive();
+  const probability=probabilityModel(data);
+  const state=stateFeatures(data);
+  const spatial=spatialFeatures(results);
+  const hidden=hiddenStateEstimate(data);
+  const scenarios=beamSearch(data,3,12);
+  const pick=probability.b>=probability.p?"B":"P";
+  const confidence=Math.max(probability.b,probability.p);
+  return {probability,state,spatial,hidden,scenarios,pick,confidence,boardVersion};
+}
+
 function renderAnalysis(){  
   if(!currentAnalysis)return;  
   const a=currentAnalysis;  
@@ -717,26 +716,22 @@ function gradePending(result,resultIndex){
 }  
   
 function renderStats(){
-  const total=records.length;
-  const hits=records.filter(x=>x.hit).length;
-  const misses=total-hits;
+  const judged=records.filter(x=>!x.tie);
+  const hits=judged.filter(x=>x.hit).length;
+  const misses=judged.length-hits;
   $("hitCount").textContent=hits+"회";
   $("missCount").textContent=misses+"회";
-  $("hitRate").textContent=hits+" / "+total+" ("+(total?(hits/total*100).toFixed(1):"0.0")+"%)";
-
+  $("hitRate").textContent=hits+" / "+judged.length+" ("+(judged.length?(hits/judged.length*100).toFixed(1):"0.0")+"%)";
   let missRun=0;
   for(let i=records.length-1;i>=0;i--){
-    if(records[i].hit)break;
+    if(records[i].tie) continue;
+    if(records[i].hit) break;
     missRun++;
   }
   $("missRun").textContent=missRun+"회";
-  const history=records.slice(-20).map(x=>x.hit?"○":"×").join(" ");
-  $("hitHistory").textContent=history||"기록 없음";
-}  
-  
-/* ===============================  
-   입력 처리  
-================================ */  
+  $("hitHistory").textContent=records.slice(-20).map(x=>x.tie?"T":(x.hit?"○":"×")).join(" ")||"기록 없음";
+}
+
 function addResult(value){  
   if(results.length>=MAX_HANDS){  
     alert("80판 입력이 완료되었습니다. 초기화 후 새 슈를 시작하세요.");  
