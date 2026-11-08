@@ -328,8 +328,9 @@ function renderBoard(){
   el.innerHTML="";
   const cells=boardArray(results);
   const gradeByIndex=new Map(records.map(x=>[x.sourceVersion,x]));
-  const wrapper=document.createElement("div");
-  wrapper.className="board-area";
+  const parent=el.parentNode;
+  const oldRates=parent.querySelector(".column-rates");
+  if(oldRates) oldRates.remove();
   const rates=document.createElement("div");
   rates.className="column-rates";
   for(let col=0;col<COLS;col++){
@@ -346,9 +347,7 @@ function renderBoard(){
     rate.innerHTML="<b>"+(total?(hit+"/"+total):"—")+"</b>"+(total?(hit/total*100).toFixed(0)+"%":"승률");
     rates.appendChild(rate);
   }
-  wrapper.appendChild(rates);
-  el.parentNode.insertBefore(wrapper,el);
-  wrapper.appendChild(el);
+  parent.insertBefore(rates,el);
   for(let r=0;r<ROWS;r++){
     for(let col=0;col<COLS;col++){
       const idx=col*ROWS+r;
