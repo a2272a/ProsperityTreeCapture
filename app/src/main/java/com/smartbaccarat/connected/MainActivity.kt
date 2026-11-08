@@ -4,10 +4,8 @@ import android.app.Activity
 import android.content.Intent
 import android.media.projection.MediaProjectionManager
 import android.os.Bundle
-import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.webkit.JavascriptInterface
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -16,36 +14,58 @@ class MainActivity : Activity() {
 
     private lateinit var webView: WebView
     private lateinit var status: TextView
-    private val requestCode = 1001
+
+    companion object {
+        private const val REQUEST_CAPTURE = 1001
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val layout = LinearLayout(this)
-        layout.orientation = LinearLayout.VERTICAL
+        val layout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setBackgroundColor(0xFF090E19.toInt())
+        }
 
-        status = TextView(this)
-        status.text = "SMART BACCARAT AI V3.1"
-        status.textSize = 20f
+        status = TextView(this).apply {
+            text = "BACCARAT LIVE AI V4 · 캡처 대기"
+            textSize = 16f
+            setTextColor(0xFFFFFFFF.toInt())
+            setPadding(12, 12, 12, 12)
+        }
         layout.addView(status)
 
-        val start = Button(this)
-        start.text = "화면 자동 인식 시작"
-        start.setOnClickListener {
-            val manager = getSystemService(MEDIA_PROJECTION_SERVICE)
-                    as MediaProjectionManager
-            startActivityForResult(
-                manager.createScreenCaptureIntent(),
-                requestCode
-            )
+        val startButton = Button(this).apply {
+            text = "화면 자동 인식 시작"
+            setOnClickListener {
+                val manager = getSystemService(
+                    MEDIA_PROJECTION_SERVICE
+                ) as MediaProjectionManager
+
+                startActivityForResult(
+                    manager.createScreenCaptureIntent(),
+                    REQUEST_CAPTURE
+                )
+            }
         }
-        layout.addView(start)
+        layout.addView(startButton)
+
+        val stopButton = Button(this).apply {
+            text = "화면 인식 중지"
+            setOnClickListener {
+                stopService(
+                    Intent(this@MainActivity, CaptureService::class.java)
+                        .setAction(CaptureService.ACTION_STOP)
+                )
+                status.text = "캡처 중지"
+            }
+        }
+        layout.addView(stopButton)
 
         webView = WebView(this)
         webView.settings.javaScriptEnabled = true
         webView.webViewClient = WebViewClient()
-        webView.webChromeClient = WebChromeClient()
-        webView.addJavascriptInterface(this, "AndroidCapture")
+
         layout.addView(
             webView,
             LinearLayout.LayoutParams(
@@ -59,13 +79,7 @@ class MainActivity : Activity() {
         webView.loadUrl("file:///android_asset/index.html")
     }
 
-    @JavascriptInterface
-    fun stop() {
-        runOnUiThread {
-            status.text = "화면 인식 중지"
-        }
-    }
-
+    @Deprecated("Deprecated in Android API")
     override fun onActivityResult(
         requestCode: Int,
         resultCode: Int,
@@ -73,9 +87,21 @@ class MainActivity : Activity() {
     ) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if (requestCode == this.requestCode &&
-            resultCode == RESULT_OK && data != null) {
-            status.text = "화면 캡처 권한 승인"
+        if (requestCode == REQUEST_CAPTURE &&
+            resultCode == RESULT_OK &&
+            data != null
+        ) {
+            val serviceIntent = Intent(
+                this,
+                CaptureService::class.java
+            ).apply {
+                action = CaptureService.ACTION_START
+                putExtra(CaptureService.EXTRA_RESULT_CODE, resultCode)
+                putExtra(CaptureService.EXTRA_DATA, data)
+            }
+
+            startForegroundService(serviceIntent)
+            status.text = "화면 캡처 승인 완료"
         }
     }
 }
