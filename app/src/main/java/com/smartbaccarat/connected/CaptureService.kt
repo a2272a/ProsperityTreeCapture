@@ -31,8 +31,8 @@ class CaptureService : Service() {
         // 폴드 분할 화면에서 오른쪽 게임창의 결과판 영역
         private const val BOARD_LEFT = 0.505f
         private const val BOARD_WIDTH = 0.490f
-        private const val BOARD_TOP = 0.440f
-        private const val BOARD_HEIGHT = 0.220f
+        private const val BOARD_TOP = 0.455f
+        private const val BOARD_HEIGHT = 0.170f
         private const val BOARD_ROWS = 6
         private const val BOARD_COLUMNS = 14
     }
