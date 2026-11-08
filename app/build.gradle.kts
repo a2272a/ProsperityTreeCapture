@@ -18,8 +18,8 @@ android {
         applicationId = "com.smartbaccarat.connected"
         minSdk = 26
         targetSdk = 35
-        versionCode = 9
-        versionName = "3.7"
+        versionCode = 10
+        versionName = "3.8"
     }
 
     buildFeatures {
