@@ -172,15 +172,15 @@ button:active{transform:scale(.97)}
     <div class="meter"><div id="probMeter"></div></div>  
     <div id="probText" class="pick-info" style="margin-top:9px">B 50.0% / P 49.0%</div>  
   </div>  
-  <div class="two" style="margin-top:9px">  
-    <div class="info">  
-      <small>예측 기록</small>  
-      <strong id="hitRate">0 / 0</strong>  
-    </div>  
-    <div class="info">  
-      <small>연속 미적중</small>  
-      <strong id="missRun">0회</strong>  
-    </div>  
+  <div class="two" style="margin-top:9px">
+    <div class="info"><small>적중</small><strong id="hitCount" style="color:var(--green)">0회</strong></div>
+    <div class="info"><small>미적중</small><strong id="missCount" style="color:var(--red)">0회</strong></div>
+    <div class="info"><small>적중률</small><strong id="hitRate">0 / 0 (0.0%)</strong></div>
+    <div class="info"><small>연속 미적중</small><strong id="missRun">0회</strong></div>
+  </div>
+  <div class="info" style="margin-top:9px">
+    <small>최근 판정 기록 · ○ 적중 / × 미적중 / T 타이(판정 제외)</small>
+    <strong id="hitHistory" style="letter-spacing:2px;word-break:break-all">기록 없음</strong>
   </div>  
 </section>  <section class="panel">  
   <div class="panel-title">그림 변화 감지</div>  
@@ -669,19 +669,22 @@ function gradePending(result){
   pendingPick=null;  
 }  
   
-function renderStats(){  
-  const total=records.length;  
-  const hits=records.filter(x=>x.hit).length;  
-  $("hitRate").textContent=  
-    hits+" / "+total+  
-    (total?" ("+(hits/total*100).toFixed(1)+"%)":"");  
-  
-  let misses=0;  
-  for(let i=records.length-1;i>=0;i--){  
-    if(records[i].hit)break;  
-    misses++;  
-  }  
-  $("missRun").textContent=misses+"회";  
+function renderStats(){
+  const total=records.length;
+  const hits=records.filter(x=>x.hit).length;
+  const misses=total-hits;
+  $("hitCount").textContent=hits+"회";
+  $("missCount").textContent=misses+"회";
+  $("hitRate").textContent=hits+" / "+total+" ("+(total?(hits/total*100).toFixed(1):"0.0")+"%)";
+
+  let missRun=0;
+  for(let i=records.length-1;i>=0;i--){
+    if(records[i].hit)break;
+    missRun++;
+  }
+  $("missRun").textContent=missRun+"회";
+  const history=records.slice(-20).map(x=>x.hit?"○":"×").join(" ");
+  $("hitHistory").textContent=history||"기록 없음";
 }  
   
 /* ===============================  
