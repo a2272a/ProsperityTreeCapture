@@ -34,10 +34,10 @@ class CaptureService : Service() {
         // Fold 분할 화면 실제 결과판 위치(전체 화면 기준 비율)
         // Fold 분할 화면: 오른쪽 게임 창의 결과 비드로드 전체 영역
         // 사진 기준 세로 6행이 모두 들어오도록 상단/하단 범위를 확장
-        private const val BOARD_LEFT = 0.500f
-        private const val BOARD_WIDTH = 0.499f
-        private const val BOARD_TOP = 0.435f
-        private const val BOARD_HEIGHT = 0.190f
+        private const val BOARD_LEFT = 0.435f
+        private const val BOARD_WIDTH = 0.465f
+        private const val BOARD_TOP = 0.375f
+        private const val BOARD_HEIGHT = 0.215f
         private const val BOARD_ROWS = 6
         private const val BOARD_COLUMNS = 14
     }
