@@ -342,17 +342,17 @@ class CaptureService : Service() {
                     'T' -> green++
                 }
 
-                for (dy in -1..1) {
-                    for (dx in -1..1) {
-                        if (dx == 0 && dy == 0) continue
-                        val nx = px + dx
-                        val ny = py + dy
-                        if (nx !in 0 until w || ny !in 0 until h) continue
-                        val ni = ny * w + nx
-                        if (mask[ni] && !visited[ni]) {
-                            visited[ni] = true
-                            if (tail < queue.size) queue[tail++] = ni
-                        }
+                // 대각선으로 이웃한 서로 다른 원이 합쳐지지 않도록 4방향만 연결
+                val neighbors = intArrayOf(
+                    if (py > 0) p - w else -1,
+                    if (px > 0) p - 1 else -1,
+                    if (px < w - 1) p + 1 else -1,
+                    if (py < h - 1) p + w else -1
+                )
+                for (ni in neighbors) {
+                    if (ni >= 0 && mask[ni] && !visited[ni]) {
+                        visited[ni] = true
+                        if (tail < queue.size) queue[tail++] = ni
                     }
                 }
             }
