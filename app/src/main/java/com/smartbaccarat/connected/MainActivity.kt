@@ -1,82 +1,94 @@
+
 package com.smartbaccarat.connected
 
 import android.app.Activity
-import android.content.Intent
+import android.content.*
 import android.media.projection.MediaProjectionManager
 import android.os.Bundle
+import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.widget.Button
-import android.widget.LinearLayout
-import android.widget.TextView
 
 class MainActivity : Activity() {
 
     private lateinit var webView: WebView
-    private lateinit var status: TextView
+    private val requestCapture = 1001
 
-    companion object {
-        private const val REQUEST_CAPTURE = 1001
+    private val captureReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            when (intent?.action) {
+                CaptureService.BROADCAST_STATUS -> {
+                    val message = intent.getStringExtra("status") ?: ""
+                    sendToPage("onCaptureStatus", message)
+                }
+
+                CaptureService.BROADCAST_SEQUENCE -> {
+                    val sequence = intent.getStringExtra("sequence") ?: ""
+                    sendToPage("onScreenSequence", sequence)
+                }
+            }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val layout = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setBackgroundColor(0xFF090E19.toInt())
+        webView = WebView(this).apply {
+            settings.javaScriptEnabled = true
+            settings.domStorageEnabled = true
+            addJavascriptInterface(CaptureBridge(), "AndroidCapture")
+            webViewClient = WebViewClient()
         }
 
-        status = TextView(this).apply {
-            text = "BACCARAT LIVE AI V4 · 캡처 대기"
-            textSize = 16f
-            setTextColor(0xFFFFFFFF.toInt())
-            setPadding(12, 12, 12, 12)
-        }
-        layout.addView(status)
+        setContentView(webView)
+        webView.loadUrl("file:///android_asset/index.html")
 
-        val startButton = Button(this).apply {
-            text = "화면 자동 인식 시작"
-            setOnClickListener {
+        val filter = IntentFilter().apply {
+            addAction(CaptureService.BROADCAST_STATUS)
+            addAction(CaptureService.BROADCAST_SEQUENCE)
+        }
+
+        if (android.os.Build.VERSION.SDK_INT >= 33) {
+            registerReceiver(captureReceiver, filter, RECEIVER_NOT_EXPORTED)
+        } else {
+            @Suppress("DEPRECATION")
+            registerReceiver(captureReceiver, filter)
+        }
+    }
+
+    private inner class CaptureBridge {
+        @JavascriptInterface
+        fun start() {
+            runOnUiThread {
                 val manager = getSystemService(
                     MEDIA_PROJECTION_SERVICE
                 ) as MediaProjectionManager
 
                 startActivityForResult(
                     manager.createScreenCaptureIntent(),
-                    REQUEST_CAPTURE
+                    requestCapture
                 )
             }
         }
-        layout.addView(startButton)
 
-        val stopButton = Button(this).apply {
-            text = "화면 인식 중지"
-            setOnClickListener {
-                stopService(
-                    Intent(this@MainActivity, CaptureService::class.java)
-                        .setAction(CaptureService.ACTION_STOP)
-                )
-                status.text = "캡처 중지"
-            }
-        }
-        layout.addView(stopButton)
-
-        webView = WebView(this)
-        webView.settings.javaScriptEnabled = true
-        webView.webViewClient = WebViewClient()
-
-        layout.addView(
-            webView,
-            LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                0,
-                1f
+        @JavascriptInterface
+        fun stop() {
+            stopService(
+                Intent(this@MainActivity, CaptureService::class.java)
+                    .setAction(CaptureService.ACTION_STOP)
             )
-        )
+        }
+    }
 
-        setContentView(layout)
-        webView.loadUrl("file:///android_asset/index.html")
+    private fun sendToPage(function: String, value: String) {
+        val safe = org.json.JSONObject.quote(value)
+        runOnUiThread {
+            webView.evaluateJavascript(
+                "if(window.ScreenBridge && window.ScreenBridge.$function)" +
+                    "{window.ScreenBridge.$function($safe);}",
+                null
+            )
+        }
     }
 
     @Deprecated("Deprecated in Android API")
@@ -87,7 +99,7 @@ class MainActivity : Activity() {
     ) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if (requestCode == REQUEST_CAPTURE &&
+        if (requestCode == requestCapture &&
             resultCode == RESULT_OK &&
             data != null
         ) {
@@ -100,8 +112,20 @@ class MainActivity : Activity() {
                 putExtra(CaptureService.EXTRA_DATA, data)
             }
 
-            startForegroundService(serviceIntent)
-            status.text = "화면 캡처 승인 완료"
+            if (android.os.Build.VERSION.SDK_INT >= 26) {
+                startForegroundService(serviceIntent)
+            } else {
+                startService(serviceIntent)
+            }
         }
+    }
+
+    override fun onDestroy() {
+        try {
+            unregisterReceiver(captureReceiver)
+        } catch (_: Exception) {
+        }
+        webView.destroy()
+        super.onDestroy()
     }
 }
