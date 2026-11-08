@@ -951,7 +951,7 @@ function resetAll(){
 const API_KEY="BACCARAT_REMOTE_API";
 function getApiBase(){
   const el=$("apiBase");
-  return (el ? el.value.trim() : localStorage.getItem(API_KEY)||"").replace(/\\/$/,"");
+  return (el ? el.value.trim() : localStorage.getItem(API_KEY)||"").replace(/\/$/,"");
 }
 async function connectRemote(){
   const base=getApiBase();
