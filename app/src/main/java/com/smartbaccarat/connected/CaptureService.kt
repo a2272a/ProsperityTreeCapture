@@ -34,13 +34,13 @@ class CaptureService : Service() {
         // Fold 분할 화면 실제 결과판 위치(전체 화면 기준 비율)
         // Fold 분할 화면: 오른쪽 게임 창의 결과 비드로드 전체 영역
         // 사진 기준 세로 6행이 모두 들어오도록 상단/하단 범위를 확장
-        // Split-screen screenshot: game panel occupies the right half.
-        // Search the complete bead-road area with margin; coordinates are
-        // relative to the full captured display (VirtualDisplay is half-size).
-        private const val BOARD_LEFT = 0.490f
-        private const val BOARD_WIDTH = 0.510f
-        private const val BOARD_TOP = 0.315f
-        private const val BOARD_HEIGHT = 0.235f
+        // Split-screen game panel: include the leftmost bead column and all six rows.
+        // These are deliberately broad fallback bounds; cell centers are detected
+        // from image content rather than assumed fixed grid coordinates.
+        private const val BOARD_LEFT = 0.420f
+        private const val BOARD_WIDTH = 0.580f
+        private const val BOARD_TOP = 0.355f
+        private const val BOARD_HEIGHT = 0.255f
         private const val BOARD_ROWS = 6
         private const val BOARD_COLUMNS = 14
     }
@@ -383,7 +383,7 @@ class CaptureService : Service() {
             // 원형 결과 마커 크기만 통과시켜 작은 점/문자/장식은 제외
             // VirtualDisplay가 원본의 절반 해상도이므로 비드 지름도 작다.
             // 기존 12px 하한은 실제 원형 기록을 통째로 누락시킬 수 있었다.
-            if (count < 18 || bw !in 6..17 || bh !in 6..17 ||
+            if (count < 14 || bw !in 5..22 || bh !in 5..22 ||
                 aspect !in 0.58f..1.62f) continue
 
             val strongest = maxOf(blue, red, green)
@@ -409,7 +409,7 @@ class CaptureService : Service() {
 
         // 원 중심의 실제 간격으로 행/열을 묶는다. 기기 배율 변화에 대응한다.
         val typicalDiameter = cells.map { it.diameter }.sorted()[cells.size / 2]
-        val tolerance = (typicalDiameter * 0.58f).coerceIn(3.5f, 7.5f)
+        val tolerance = (typicalDiameter * 0.55f).coerceIn(3.5f, 8.5f)
 
         fun cluster(values: List<Float>): List<Float> {
             val sorted = values.sorted()
