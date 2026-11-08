@@ -323,7 +323,7 @@ function renderBoard(){
   const el=$("board");
   el.innerHTML="";
   const cells=boardArray(results);
-  const gradeByIndex=new Map(records.map(x=>[x.sourceVersion,x]));
+  const gradeByIndex=new Map(records.map(x=>[x.resultIndex,x]));
   const parent=el.parentNode;
   const oldRates=parent.querySelector(".column-rates");
   if(oldRates) oldRates.remove();
@@ -358,11 +358,6 @@ function renderBoard(){
         mark.className="grade "+(grade.hit?"hit":"miss");
         mark.textContent=grade.hit?"○":"×";
         mark.title=grade.pick+" 예상 / "+grade.result+" 실제";
-        div.appendChild(mark);
-      }else if(value==="T" && idx>0){
-        const mark=document.createElement("span");
-        mark.className="grade tie";
-        mark.textContent="T";
         div.appendChild(mark);
       }
       el.appendChild(div);
@@ -694,18 +689,18 @@ function renderScenarios(items){
 ================================ */  
 let records=[];  
   
-function gradePending(result){  
-  if(!pendingPick)return;  
-  if(result==="T")return;  
-  
-  records.push({  
-    pick:pendingPick.pick,  
-    result,  
-    hit:pendingPick.pick===result,  
-    sourceVersion:pendingPick.version  
-  });  
-  
-  pendingPick=null;  
+function gradePending(result,resultIndex){
+  if(!pendingPick)return;
+  const tie=result==="T";
+  records.push({
+    pick:pendingPick.pick,
+    result,
+    hit:!tie && pendingPick.pick===result,
+    tie,
+    resultIndex,
+    sourceVersion:pendingPick.version
+  });
+  pendingPick=null;
 }  
   
 function renderStats(){
@@ -737,11 +732,9 @@ function addResult(value){
   
   const previous=results.slice();  
   
-  // 입력 직전 픽을 결과와 연결  
-  if(value!=="T"){  
-    gradePending(value);  
-  }  
-  
+  // 직전 예상픽을 이번 결과 칸에 기록한다. T는 무승부로 별도 표시한다.
+  gradePending(value,results.length);
+
   results.push(value);  
   boardVersion++;  
   
@@ -854,19 +847,23 @@ function rebuild(){
   analysisVersion=0;  
   
   // 저장된 결과를 순서대로 재생해 O/X 기록 복원  
-  const original=results.slice();  
-  results=[];  
-  
+  const original=results.slice();
+  results=[];
+  currentAnalysis=calculate();
+  currentPick=currentAnalysis.pick;
+  pendingPick={pick:currentPick,version:0};
+
   for(const value of original){  
-    if(value!=="T"){  
-      if(pendingPick){  
-        records.push({  
-          pick:pendingPick.pick,  
-          result:value,  
-          hit:pendingPick.pick===value,  
-          sourceVersion:pendingPick.version  
-        });  
-      }  
+    if(pendingPick){
+      records.push({
+        pick:pendingPick.pick,
+        result:value,
+        hit:value!=="T" && pendingPick.pick===value,
+        tie:value==="T",
+        resultIndex:results.length,
+        sourceVersion:pendingPick.version
+      });
+      pendingPick=null;
     }  
   
     results.push(value);  
@@ -894,7 +891,10 @@ function rebuild(){
     $("changeStrength").textContent="-";  
     $("changeDetail").textContent=  
       "저장된 결과를 순서대로 재생하고 예측 기록을 복원했습니다.";  
-  }else{  
+  }else{
+    currentAnalysis=calculate();
+    currentPick=currentAnalysis.pick;
+    pendingPick={pick:currentPick,version:0};
     $("sync").textContent="대기";  
     $("sync").className="good";  
     $("pick").textContent="-";  
