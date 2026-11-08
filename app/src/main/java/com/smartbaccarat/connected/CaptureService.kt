@@ -376,7 +376,7 @@ class CaptureService : Service() {
             val aspect = bw.toFloat() / bh.coerceAtLeast(1)
 
             // 원형 결과 마커 크기만 통과시켜 작은 점/문자/장식은 제외
-            if (count < 85 || bw !in 15..52 || bh !in 15..52 ||
+            if (count < 50 || bw !in 12..26 || bh !in 12..26 ||
                 aspect !in 0.62f..1.48f) continue
 
             val strongest = maxOf(blue, red, green)
@@ -389,8 +389,8 @@ class CaptureService : Service() {
 
             cells.add(
                 DetectedCell(
-                    left + sumX.toFloat() / count,
-                    top + sumY.toFloat() / count,
+                    left + (minX + maxX) / 2f,
+                    top + (minY + maxY) / 2f,
                     value,
                     count,
                     diameter
@@ -402,7 +402,7 @@ class CaptureService : Service() {
 
         // 원 중심의 실제 간격으로 행/열을 묶는다. 기기 배율 변화에 대응한다.
         val typicalDiameter = cells.map { it.diameter }.sorted()[cells.size / 2]
-        val tolerance = (typicalDiameter * 0.58f).coerceIn(9f, 23f)
+        val tolerance = (typicalDiameter * 0.58f).coerceIn(7f, 14f)
 
         fun cluster(values: List<Float>): List<Float> {
             val sorted = values.sorted()
@@ -443,9 +443,9 @@ class CaptureService : Service() {
         val b = Color.blue(pixel)
 
         return when {
-            b > 105 && b > r * 1.30f && b > g * 1.08f -> 'P'
-            r > 110 && r > b * 1.25f && r > g * 1.10f -> 'B'
-            g > 80 && g > r * 1.12f && g > b * 1.05f -> 'T'
+            b > 45 && b > r * 1.22f && b > g * 1.04f -> 'P'
+            r > 50 && r > b * 1.18f && r > g * 1.08f -> 'B'
+            g > 40 && g > r * 1.08f && g > b * 1.02f -> 'T'
             else -> '.'
         }
     }
