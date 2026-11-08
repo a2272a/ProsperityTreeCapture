@@ -29,12 +29,12 @@ class CaptureService : Service() {
         const val BROADCAST_SEQUENCE = "BACCARAT_CAPTURE_SEQUENCE"
         const val CHANNEL_ID = "baccarat_capture"
 
-        // 폴드 분할 화면에서 오른쪽 게임창의 결과판 영역
+        // 실제 화면의 원형 비드로드(결과 원판) 영역
         // Fold 분할 화면 실제 결과판 위치(전체 화면 기준 비율)
-        private const val BOARD_LEFT = 0.508f
-        private const val BOARD_WIDTH = 0.482f
-        private const val BOARD_TOP = 0.336f
-        private const val BOARD_HEIGHT = 0.153f
+        private const val BOARD_LEFT = 0.505f
+        private const val BOARD_WIDTH = 0.490f
+        private const val BOARD_TOP = 0.444f
+        private const val BOARD_HEIGHT = 0.216f
         private const val BOARD_ROWS = 6
         private const val BOARD_COLUMNS = 14
     }
