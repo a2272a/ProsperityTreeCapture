@@ -14,6 +14,7 @@ import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.os.SystemClock
 import android.util.DisplayMetrics
 import kotlin.math.max
 
@@ -48,6 +49,7 @@ class CaptureService : Service() {
     private var lastSequence = ""
     private var candidateSequence = ""
     private var stableFrames = 0
+    private var lastProcessedAt = 0L
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -192,6 +194,13 @@ class CaptureService : Service() {
 
                     try {
 
+                        // 최신 프레임만 600ms 간격으로 처리해 CPU 점유율 제한
+                        val now = SystemClock.elapsedRealtime()
+                        if (now - lastProcessedAt < 600L) {
+                            return@setOnImageAvailableListener
+                        }
+                        lastProcessedAt = now
+
                         val plane = image.planes[0]
                         val buffer = plane.buffer
 
@@ -212,9 +221,17 @@ class CaptureService : Service() {
                         buffer.rewind()
                         bitmap.copyPixelsFromBuffer(buffer)
 
-                        val sequence = readBoard(bitmap)
-
+                        // 분석 전 해상도를 절반으로 낮춰 픽셀 처리량을 약 1/4로 감소
+                        val scaled = Bitmap.createScaledBitmap(
+                            bitmap,
+                            (bitmap.width / 2).coerceAtLeast(1),
+                            (bitmap.height / 2).coerceAtLeast(1),
+                            false
+                        )
                         bitmap.recycle()
+
+                        val sequence = readBoard(scaled)
+                        scaled.recycle()
 
                         // 두 번 연속 같은 결과일 때만 전송
                         if (sequence.length >= 4) {
