@@ -51,6 +51,7 @@ button:active{transform:scale(.97)}
 </head>
 <body>
 <div class="app">
+
 <header>
 <h1>♠ BACCARAT LIVE AI V4</h1>
 <div class="sub">REALTIME BOARD CHANGE & SCENARIO ENGINE</div>
@@ -81,7 +82,11 @@ button:active{transform:scale(.97)}
 <section class="panel">
 <div class="panel-title">80판 보드 · 6행 × 14열</div>
 <div class="board-wrap"><div class="board" id="board"></div></div>
-<div class="legend"><span style="color:var(--blue)">● B 뱅커</span><span style="color:var(--red)">● P 플레이어</span><span style="color:var(--green)">● T 타이</span></div>
+<div class="legend">
+<span style="color:var(--blue)">● B 뱅커</span>
+<span style="color:var(--red)">● P 플레이어</span>
+<span style="color:var(--green)">● T 타이</span>
+</div>
 </section>
 
 <section class="panel">
@@ -144,7 +149,9 @@ button:active{transform:scale(.97)}
 <div class="log" id="logs">분석 기록이 없습니다.</div>
 </section>
 
-<div class="note" style="text-align:center;padding:10px">BACCARAT LIVE AI V4 · 예측은 실제 결과를 보장하지 않습니다.</div>
+<div class="note" style="text-align:center;padding:10px">
+BACCARAT LIVE AI V4 · 예측은 실제 결과를 보장하지 않습니다.
+</div>
 </div>
 
 <script>
@@ -152,256 +159,684 @@ button:active{transform:scale(.97)}
 
 const MAX_HANDS=80,ROWS=6,COLS=14;
 const STORAGE_KEY="BACCARAT_LIVE_V4";
+
 let results=[],boardVersion=0,analysisVersion=0;
 let currentAnalysis=null,currentPick=null,pendingPick=null;
 let historyLog=[],lastChange=null,records=[];
+
 const $=id=>document.getElementById(id);
 
 function saveData(){
- try{localStorage.setItem(STORAGE_KEY,JSON.stringify({results}));}catch(e){}
+ try{
+  localStorage.setItem(STORAGE_KEY,JSON.stringify({results}));
+ }catch(e){}
 }
-function decisive(){return results.filter(x=>x==="B"||x==="P");}
+
+function decisive(){
+ return results.filter(x=>x==="B"||x==="P");
+}
+
 function boardArray(data){
  const cells=Array(ROWS*COLS).fill(null);
  data.forEach((v,i)=>{if(i<MAX_HANDS)cells[i]=v;});
  return cells;
 }
-function positionOf(i){return {row:i%ROWS+1,col:Math.floor(i/ROWS)+1};}
+
+function positionOf(i){
+ return {row:i%ROWS+1,col:Math.floor(i/ROWS)+1};
+}
 
 function renderBoard(){
- const el=$("board");el.innerHTML="";
+ const el=$("board");
+ el.innerHTML="";
  const cells=boardArray(results);
- for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
-  const i=c*ROWS+r,v=cells[i],d=document.createElement("div");
-  d.className="cell "+(v||"empty")+(i===results.length-1?" latest":"");
-  d.textContent=v||"·";el.appendChild(d);
+
+ for(let r=0;r<ROWS;r++){
+  for(let c=0;c<COLS;c++){
+   const i=c*ROWS+r,v=cells[i],d=document.createElement("div");
+   d.className="cell "+(v||"empty")+(i===results.length-1?" latest":"");
+   d.textContent=v||"·";
+   el.appendChild(d);
+  }
  }
 }
+
 function flipRatio(a){
  if(a.length<2)return 0;
- let n=0;for(let i=1;i<a.length;i++)if(a[i]!==a[i-1])n++;
+ let n=0;
+ for(let i=1;i<a.length;i++){
+  if(a[i]!==a[i-1])n++;
+ }
  return n/(a.length-1);
 }
+
 function stateFeatures(data){
- if(!data.length)return {streak:0,alternation:0,state:"데이터 부족",change:false};
+ if(!data.length){
+  return {streak:0,alternation:0,state:"데이터 부족",change:false};
+ }
+
  let streak=1,last=data[data.length-1];
- for(let i=data.length-2;i>=0&&data[i]===last;i--)streak++;
- const recent=data.slice(-12),alternation=flipRatio(recent);
- const all=data.slice(-16),split=Math.floor(all.length/2);
- const diff=Math.abs(flipRatio(all.slice(0,split))-flipRatio(all.slice(split)));
+
+ for(let i=data.length-2;i>=0&&data[i]===last;i--){
+  streak++;
+ }
+
+ const recent=data.slice(-12);
+ const alternation=flipRatio(recent);
+ const all=data.slice(-16);
+ const split=Math.floor(all.length/2);
+
+ const diff=Math.abs(
+  flipRatio(all.slice(0,split))-
+  flipRatio(all.slice(split))
+ );
+
  return {
-  streak,alternation,
-  state:alternation>=.7?"교차 성향":alternation<=.3?"연속 성향":"혼합 상태",
+  streak,
+  alternation,
+  state:alternation>=.7?"교차 성향":
+        alternation<=.3?"연속 성향":"혼합 상태",
   change:all.length>=8&&diff>=.4
  };
 }
+
 const BASE_B=.5068;
-function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+
+function clamp(v,a,b){
+ return Math.max(a,Math.min(b,v));
+}
+
 function probabilityModel(data){
- if(!data.length)return {b:BASE_B,p:1-BASE_B};
- const recent=data.slice(-12),bCount=recent.filter(x=>x==="B").length;
- const alpha=8,raw=(bCount+alpha*BASE_B)/(recent.length+alpha);
+ if(!data.length){
+  return {b:BASE_B,p:1-BASE_B};
+ }
+
+ const recent=data.slice(-12);
+ const bCount=recent.filter(x=>x==="B").length;
+ const alpha=8;
+
+ const raw=(bCount+alpha*BASE_B)/(recent.length+alpha);
  const state=stateFeatures(data);
  const damp=1/(1+Math.max(0,state.streak-2)*.45);
+
  let b=BASE_B+(raw-BASE_B)*damp*(state.change?.65:1);
+
  b=clamp(b,BASE_B-.025,BASE_B+.025);
+
  return {b,p:1-b};
 }
+
 function spatialFeatures(data){
- const cells=boardArray(data);let h=0,v=0,d=0,valid=0;
+ const cells=boardArray(data);
+ let h=0,v=0,d=0,valid=0;
+
  function same(a,b){
   if(!a||!b||a==="T"||b==="T")return false;
-  valid++;return a===b;
+  valid++;
+  return a===b;
  }
- for(let c=0;c<COLS;c++)for(let r=0;r<ROWS;r++){
-  let i=c*ROWS+r;
-  if(r+1<ROWS&&same(cells[i],cells[i+1]))v++;
-  if(c+1<COLS){
-   if(same(cells[i],cells[i+ROWS]))h++;
-   if(r+1<ROWS&&same(cells[i],cells[i+ROWS+1]))d++;
-  }
- }
- return {description:valid?`가로 ${h} / 세로 ${v} / 대각 ${d}`:"데이터 부족"};
-}
-function beamSearch(data,depth=3,width=12){
- let beam=[{seq:"",prob:1,data:data.slice()}];
- for(let step=0;step<depth;step++){
-  let next=[];
-  for(const node of beam){
-   const m=probabilityModel(node.data);
-   for(const side of ["B","P"]){
-    const chance=side==="B"?m.b:m.p;
-    next.push({seq:node.seq+side,prob:node.prob*chance,data:node.data.concat(side)});
+
+ for(let c=0;c<COLS;c++){
+  for(let r=0;r<ROWS;r++){
+   let i=c*ROWS+r;
+
+   if(r+1<ROWS&&same(cells[i],cells[i+1])){
+    v++;
+   }
+
+   if(c+1<COLS){
+    if(same(cells[i],cells[i+ROWS]))h++;
+    if(r+1<ROWS&&same(cells[i],cells[i+ROWS+1]))d++;
    }
   }
-  next.sort((a,b)=>b.prob-a.prob);beam=next.slice(0,width);
  }
+
+ return {
+  description:valid?
+   `가로 ${h} / 세로 ${v} / 대각 ${d}`:
+   "데이터 부족"
+ };
+}
+
+function beamSearch(data,depth=3,width=12){
+ let beam=[{seq:"",prob:1,data:data.slice()}];
+
+ for(let step=0;step<depth;step++){
+  let next=[];
+
+  for(const node of beam){
+   const m=probabilityModel(node.data);
+
+   for(const side of ["B","P"]){
+    const chance=side==="B"?m.b:m.p;
+
+    next.push({
+     seq:node.seq+side,
+     prob:node.prob*chance,
+     data:node.data.concat(side)
+    });
+   }
+  }
+
+  next.sort((a,b)=>b.prob-a.prob);
+  beam=next.slice(0,width);
+ }
+
  return beam.slice(0,5);
 }
+
 function calculate(){
- const data=decisive(),probability=probabilityModel(data),state=stateFeatures(data);
- return {probability,state,spatial:spatialFeatures(results),scenarios:beamSearch(data),
- pick:probability.b>=probability.p?"B":"P",confidence:Math.max(probability.b,probability.p)};
+ const data=decisive();
+ const probability=probabilityModel(data);
+ const state=stateFeatures(data);
+
+ return {
+  probability,
+  state,
+  spatial:spatialFeatures(results),
+  scenarios:beamSearch(data),
+  pick:probability.b>=probability.p?"B":"P",
+  confidence:Math.max(probability.b,probability.p)
+ };
 }
+
 function renderScenarios(items){
- const el=$("scenarios");el.innerHTML="";
+ const el=$("scenarios");
+ el.innerHTML="";
+
  items.forEach((item,i)=>{
-  const row=document.createElement("div");row.className="scenario";
-  const top=document.createElement("div");top.className="sc-row";
-  const label=document.createElement("strong");label.textContent="시나리오 "+(i+1);
-  const prob=document.createElement("span");prob.textContent=(item.prob*100).toFixed(2)+"%";prob.style.color="var(--gold)";
+  const row=document.createElement("div");
+  row.className="scenario";
+
+  const top=document.createElement("div");
+  top.className="sc-row";
+
+  const label=document.createElement("strong");
+  label.textContent="시나리오 "+(i+1);
+
+  const prob=document.createElement("span");
+  prob.textContent=(item.prob*100).toFixed(2)+"%";
+  prob.style.color="var(--gold)";
+
   top.append(label,prob);
-  const seq=document.createElement("div");seq.className="sequence";
-  for(const ch of item.seq){const ball=document.createElement("span");ball.className="ball "+ch;ball.textContent=ch;seq.appendChild(ball);}
-  row.append(top,seq);el.appendChild(row);
+
+  const seq=document.createElement("div");
+  seq.className="sequence";
+
+  for(const ch of item.seq){
+   const ball=document.createElement("span");
+   ball.className="ball "+ch;
+   ball.textContent=ch;
+   seq.appendChild(ball);
+  }
+
+  row.append(top,seq);
+  el.appendChild(row);
  });
 }
+
 function renderStats(){
- const hits=records.filter(x=>x.hit).length,total=records.length;
- $("hitRate").textContent=hits+" / "+total+(total?" ("+(hits/total*100).toFixed(1)+"%)":"");
+ const hits=records.filter(x=>x.hit).length;
+ const total=records.length;
+
+ $("hitRate").textContent=
+  hits+" / "+total+
+  (total?" ("+(hits/total*100).toFixed(1)+"%)":"");
+
  let misses=0;
- for(let i=records.length-1;i>=0;i--){if(records[i].hit)break;misses++;}
+
+ for(let i=records.length-1;i>=0;i--){
+  if(records[i].hit)break;
+  misses++;
+ }
+
  $("missRun").textContent=misses+"회";
 }
+
 function renderAnalysis(){
  if(!currentAnalysis)return;
+
  const a=currentAnalysis;
- $("pick").textContent=a.pick;$("pick").className="pick "+a.pick;
- $("pickInfo").textContent="모델상 우세 "+(a.confidence*100).toFixed(1)+"% · 보장 확률 아님";
- $("probText").textContent="B "+(a.probability.b*100).toFixed(1)+"% / P "+(a.probability.p*100).toFixed(1)+"%";
- $("probMeter").style.width=(a.probability.b*100)+"%";
+
+ $("pick").textContent=a.pick;
+ $("pick").className="pick "+a.pick;
+
+ $("pickInfo").textContent=
+  "모델상 우세 "+(a.confidence*100).toFixed(1)+
+  "% · 보장 확률 아님";
+
+ $("probText").textContent=
+  "B "+(a.probability.b*100).toFixed(1)+
+  "% / P "+(a.probability.p*100).toFixed(1)+"%";
+
+ $("probMeter").style.width=
+  (a.probability.b*100)+"%";
+
  $("stateName").textContent=a.state.state;
  $("streak").textContent=a.state.streak+"회";
- $("alternate").textContent=(a.state.alternation*100).toFixed(0)+"%";
+
+ $("alternate").textContent=
+  (a.state.alternation*100).toFixed(0)+"%";
+
  $("spatial").textContent=a.spatial.description;
- renderScenarios(a.scenarios);renderStats();
+
+ renderScenarios(a.scenarios);
+ renderStats();
 }
+
 function detectBoardChange(previous,current){
- const a=boardArray(previous),b=boardArray(current),changed=[];
- for(let i=0;i<a.length;i++)if(a[i]!==b[i])changed.push({before:a[i],after:b[i],...positionOf(i)});
- const data=current.filter(x=>x!=="T"),recent=data.slice(-8),ratio=flipRatio(recent);
+ const a=boardArray(previous);
+ const b=boardArray(current);
+ const changed=[];
+
+ for(let i=0;i<a.length;i++){
+  if(a[i]!==b[i]){
+   changed.push({
+    before:a[i],
+    after:b[i],
+    ...positionOf(i)
+   });
+  }
+ }
+
+ const data=current.filter(x=>x!=="T");
+ const recent=data.slice(-8);
+ const ratio=flipRatio(recent);
+
  let type="새 결과 입력";
- if(data.length>=3)type=ratio>=.72?"교차 성향":ratio<=.28?"연속 성향":"혼합 성향";
+
+ if(data.length>=3){
+  type=ratio>=.72?"교차 성향":
+       ratio<=.28?"연속 성향":"혼합 성향";
+ }
+
  if(!changed.length)type="변화 없음";
- return {changed,type,last:changed.length?changed[changed.length-1]:null,strength:changed.length};
+
+ return {
+  changed,
+  type,
+  last:changed.length?changed[changed.length-1]:null,
+  strength:changed.length
+ };
 }
+
 function renderChange(){
  if(!lastChange)return;
- $("changeStatus").textContent=lastChange.changed.length?"변화 감지":"변화 없음";
+
+ $("changeStatus").textContent=
+  lastChange.changed.length?"변화 감지":"변화 없음";
+
  $("changeType").textContent=lastChange.type;
+
  const x=lastChange.last;
- $("changePos").textContent=x?x.row+"행 "+x.col+"열":"-";
- $("changeStrength").textContent=lastChange.strength+"칸";
- $("changeDetail").textContent=x?"변경 위치 "+x.row+"행 "+x.col+"열 · "+(x.before||"빈칸")+" → "+x.after:"보드 변경 사항 없음";
+
+ $("changePos").textContent=
+  x?x.row+"행 "+x.col+"열":"-";
+
+ $("changeStrength").textContent=
+  lastChange.strength+"칸";
+
+ $("changeDetail").textContent=
+  x?
+  "변경 위치 "+x.row+"행 "+x.col+"열 · "+
+  (x.before||"빈칸")+" → "+x.after:
+  "보드 변경 사항 없음";
 }
+
 function renderVersions(){
- $("boardVer").textContent=String(boardVersion).padStart(3,"0");
- $("analysisVer").textContent=String(analysisVersion).padStart(3,"0");
+ $("boardVer").textContent=
+  String(boardVersion).padStart(3,"0");
+
+ $("analysisVer").textContent=
+  String(analysisVersion).padStart(3,"0");
 }
+
 function addLog(value){
- historyLog.unshift(new Date().toLocaleTimeString("ko-KR")+" · "+value+" 입력 · 보드 "+boardVersion+" · 픽 "+currentPick);
+ historyLog.unshift(
+  new Date().toLocaleTimeString("ko-KR")+
+  " · "+value+" 입력 · 보드 "+
+  boardVersion+" · 픽 "+currentPick
+ );
+
  historyLog=historyLog.slice(0,30);
  $("logs").innerHTML="";
- historyLog.forEach(line=>{const d=document.createElement("div");d.textContent=line;$("logs").appendChild(d);});
+
+ historyLog.forEach(line=>{
+  const d=document.createElement("div");
+  d.textContent=line;
+  $("logs").appendChild(d);
+ });
 }
+
 function addResult(value){
  if(!["B","P","T"].includes(value)||results.length>=MAX_HANDS)return;
+
  const previous=results.slice();
+
  if(value!=="T"&&pendingPick){
-  records.push({pick:pendingPick.pick,result:value,hit:pendingPick.pick===value});
+  records.push({
+   pick:pendingPick.pick,
+   result:value,
+   hit:pendingPick.pick===value
+  });
+
   pendingPick=null;
  }
- results.push(value);boardVersion++;
+
+ results.push(value);
+ boardVersion++;
+
  lastChange=detectBoardChange(previous,results);
+
  renderBoard();
- currentAnalysis=calculate();analysisVersion=boardVersion;currentPick=currentAnalysis.pick;
- pendingPick={pick:currentPick,version:analysisVersion};
- renderAnalysis();renderChange();renderVersions();addLog(value);saveData();
- $("sync").textContent="일치";$("sync").className="good";
+
+ currentAnalysis=calculate();
+ analysisVersion=boardVersion;
+ currentPick=currentAnalysis.pick;
+
+ pendingPick={
+  pick:currentPick,
+  version:analysisVersion
+ };
+
+ renderAnalysis();
+ renderChange();
+ renderVersions();
+ addLog(value);
+ saveData();
+
+ $("sync").textContent="일치";
+ $("sync").className="good";
 }
+
+/* 전체 보드 재구성 */
 function rebuild(){
- records=[];pendingPick=null;currentPick=null;currentAnalysis=null;historyLog=[];
- const original=results.slice();results=[];boardVersion=0;analysisVersion=0;
+ records=[];
+ pendingPick=null;
+ currentPick=null;
+ currentAnalysis=null;
+ historyLog=[];
+
+ const original=results.slice();
+
+ results=[];
+ boardVersion=0;
+ analysisVersion=0;
+
  for(const value of original){
-  if(value!=="T"&&pendingPick)records.push({pick:pendingPick.pick,result:value,hit:pendingPick.pick===value});
-  results.push(value);boardVersion++;
-  currentAnalysis=calculate();currentPick=currentAnalysis.pick;analysisVersion=boardVersion;
-  pendingPick={pick:currentPick,version:analysisVersion};
+
+  if(value!=="T"&&pendingPick){
+   records.push({
+    pick:pendingPick.pick,
+    result:value,
+    hit:pendingPick.pick===value
+   });
+  }
+
+  results.push(value);
+  boardVersion++;
+
+  currentAnalysis=calculate();
+  currentPick=currentAnalysis.pick;
+  analysisVersion=boardVersion;
+
+  pendingPick={
+   pick:currentPick,
+   version:analysisVersion
+  };
  }
- renderBoard();renderVersions();renderStats();
+
+ renderBoard();
+ renderVersions();
+ renderStats();
+
  if(results.length){
-  renderAnalysis();$("sync").textContent="일치";$("sync").className="good";
-  $("changeStatus").textContent="재구성 완료";$("changeType").textContent="전체 보드 재분석";
+
+  renderAnalysis();
+
+  $("sync").textContent="일치";
+  $("sync").className="good";
+
+  $("changeStatus").textContent="재구성 완료";
+  $("changeType").textContent="전체 보드 재분석";
+
  }else{
-  $("sync").textContent="대기";$("sync").className="good";
-  $("pick").textContent="-";$("pickInfo").textContent="결과를 입력하면 분석합니다";
-  $("probText").textContent="B 50.7% / P 49.3%";$("probMeter").style.width="50.7%";
-  $("stateName").textContent="데이터 부족";$("streak").textContent="0";
-  $("alternate").textContent="-";$("spatial").textContent="-";
+
+  $("sync").textContent="대기";
+  $("sync").className="good";
+
+  $("pick").textContent="-";
+  $("pickInfo").textContent="결과를 입력하면 분석합니다";
+
+  $("probText").textContent="B 50.7% / P 49.3%";
+  $("probMeter").style.width="50.7%";
+
+  $("stateName").textContent="데이터 부족";
+  $("streak").textContent="0";
+  $("alternate").textContent="-";
+  $("spatial").textContent="-";
+
   $("scenarios").textContent="결과 입력 후 표시됩니다.";
-  $("changeStatus").textContent="초기 상태";$("changeType").textContent="-";
-  $("changePos").textContent="-";$("changeStrength").textContent="-";
+
+  $("changeStatus").textContent="초기 상태";
+  $("changeType").textContent="-";
+  $("changePos").textContent="-";
+  $("changeStrength").textContent="-";
   $("changeDetail").textContent="결과 입력을 기다리는 중";
  }
 }
-function undo(){if(!results.length)return;results.pop();saveData();rebuild();}
+
+/* 수정 1: 마지막 입력 취소 */
+function undo(){
+ if(!results.length)return;
+
+ results.pop();
+
+ // 자동 인식 중복 방지 기록 초기화
+ lastAutoSequence="";
+ autoRecognizedCount=0;
+
+ $("screenCount").textContent="0판";
+
+ saveData();
+ rebuild();
+
+ screenMessage(
+  "재동기화 대기",
+  "마지막 결과를 취소했습니다. 다음 화면 인식부터 다시 동기화합니다."
+ );
+}
+
+/* 전체 초기화 */
 function resetAll(){
  if(!confirm("입력된 결과를 모두 초기화할까요?"))return;
- results=[];records=[];historyLog=[];pendingPick=null;lastChange=null;
- localStorage.removeItem(STORAGE_KEY);rebuild();
- autoRecognizedCount=0;lastAutoSequence="";
+
+ results=[];
+ records=[];
+ historyLog=[];
+ pendingPick=null;
+ lastChange=null;
+
+ localStorage.removeItem(STORAGE_KEY);
+
+ autoRecognizedCount=0;
+ lastAutoSequence="";
+
  $("screenCount").textContent="0판";
+
+ rebuild();
+
+ screenMessage(
+  "초기화 완료",
+  "보드와 자동 인식 기록을 초기화했습니다."
+ );
 }
 
 /* Android 자동 화면 인식 브리지 */
 let lastAutoSequence="";
 let autoRecognizedCount=0;
+
 function screenMessage(status,detail){
- if($("screenState"))$("screenState").textContent=status;
- if(detail!==undefined&&$("screenDetail"))$("screenDetail").textContent=detail;
-}
-function startScreenCapture(){
- if(!window.AndroidCapture||typeof AndroidCapture.start!=="function"){
-  screenMessage("앱 연결 오류","Android 앱에서 실행해야 화면 인식을 사용할 수 있습니다.");return;
+ if($("screenState")){
+  $("screenState").textContent=status;
  }
- screenMessage("권한 요청 중","화면 공유 허용 창에서 지금 시작을 눌러주세요.");
- AndroidCapture.start();
+
+ if(detail!==undefined&&$("screenDetail")){
+  $("screenDetail").textContent=detail;
+ }
+
+/* 수정 2: 화면 인식 시작 */
 }
+
+function startScreenCapture(){
+
+ if(!window.AndroidCapture||
+    typeof AndroidCapture.start!=="function"){
+
+  screenMessage(
+   "앱 연결 오류",
+   "Android 앱 내부에서 실행해야 화면 인식을 사용할 수 있습니다."
+  );
+
+  return;
+ }
+
+ try{
+
+  screenMessage(
+   "권한 요청 중",
+   "화면 공유 허용 창에서 지금 시작을 눌러주세요."
+  );
+
+  AndroidCapture.start();
+
+ }catch(error){
+
+  screenMessage(
+   "시작 실패",
+   "화면 캡처 시작 오류: "+String(error)
+  );
+ }
+}
+
+/* 수정 3: 화면 인식 중지 */
 function stopScreenCapture(){
- if(window.AndroidCapture&&typeof AndroidCapture.stop==="function")AndroidCapture.stop();
- screenMessage("인식 중지","화면 수신을 중지했습니다.");
+
+ try{
+
+  if(window.AndroidCapture&&
+     typeof AndroidCapture.stop==="function"){
+
+   AndroidCapture.stop();
+  }
+
+  screenMessage(
+   "인식 중지",
+   "화면 수신을 중지했습니다."
+  );
+
+ }catch(error){
+
+  screenMessage(
+   "중지 오류",
+   String(error)
+  );
+ }
 }
+
+/* Android에서 전달하는 캡처 결과 수신 */
 window.ScreenBridge={
- onCaptureStatus:function(message){screenMessage("연결됨",String(message||"화면 인식 실행 중"));},
+
+ onCaptureStatus:function(message){
+
+  screenMessage(
+   "연결됨",
+   String(message||"화면 인식 실행 중")
+  );
+ },
+
  onScreenSequence:function(sequence){
-  const incoming=String(sequence||"").toUpperCase().replace(/[^BPT]/g,"").slice(0,MAX_HANDS);
+
+  const incoming=String(sequence||"")
+   .toUpperCase()
+   .replace(/[^BPT]/g,"")
+   .slice(0,MAX_HANDS);
+
   if(!incoming)return;
+
   const current=results.join("");
+
   if(incoming===lastAutoSequence)return;
+
   if(incoming===current){
+
    lastAutoSequence=incoming;
-   screenMessage("동기화 완료","화면 결과와 V4 입력판이 일치합니다.");return;
+
+   screenMessage(
+    "동기화 완료",
+    "화면 결과와 V4 입력판이 일치합니다."
+   );
+
+   return;
   }
+
   if(!incoming.startsWith(current)){
-   screenMessage("입력 불일치","기존 입력판과 화면 결과가 달라 자동 입력을 보류했습니다.");return;
+
+   screenMessage(
+    "입력 불일치",
+    "기존 입력판과 화면 결과가 달라 자동 입력을 보류했습니다."
+   );
+
+   return;
   }
+
   const additions=incoming.slice(current.length);
   let added=0;
-  for(const value of additions){if(results.length>=MAX_HANDS)break;addResult(value);added++;}
-  lastAutoSequence=incoming;autoRecognizedCount+=added;
-  $("screenCount").textContent=autoRecognizedCount+"판";
-  screenMessage("자동 입력 완료",added+"개 결과를 V4 보드에 반영했습니다. 인식 결과를 확인하세요.");
+
+  for(const value of additions){
+
+   if(results.length>=MAX_HANDS)break;
+
+   addResult(value);
+   added++;
+  }
+
+  lastAutoSequence=incoming;
+  autoRecognizedCount+=added;
+
+  $("screenCount").textContent=
+   autoRecognizedCount+"판";
+
+  screenMessage(
+   "자동 입력 완료",
+   added+"개 결과를 V4 보드에 반영했습니다. 인식 결과를 확인하세요."
+  );
  }
 };
 
+/* 저장 데이터 불러오기 */
 function loadData(){
+
  try{
-  const saved=JSON.parse(localStorage.getItem(STORAGE_KEY));
-  if(saved&&Array.isArray(saved.results))results=saved.results.filter(x=>["B","P","T"].includes(x)).slice(0,MAX_HANDS);
+
+  const saved=JSON.parse(
+   localStorage.getItem(STORAGE_KEY)
+  );
+
+  if(saved&&Array.isArray(saved.results)){
+
+   results=saved.results
+    .filter(x=>["B","P","T"].includes(x))
+    .slice(0,MAX_HANDS);
+  }
+
  }catch(e){}
+
  rebuild();
 }
+
 loadData();
+
 </script>
 </body>
 </html>
