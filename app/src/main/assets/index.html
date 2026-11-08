@@ -142,6 +142,17 @@ button:active{transform:scale(.97)}
     <span>노란 테두리: 마지막 입력</span>  
   </div>  
 </section>  <section class="panel">  
+  <div class="panel-title">실시간 화면 자동 인식</div>
+  <div class="info" style="margin-bottom:9px">
+    <small>연결 상태</small>
+    <strong id="captureStatus">화면 인식 대기</strong>
+  </div>
+  <div class="subcontrols">
+    <button class="btnSub" onclick="startScreenCapture()">화면 인식 시작</button>
+    <button class="btnSub" onclick="stopScreenCapture()">인식 중지</button>
+  </div>
+  <div class="note" style="margin-top:8px">시작을 누른 뒤 Android 화면 공유 권한을 허용하세요.</div>
+</section>  <section class="panel">  
   <div class="panel-title">결과 입력</div>  
   <div class="controls">  
     <button class="btnB" onclick="addResult('B')">B</button>  
@@ -882,9 +893,46 @@ function resetAll(){
   rebuild();  
 }  
   
-/* ===============================  
-   시작  
-================================ */  
+/* ===============================
+   Android 화면 인식 연결
+================================ */
+function startScreenCapture(){
+  if(!window.AndroidCapture || typeof window.AndroidCapture.start!=="function"){
+    $("captureStatus").textContent="Android 앱 연결을 찾을 수 없습니다.";
+    return;
+  }
+  $("captureStatus").textContent="화면 공유 권한을 기다리는 중";
+  window.AndroidCapture.start();
+}
+
+function stopScreenCapture(){
+  if(window.AndroidCapture && typeof window.AndroidCapture.stop==="function"){
+    window.AndroidCapture.stop();
+  }
+  $("captureStatus").textContent="인식 중지 요청";
+}
+
+window.ScreenBridge={
+  onCaptureStatus(message){
+    const el=$("captureStatus");
+    if(el) el.textContent=String(message||"");
+  },
+  onScreenSequence(sequence){
+    const incoming=String(sequence||"").split("").filter(x=>["B","P","T"].includes(x)).slice(0,MAX_HANDS);
+    if(!incoming.length) return;
+    if(incoming.join("")===results.join("")) return;
+    results=incoming;
+    saveData();
+    rebuild();
+    $("captureStatus").textContent="자동 인식 반영 완료 · "+incoming.length+"판";
+    boardVersion=results.length;
+    renderVersions();
+  }
+};
+
+/* ===============================
+   시작
+================================ */
 loadData();  
 </script>  </body>  
 </html>  
