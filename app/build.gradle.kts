@@ -6,20 +6,20 @@ plugins {
 android {
     namespace = "com.smartbaccarat.connected"
     compileSdk = 35
-compileOptions {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
-}
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
 
-kotlinOptions {
-    jvmTarget = "17"
-}
+    kotlinOptions {
+        jvmTarget = "17"
+    }
     defaultConfig {
         applicationId = "com.smartbaccarat.connected"
         minSdk = 26
         targetSdk = 35
-        versionCode = 8
-        versionName = "3.6"
+        versionCode = 9
+        versionName = "3.7"
     }
 
     buildFeatures {
