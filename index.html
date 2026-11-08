@@ -1,842 +1,1003 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>BACCARAT LIVE AI V4</title>
-<style>
-:root{--bg:#090e19;--panel:#131d2d;--panel2:#1a2940;--line:#293b55;--text:#f3f6fc;--muted:#9eacc0;--blue:#398cff;--red:#ff5268;--green:#22d69a;--gold:#ffc75c}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,"Noto Sans KR",sans-serif;padding:10px}
-.app{max-width:760px;margin:auto}
-header{text-align:center;padding:12px}
-h1{font-size:23px;margin:0 0 6px}
-.sub,.note,.pick-info{font-size:12px;color:var(--muted);line-height:1.6}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:13px;margin-bottom:12px}
-.panel-title{font-size:15px;font-weight:900;margin-bottom:11px}
-.status-grid,.controls{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.status,.info{background:var(--panel2);border-radius:9px;padding:11px;min-width:0}
-.status{text-align:center}
-.status small,.info small{display:block;color:var(--muted);font-size:11px;margin-bottom:5px}
-.status strong,.info strong{font-size:15px;overflow-wrap:anywhere}
-.good{color:var(--green)}.warn{color:var(--gold)}.bad{color:var(--red)}
-.board-wrap{overflow-x:auto}
-.board{display:grid;grid-template-columns:repeat(14,minmax(34px,1fr));gap:3px;min-width:510px}
-.cell{height:43px;border:1px solid #293950;border-radius:6px;display:flex;align-items:center;justify-content:center;background:#0d1625;font-size:17px;font-weight:900}
-.cell.B{color:var(--blue);border-color:#2865b1;background:#102849}
-.cell.P{color:var(--red);border-color:#a53c50;background:#351923}
-.cell.T{color:var(--green);border-color:#248767;background:#10362d}
-.cell.latest{outline:2px solid var(--gold)}
-.cell.empty{color:#34445b}
-.legend{display:flex;gap:12px;margin-top:9px;font-size:11px;color:var(--muted)}
-button{border:0;border-radius:12px;min-height:55px;font-size:21px;font-weight:900;color:white;touch-action:manipulation}
-button:active{transform:scale(.97)}
-.btnB{background:#1768cf}.btnP{background:#d93650}.btnT{background:#168b68}
-.btnSub{min-height:43px;font-size:14px;background:#263750;border:1px solid #405575}
-.subcontrols{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}
-.pickbox{background:#0d1727;border:1px solid var(--line);border-radius:13px;padding:15px;text-align:center}
-.pick{font-size:48px;font-weight:1000;margin:7px}
-.pick.B{color:var(--blue)}.pick.P{color:var(--red)}
-.meter{height:9px;background:#26354b;border-radius:10px;overflow:hidden;margin-top:12px}
-.meter>div{height:100%;background:var(--green);width:50%}
-.scenario{padding:9px 0;border-bottom:1px solid var(--line)}
-.sc-row{display:flex;justify-content:space-between;align-items:center}
-.sequence{display:flex;gap:4px;margin-top:7px}
-.ball{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900}
-.ball.B{background:#1768cf}.ball.P{background:#d93650}
-.log{max-height:190px;overflow:auto;font-size:12px;color:var(--muted);line-height:1.8}
-@media(max-width:420px){body{padding:7px}.cell{height:39px}h1{font-size:20px}}
-</style>
-</head>
-<body>
-<div class="app">
-
-<header>
-<h1>♠ BACCARAT LIVE AI V4</h1>
-<div class="sub">REALTIME BOARD CHANGE & SCENARIO ENGINE</div>
-</header>
-
-<section class="panel" id="capturePanel">
-<div class="panel-title">실제 게임 화면 자동 연결</div>
-<div class="two">
-<div class="info"><small>캡처 상태</small><strong id="screenState">연결 대기</strong></div>
-<div class="info"><small>자동 인식 판수</small><strong id="screenCount">0판</strong></div>
-</div>
-<div class="subcontrols">
-<button class="btnSub" onclick="startScreenCapture()">화면 인식 시작</button>
-<button class="btnSub" onclick="stopScreenCapture()">인식 중지</button>
-</div>
-<div class="note" id="screenDetail" style="margin-top:8px">Android 앱에서 게임 화면 공유를 시작하세요.</div>
+<!DOCTYPE html>  <html lang="ko">  
+<head>  
+<meta charset="UTF-8">  
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">  
+<title>BACCARAT LIVE AI V4</title>  
+<style>  
+:root{  
+  --bg:#090e19;--panel:#131d2d;--panel2:#1a2940;  
+  --line:#293b55;--text:#f3f6fc;--muted:#9eacc0;  
+  --blue:#398cff;--red:#ff5268;--green:#22d69a;--gold:#ffc75c;  
+}  
+*{box-sizing:border-box}  
+body{  
+  margin:0;background:var(--bg);color:var(--text);  
+  font-family:Arial,"Noto Sans KR",sans-serif;  
+  padding:12px 10px 30px;  
+}  
+.app{max-width:760px;margin:auto}  
+header{text-align:center;padding:10px 0 15px}  
+h1{font-size:23px;margin:0 0 6px;letter-spacing:1px}  
+.sub{font-size:12px;color:var(--muted)}  
+.panel{  
+  background:var(--panel);border:1px solid var(--line);  
+  border-radius:14px;padding:13px;margin-bottom:12px;  
+}  
+.panel-title{font-size:14px;font-weight:800;margin-bottom:11px}  
+.status-grid{  
+  display:grid;grid-template-columns:repeat(3,1fr);gap:7px  
+}  
+.status{  
+  background:var(--panel2);border-radius:9px;padding:10px 5px;  
+  text-align:center;min-width:0  
+}  
+.status small{display:block;color:var(--muted);font-size:11px;margin-bottom:5px}  
+.status strong{font-size:17px;overflow-wrap:anywhere}  
+.good{color:var(--green)}  
+.warn{color:var(--gold)}  
+.bad{color:var(--red)}  
+.board-wrap{overflow-x:auto;overscroll-behavior-x:contain}  
+.board{  
+  display:grid;grid-template-columns:repeat(14,minmax(34px,1fr));  
+  gap:3px;min-width:510px  
+}  
+.cell{  
+  height:43px;border:1px solid #293950;border-radius:6px;  
+  display:flex;align-items:center;justify-content:center;  
+  background:#0d1625;font-size:17px;font-weight:900;  
+  position:relative  
+}  
+.cell.B{color:var(--red);border-color:#a53c50;background:#351923}  
+.cell.P{color:var(--blue);border-color:#2865b1;background:#102849}  
+.cell.T{color:var(--green);border-color:#248767;background:#10362d}  
+.cell.latest{outline:2px solid var(--gold);outline-offset:-2px}
+.cell .grade{position:absolute;right:1px;top:0px;font-size:10px;line-height:12px;font-weight:1000;border-radius:4px;padding:0 2px;background:#07111e}
+.cell .grade.hit{color:#22d69a}
+.cell .grade.miss{color:#ff5268}
+.cell .grade.tie{color:#ffc75c}
+.cell .grade.pending{color:#ffc75c}
+.col-rate{font-size:10px;color:var(--muted);text-align:center;min-width:0;line-height:1.2}
+.col-rate b{display:block;color:var(--text);font-size:11px}
+.board-area{min-width:510px}
+.column-rates{display:grid;grid-template-columns:repeat(14,minmax(34px,1fr));gap:3px;margin-bottom:5px}
+  
+.cell.empty{color:#34445b}  
+.legend{display:flex;gap:14px;margin-top:9px;font-size:11px;color:var(--muted)}  
+.legend b{font-size:14px}  
+.controls{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}  
+button{  
+  border:0;border-radius:12px;min-height:57px;  
+  font-size:22px;font-weight:900;color:white;cursor:pointer;  
+  touch-action:manipulation  
+}  
+button:active{transform:scale(.97)}  
+.btnB{background:#d93650}  
+.btnP{background:#1768cf}  
+.btnT{background:#168b68}  
+.btnSub{  
+  min-height:43px;font-size:14px;background:#263750;  
+  border:1px solid #405575  
+}  
+.subcontrols{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}  
+.pickbox{  
+  background:#0d1727;border:1px solid var(--line);  
+  border-radius:13px;padding:15px;text-align:center  
+}  
+.pick-label{font-size:12px;color:var(--muted)}  
+.pick{  
+  font-size:48px;font-weight:1000;line-height:1.2;margin:7px 0  
+}  
+.pick.B{color:var(--red)}  
+.pick.P{color:var(--blue)}  
+.pick-info{font-size:12px;color:var(--muted)}  
+.meter{height:9px;background:#26354b;border-radius:10px;overflow:hidden;margin-top:12px}  
+.meter>div{height:100%;background:var(--green);width:50%;transition:width .15s}  
+.two{display:grid;grid-template-columns:1fr 1fr;gap:9px}  
+.info{  
+  background:var(--panel2);padding:11px;border-radius:10px;  
+  min-width:0  
+}  
+.info small{color:var(--muted);font-size:11px;display:block;margin-bottom:5px}  
+.info strong{font-size:15px;overflow-wrap:anywhere}  
+.scenario{padding:9px 0;border-bottom:1px solid var(--line)}  
+.scenario:last-child{border:0}  
+.sc-row{display:flex;align-items:center;justify-content:space-between;gap:8px}  
+.sequence{display:flex;gap:4px;flex-wrap:wrap}  
+.ball{  
+  width:27px;height:27px;border-radius:50%;display:flex;  
+  align-items:center;justify-content:center;font-size:12px;font-weight:900  
+}  
+.ball.B{background:#d93650}  
+.ball.P{background:#1768cf}  
+.ball.T{background:#168b68}  
+.log{  
+  max-height:190px;overflow:auto;font-size:12px;color:var(--muted);  
+  line-height:1.8  
+}  
+.note{font-size:11px;color:var(--muted);line-height:1.6}  
+.footer{text-align:center;color:#718198;font-size:10px;padding:10px}  
+@media(max-width:420px){  
+  body{padding:8px 7px 24px}  
+  h1{font-size:20px}  
+  .cell{height:39px}  
+  .status strong{font-size:15px}  
+}  
+</style>  
+</head>  
+<body>  
+<div class="app">  
+<header>  
+  <h1>♠ BACCARAT LIVE AI · MANUAL</h1>  
+  <div class="sub">MANUAL INPUT · REALTIME PROBABILITY & SCENARIO ENGINE</div>  
+</header>  <section class="panel">  
+  <div class="panel-title">실시간 엔진 상태</div>  
+  <div class="status-grid">  
+    <div class="status">  
+      <small>보드 버전</small><strong id="boardVer">000</strong>  
+    </div>  
+    <div class="status">  
+      <small>분석 버전</small><strong id="analysisVer">000</strong>  
+    </div>  
+    <div class="status">  
+      <small>동기화</small><strong id="sync" class="good">대기</strong>  
+    </div>  
+  </div>  
+</section>  <section class="panel">  
+  <div class="panel-title">80판 보드 · 6행 × 14열</div>  
+  <div class="board-wrap"><div class="board" id="board"></div></div>  
+  <div class="legend">  
+    <span><b style="color:var(--blue)">● P</b> 플레이어</span>  
+    <span><b style="color:var(--red)">● B</b> 뱅커</span>  
+    <span><b style="color:var(--green)">● T</b> 타이</span>  
+    <span>노란 테두리: 마지막 입력</span>  
+  </div>  
+</section>  <section class="panel">
+  <div class="panel-title">실시간 분석 연결</div>
+  <div class="info">
+    <small>입력 방식</small>
+    <strong class="good">수동 입력 모드 · 자동 화면 인식 사용 안 함</strong>
+  </div>
+  <div class="note" style="margin-top:8px">게임 결과판을 확인하고 아래 P/B/T 버튼으로 입력하세요. 입력 즉시 보드·확률·시나리오·적중 기록이 갱신됩니다. 인터넷 서버 분석은 서버 주소 연결 후 활성화됩니다.</div>
 </section>
-
-<section class="panel">
-<div class="panel-title">실시간 엔진 상태</div>
-<div class="status-grid">
-<div class="status"><small>보드 버전</small><strong id="boardVer">000</strong></div>
-<div class="status"><small>분석 버전</small><strong id="analysisVer">000</strong></div>
-<div class="status"><small>동기화</small><strong id="sync" class="good">대기</strong></div>
-</div>
-</section>
-
-<section class="panel">
-<div class="panel-title">80판 보드 · 6행 × 14열</div>
-<div class="board-wrap"><div class="board" id="board"></div></div>
-<div class="legend">
-<span style="color:var(--blue)">● B 뱅커</span>
-<span style="color:var(--red)">● P 플레이어</span>
-<span style="color:var(--green)">● T 타이</span>
-</div>
-</section>
-
-<section class="panel">
-<div class="panel-title">결과 입력</div>
-<div class="controls">
-<button class="btnB" onclick="addResult('B')">B</button>
-<button class="btnP" onclick="addResult('P')">P</button>
-<button class="btnT" onclick="addResult('T')">T</button>
-</div>
-<div class="subcontrols">
-<button class="btnSub" onclick="undo()">↶ 마지막 입력 취소</button>
-<button class="btnSub" onclick="resetAll()">전체 초기화</button>
-</div>
-</section>
-
-<section class="panel">
-<div class="panel-title">다음 결과 예상 픽</div>
-<div class="pickbox">
-<div class="pick-info">현재 보드 기준 실시간 예측</div>
-<div id="pick" class="pick">-</div>
-<div id="pickInfo" class="pick-info">결과를 입력하면 분석합니다</div>
-<div class="meter"><div id="probMeter"></div></div>
-<div id="probText" class="pick-info" style="margin-top:9px">B 50.7% / P 49.3%</div>
-</div>
-<div class="two" style="margin-top:9px">
-<div class="info"><small>예측 기록</small><strong id="hitRate">0 / 0</strong></div>
-<div class="info"><small>연속 미적중</small><strong id="missRun">0회</strong></div>
-</div>
-</section>
-
-<section class="panel">
-<div class="panel-title">그림 변화 감지</div>
-<div class="two">
-<div class="info"><small>감지 상태</small><strong id="changeStatus">초기 상태</strong></div>
-<div class="info"><small>변화 유형</small><strong id="changeType">-</strong></div>
-<div class="info"><small>마지막 변경 위치</small><strong id="changePos">-</strong></div>
-<div class="info"><small>변화 강도</small><strong id="changeStrength">-</strong></div>
-</div>
-<div class="note" id="changeDetail" style="margin-top:10px">결과 입력을 기다리는 중</div>
-</section>
-
-<section class="panel">
-<div class="panel-title">현재 그림 상태 분석</div>
-<div class="two">
-<div class="info"><small>최근 상태 추정</small><strong id="stateName">데이터 부족</strong></div>
-<div class="info"><small>최근 연속 길이</small><strong id="streak">0</strong></div>
-<div class="info"><small>최근 교차 비율</small><strong id="alternate">-</strong></div>
-<div class="info"><small>공간 특징</small><strong id="spatial">-</strong></div>
-</div>
-</section>
-
-<section class="panel">
-<div class="panel-title">다음 3칸 시나리오 탐색</div>
-<div class="note">현재 상태에서 가능한 3칸 전개를 확률 모델로 비교합니다.</div>
-<div id="scenarios" style="margin-top:8px">결과 입력 후 표시됩니다.</div>
-</section>
-
-<section class="panel">
-<div class="panel-title">최근 분석 기록</div>
-<div class="log" id="logs">분석 기록이 없습니다.</div>
-</section>
-
-<div class="note" style="text-align:center;padding:10px">
-BACCARAT LIVE AI V4 · 예측은 실제 결과를 보장하지 않습니다.
-</div>
-</div>
-
-<script>
-"use strict";
-
-const MAX_HANDS=80,ROWS=6,COLS=14;
-const STORAGE_KEY="BACCARAT_LIVE_V4";
-
-let results=[],boardVersion=0,analysisVersion=0;
-let currentAnalysis=null,currentPick=null,pendingPick=null;
-let historyLog=[],lastChange=null,records=[];
-
-const $=id=>document.getElementById(id);
-
-function saveData(){
- try{
-  localStorage.setItem(STORAGE_KEY,JSON.stringify({results}));
- }catch(e){}
-}
-
-function decisive(){
- return results.filter(x=>x==="B"||x==="P");
-}
-
-function boardArray(data){
- const cells=Array(ROWS*COLS).fill(null);
- data.forEach((v,i)=>{if(i<MAX_HANDS)cells[i]=v;});
- return cells;
-}
-
-function positionOf(i){
- return {row:i%ROWS+1,col:Math.floor(i/ROWS)+1};
-}
-
+  <section class="panel">  
+  <section class="panel">
+  <div class="panel-title">인터넷 분석 서버</div>
+  <div class="info">
+    <small>서버 연결 상태</small>
+    <strong id="remoteStatus" class="warn">서버 주소 설정 필요 · 기기 내 분석 사용 중</strong>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr;gap:7px;margin-top:9px">
+    <input id="apiBase" type="url" placeholder="분석 서버 주소 (배포 후 입력)" style="width:100%;min-height:42px;border-radius:8px;border:1px solid #405575;background:#0d1727;color:#f3f6fc;padding:8px;font-size:13px">
+    <button class="btnSub" onclick="connectRemote()">서버 연결 확인</button>
+  </div>
+  <div class="note" style="margin-top:8px">수동 입력 결과만 서버로 전송해 통계·확률·시나리오를 추가 계산합니다. 주소가 없으면 기기 내 분석으로 계속 작동합니다.</div>
+  <div class="info" style="margin-top:8px"><small>서버 분석 결과</small><strong id="remoteSummary">아직 서버 분석을 실행하지 않았습니다.</strong></div>
+</section>  <div class="panel-title">결과 입력</div>  
+  <div class="controls">  
+    <button class="btnB" onclick="addResult('B')">B</button>  
+    <button class="btnP" onclick="addResult('P')">P</button>  
+    <button class="btnT" onclick="addResult('T')">T</button>  
+  </div>  
+  <div class="subcontrols">  
+    <button class="btnSub" onclick="undo()">↶ 마지막 입력 취소</button>  
+    <button class="btnSub" onclick="resetAll()">전체 초기화</button>  
+  </div>  
+</section>  <section class="panel">  
+  <div class="panel-title">다음 결과 예상 픽</div>  
+  <div class="pickbox">  
+    <div class="pick-label">현재 보드 기준 실시간 예측</div>  
+    <div id="pick" class="pick">-</div>  
+    <div id="pickInfo" class="pick-info">결과를 입력하면 분석합니다</div>  
+    <div class="meter"><div id="probMeter"></div></div>  
+    <div id="probText" class="pick-info" style="margin-top:9px">B 50.0% / P 49.0%</div>  
+  </div>  
+  <div class="two" style="margin-top:9px">
+    <div class="info"><small>적중</small><strong id="hitCount" style="color:var(--green)">0회</strong></div>
+    <div class="info"><small>미적중</small><strong id="missCount" style="color:var(--red)">0회</strong></div>
+    <div class="info"><small>적중률</small><strong id="hitRate">0 / 0 (0.0%)</strong></div>
+    <div class="info"><small>연속 미적중</small><strong id="missRun">0회</strong></div>
+  </div>
+  <div class="info" style="margin-top:9px">
+    <small>최근 판정 기록 · ○ 적중 / × 미적중 / T 타이(판정 제외)</small>
+    <strong id="hitHistory" style="letter-spacing:2px;word-break:break-all">기록 없음</strong>
+  </div>  
+</section>  <section class="panel">  
+  <div class="panel-title">그림 변화 감지</div>  
+  <div class="two">  
+    <div class="info">  
+      <small>감지 상태</small>  
+      <strong id="changeStatus">초기 상태</strong>  
+    </div>  
+    <div class="info">  
+      <small>변화 유형</small>  
+      <strong id="changeType">-</strong>  
+    </div>  
+    <div class="info">  
+      <small>마지막 변경 위치</small>  
+      <strong id="changePos">-</strong>  
+    </div>  
+    <div class="info">  
+      <small>변화 강도</small>  
+      <strong id="changeStrength">-</strong>  
+    </div>  
+  </div>  
+  <div class="note" id="changeDetail" style="margin-top:10px">  
+    결과 입력을 기다리는 중  
+  </div>  
+</section>  <section class="panel">  
+  <div class="panel-title">현재 그림 상태 분석</div>  
+  <div class="two">  
+    <div class="info">  
+      <small>최근 상태 추정</small>  
+      <strong id="stateName">데이터 부족</strong>  
+    </div>  
+    <div class="info">  
+      <small>최근 연속 길이</small>  
+      <strong id="streak">0</strong>  
+    </div>  
+    <div class="info">  
+      <small>최근 교차 비율</small>  
+      <strong id="alternate">-</strong>  
+    </div>  
+    <div class="info">  
+      <small>공간 특징</small>  
+      <strong id="spatial">-</strong>  
+    </div>  
+  </div>  
+</section>  <section class="panel">  
+  <div class="panel-title">다음 3칸 시나리오 탐색</div>  
+  <div class="note" style="margin-bottom:8px">  
+    현재 상태에서 가능한 3칸 전개를 확률 모델로 비교합니다.  
+  </div>  
+  <div id="scenarios">  
+    <div class="note">결과 입력 후 시나리오가 표시됩니다.</div>  
+  </div>  
+</section>  <section class="panel">  
+  <div class="panel-title">최근 분석 기록</div>  
+  <div class="log" id="logs">분석 기록이 없습니다.</div>  
+</section>  <section class="panel">  
+  <div class="panel-title">엔진 작동 원리</div>  
+  <div class="note">  
+    • 새 결과 입력 즉시 보드 버전 증가 및 재분석<br>  
+    • 변경 좌표와 이전 보드 비교<br>  
+    • B/P/T 입력 상태 분리<br>  
+    • 타이는 B/P 적중 판정에서 제외<br>  
+    • 다음 픽은 결과 입력 전에 저장<br>  
+    • 이전 분석 결과가 최신 보드에 재사용되지 않도록 버전 검사  
+  </div>  
+</section>  <div class="footer">  
+  BACCARAT LIVE AI · 수동 입력 기반 확률 분석은 실제 결과를 보장하지 않습니다.  
+</div>  
+</div>  <script>  
+"use strict";  
+  
+/* ===============================  
+   설정 및 데이터  
+================================ */  
+const MAX_HANDS = 80;  
+const ROWS = 6;  
+const COLS = 14;  
+const STORAGE_KEY = "BACCARAT_LIVE_V4";  
+  
+let results = [];  
+let boardVersion = 0;  
+let analysisVersion = 0;  
+let currentAnalysis = null;  
+let currentPick = null;  
+let pendingPick = null;  
+let historyLog = [];  
+let lastChange = null;  
+  
+const $ = id => document.getElementById(id);  
+  
+function loadData(){  
+  try{  
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));  
+    if(saved && Array.isArray(saved.results)){  
+      results = saved.results.filter(x=>["B","P","T"].includes(x)).slice(0,MAX_HANDS);
+    }  
+  }catch(e){}  
+  boardVersion = results.length;  
+  rebuild();  
+}  
+  
+function saveData(){  
+  try{  
+    localStorage.setItem(STORAGE_KEY,JSON.stringify({  
+      results:results }));  
+  }catch(e){}  
+}  
+  
+function decisive(){  
+  return results.filter(x=>x==="B"||x==="P");  
+}  
+  
+/* ===============================  
+   보드 구성  
+   6행 × 14열, 열 우선 입력  
+================================ */  
+function boardArray(data){  
+  const cells = Array(ROWS*COLS).fill(null);  
+  data.forEach((v,i)=>{  
+    if(i<MAX_HANDS) cells[i]=v;  
+  });  
+  return cells;  
+}  
+  
+function positionOf(index){  
+  return {  
+    row:(index%ROWS)+1,  
+    col:Math.floor(index/ROWS)+1  
+  };  
+}  
+  
 function renderBoard(){
- const el=$("board");
- el.innerHTML="";
- const cells=boardArray(results);
-
- for(let r=0;r<ROWS;r++){
-  for(let c=0;c<COLS;c++){
-   const i=c*ROWS+r,v=cells[i],d=document.createElement("div");
-   d.className="cell "+(v||"empty")+(i===results.length-1?" latest":"");
-   d.textContent=v||"·";
-   el.appendChild(d);
+  const el=$("board");
+  el.innerHTML="";
+  const cells=boardArray(results);
+  const gradeByIndex=new Map(records.map(x=>[x.resultIndex,x]));
+  const parent=el.parentNode;
+  const oldRates=parent.querySelector(".column-rates");
+  if(oldRates) oldRates.remove();
+  const rates=document.createElement("div");
+  rates.className="column-rates";
+  for(let col=0;col<COLS;col++){
+    const entries=[];
+    for(let row=0;row<ROWS;row++){
+      const idx=col*ROWS+row;
+      const g=gradeByIndex.get(idx);
+      if(g) entries.push(g);
+    }
+    const hit=entries.filter(x=>x.hit).length;
+    const total=entries.length;
+    const rate=document.createElement("div");
+    rate.className="col-rate";
+    rate.innerHTML="<b>"+(total?(hit+"/"+total):"—")+"</b>"+(total?(hit/total*100).toFixed(0)+"%":"승률");
+    rates.appendChild(rate);
   }
- }
-}
-
-function flipRatio(a){
- if(a.length<2)return 0;
- let n=0;
- for(let i=1;i<a.length;i++){
-  if(a[i]!==a[i-1])n++;
- }
- return n/(a.length-1);
-}
-
-function stateFeatures(data){
- if(!data.length){
-  return {streak:0,alternation:0,state:"데이터 부족",change:false};
- }
-
- let streak=1,last=data[data.length-1];
-
- for(let i=data.length-2;i>=0&&data[i]===last;i--){
-  streak++;
- }
-
- const recent=data.slice(-12);
- const alternation=flipRatio(recent);
- const all=data.slice(-16);
- const split=Math.floor(all.length/2);
-
- const diff=Math.abs(
-  flipRatio(all.slice(0,split))-
-  flipRatio(all.slice(split))
- );
-
- return {
-  streak,
-  alternation,
-  state:alternation>=.7?"교차 성향":
-        alternation<=.3?"연속 성향":"혼합 상태",
-  change:all.length>=8&&diff>=.4
- };
-}
-
-const BASE_B=.5068;
-
-function clamp(v,a,b){
- return Math.max(a,Math.min(b,v));
-}
-
-function probabilityModel(data){
- if(!data.length){
-  return {b:BASE_B,p:1-BASE_B};
- }
-
- const recent=data.slice(-12);
- const bCount=recent.filter(x=>x==="B").length;
- const alpha=8;
-
- const raw=(bCount+alpha*BASE_B)/(recent.length+alpha);
- const state=stateFeatures(data);
- const damp=1/(1+Math.max(0,state.streak-2)*.45);
-
- let b=BASE_B+(raw-BASE_B)*damp*(state.change?.65:1);
-
- b=clamp(b,BASE_B-.025,BASE_B+.025);
-
- return {b,p:1-b};
-}
-
-function spatialFeatures(data){
- const cells=boardArray(data);
- let h=0,v=0,d=0,valid=0;
-
- function same(a,b){
-  if(!a||!b||a==="T"||b==="T")return false;
-  valid++;
-  return a===b;
- }
-
- for(let c=0;c<COLS;c++){
+  parent.insertBefore(rates,el);
   for(let r=0;r<ROWS;r++){
-   let i=c*ROWS+r;
-
-   if(r+1<ROWS&&same(cells[i],cells[i+1])){
-    v++;
-   }
-
-   if(c+1<COLS){
-    if(same(cells[i],cells[i+ROWS]))h++;
-    if(r+1<ROWS&&same(cells[i],cells[i+ROWS+1]))d++;
-   }
+    for(let col=0;col<COLS;col++){
+      const idx=col*ROWS+r;
+      const value=cells[idx];
+      const div=document.createElement("div");
+      div.className="cell "+(value||"empty");
+      if(idx===results.length-1) div.classList.add("latest");
+      div.textContent=value||"·";
+      const grade=gradeByIndex.get(idx);
+      if(grade){
+        const mark=document.createElement("span");
+        mark.className="grade "+(grade.tie?"tie":(grade.hit?"hit":"miss"));
+        mark.textContent=grade.tie?"T":(grade.hit?"○":"×");
+        mark.title=grade.pick+" 예상 / "+grade.result+" 실제";
+        div.appendChild(mark);
+      }
+      el.appendChild(div);
+    }
   }
- }
-
- return {
-  description:valid?
-   `가로 ${h} / 세로 ${v} / 대각 ${d}`:
-   "데이터 부족"
- };
+}  
+  
+/* ===============================  
+   변화 감지  
+================================ */  
+function detectBoardChange(previous,current){  
+  let changed=[];  
+  const a=boardArray(previous);  
+  const b=boardArray(current);  
+  
+  for(let i=0;i<a.length;i++){  
+    if(a[i]!==b[i]){  
+      changed.push({  
+        index:i,  
+        before:a[i],  
+        after:b[i],  
+        ...positionOf(i)  
+      });  
+    }  
+  }  
+  
+  const oldD=previous.filter(x=>x!=="T");  
+  const newD=current.filter(x=>x!=="T");  
+  const recent=newD.slice(-8);  
+  
+  let type="새 결과 입력";  
+  let strength=changed.length;  
+  
+  if(newD.length>=3){  
+    let same=0, flips=0;  
+    for(let i=1;i<recent.length;i++){  
+      if(recent[i]===recent[i-1]) same++;  
+      else flips++;  
+    }  
+    const total=Math.max(1,recent.length-1);  
+    const ratio=flips/total;  
+  
+    if(ratio>=0.72) type="교차 성향";  
+    else if(ratio<=0.28) type="연속 성향";  
+    else type="혼합 성향";  
+  
+    if(oldD.length>=5){  
+      const oldTail=oldD.slice(-5);  
+      const newTail=newD.slice(-5);  
+      const oldFlip=flipRatio(oldTail);  
+      const newFlip=flipRatio(newTail);  
+      if(Math.abs(oldFlip-newFlip)>=0.4) type="구조 변화 감지";  
+    }  
+  }  
+  
+  if(changed.length===0) type="변화 없음";  
+  return {  
+    changed,  
+    type,  
+    strength,  
+    last:changed.length?changed[changed.length-1]:null,  
+    time:Date.now()  
+  };  
+}  
+  
+function flipRatio(arr){  
+  if(arr.length<2)return 0;  
+  let n=0;  
+  for(let i=1;i<arr.length;i++) if(arr[i]!==arr[i-1])n++;  
+  return n/(arr.length-1);  
+}  
+  
+/* ===============================  
+   공간 특징 추출  
+   주변 칸의 B/P/T 상태를 계산  
+================================ */  
+function spatialFeatures(data){  
+  const cells=boardArray(data);  
+  let horizontal=0,vertical=0,diagonal=0,valid=0;  
+  
+  function compare(a,b){  
+    if(a===null||b===null||a==="T"||b==="T")return;  
+    valid++;  
+    if(a===b) return 1;  
+    return 0;  
+  }  
+  
+  for(let c=0;c<COLS;c++){  
+    for(let r=0;r<ROWS;r++){  
+      const i=c*ROWS+r;  
+      if(r+1<ROWS){  
+        const v=compare(cells[i],cells[i+1]);  
+        if(v===1)vertical++;  
+      }  
+      if(c+1<COLS){  
+        const v=compare(cells[i],cells[i+ROWS]);  
+        if(v===1)horizontal++;  
+        if(r+1<ROWS){  
+          const d=compare(cells[i],cells[i+ROWS+1]);  
+          if(d===1)diagonal++;  
+        }  
+      }  
+    }  
+  }  
+  
+  return {  
+    horizontal,vertical,diagonal,valid,  
+    description:valid===0?"데이터 부족":  
+      "가로 "+horizontal+" / 세로 "+vertical+" / 대각 "+diagonal  
+  };  
+}  
+  
+/* ===============================  
+   상태 및 변화점 추정  
+================================ */  
+function stateFeatures(data){  
+  const n=data.length;  
+  if(n===0){  
+    return {  
+      streak:0,alternation:0,state:"데이터 부족",  
+      changeScore:0,change:false  
+    };  
+  }  
+  
+  const last=data[n-1];  
+  let streak=1;  
+  for(let i=n-2;i>=0;i--){  
+    if(data[i]===last)streak++;  
+    else break;  
+  }  
+  
+  const recent=data.slice(-12);  
+  const alternation=flipRatio(recent);  
+  
+  let state="혼합 상태";  
+  if(alternation>=0.7)state="교차 성향";  
+  if(alternation<=0.3)state="연속 성향";  
+  
+  const all=data.slice(-16);  
+  const split=Math.floor(all.length/2);  
+  const older=all.slice(0,split);  
+  const newer=all.slice(split);  
+  const diff=Math.abs(flipRatio(older)-flipRatio(newer));  
+  const changeScore=Math.min(1,diff*1.5);  
+  
+  return {  
+    streak,  
+    alternation,  
+    state,  
+    changeScore,  
+    change:all.length>=8 && diff>=0.4  
+  };  
+}  
+  
+/* ===============================  
+   확률 계산  
+   최근 빈도는 강하게 추종하지 않음.  
+   연승/연패는 방향 신호가 아니라  
+   불확실성 조정에 사용.  
+================================ */  
+const BASE_B=0.5068;  
+  
+function clamp(v,min,max){  
+  return Math.max(min,Math.min(max,v));  
+}  
+  
+function probabilityModel(data){
+  // 최근 3·5·8·12개의 짧은 창을 동시에 읽어 현재 그림의 변화를 매판 재계산한다.
+  const d=data.filter(x=>x==="B"||x==="P");
+  if(!d.length) return {b:0.5068,p:0.4932,parts:[],signal:"초기 기준"};
+  const windows=[3,5,8,12], weights=[0.34,0.28,0.23,0.15];
+  const parts=[];
+  let bScore=0,totalWeight=0;
+  for(let k=0;k<windows.length;k++){
+    const sample=d.slice(-windows[k]);
+    if(!sample.length) continue;
+    const countB=sample.filter(x=>x==="B").length;
+    const prior=[1.5,2.5,4,4][k];
+    const pB=(countB+prior*0.5068)/(sample.length+prior);
+    parts.push({window:windows[k],b:pB,p:1-pB,count:sample.length});
+    bScore+=pB*weights[k];
+    totalWeight+=weights[k];
+  }
+  let b=totalWeight?bScore/totalWeight:0.5068;
+  const last=d[d.length-1], transitions=[];
+  for(let i=1;i<d.length;i++) if(d[i-1]===last) transitions.push(d[i]);
+  let transitionB=null;
+  if(transitions.length>=2){
+    const countB=transitions.filter(x=>x==="B").length;
+    transitionB=(countB+2*0.5068)/(transitions.length+2);
+    b=b*0.78+transitionB*0.22;
+  }
+  // 넓은 고정 상한을 두지 않고, 소표본 극단치만 완충한다.
+  b=clamp(b,0.35,0.65);
+  return {b,p:1-b,parts,transitionB,last,
+    signal:Math.abs(b-0.5)>=0.035?"상대 우세 신호":"우세 신호 약함",
+    recentFlip:flipRatio(d.slice(-5))};
 }
 
-function beamSearch(data,depth=3,width=12){
- let beam=[{seq:"",prob:1,data:data.slice()}];
-
- for(let step=0;step<depth;step++){
-  let next=[];
-
-  for(const node of beam){
-   const m=probabilityModel(node.data);
-
-   for(const side of ["B","P"]){
-    const chance=side==="B"?m.b:m.p;
-
-    next.push({
-     seq:node.seq+side,
-     prob:node.prob*chance,
-     data:node.data.concat(side)
-    });
-   }
-  }
-
-  next.sort((a,b)=>b.prob-a.prob);
-  beam=next.slice(0,width);
- }
-
- return beam.slice(0,5);
-}
-
+function hiddenStateEstimate(data){  
+  if(data.length<4)return {  
+    name:"데이터 부족",continuation:0.5,transition:0.5  
+  };  
+  
+  const recent=data.slice(-8);  
+  const flip=flipRatio(recent);  
+  const continuation=1-flip;  
+  
+  return {  
+    name:continuation>=0.65?"연속 우세":  
+         continuation<=0.35?"교차 우세":"혼합 상태",  
+    continuation,  
+    transition:flip  
+  };  
+}  
+  
+/* ===============================  
+   다음 3칸 빔 탐색  
+================================ */  
+function beamSearch(data,depth=3,width=12){  
+  const first=probabilityModel(data);  
+  let beam=[{seq:"",prob:1,data:data.slice()}];  
+  
+  for(let step=0;step<depth;step++){  
+    let next=[];  
+  
+    for(const node of beam){  
+      const model=probabilityModel(node.data);  
+      for(const side of ["B","P"]){  
+        const chance=side==="B"?model.b:model.p;  
+        const seq=node.seq+side;  
+        const nextData=node.data.concat(side);  
+  
+        next.push({  
+          seq,  
+          prob:node.prob*chance,  
+          data:nextData  
+        });  
+      }  
+    }  
+  
+    next.sort((a,b)=>b.prob-a.prob);  
+    beam=next.slice(0,width);  
+  }  
+  
+  return beam.sort((a,b)=>b.prob-a.prob).slice(0,5);  
+}  
+  
+/* ===============================  
+   분석 실행  
+================================ */  
 function calculate(){
- const data=decisive();
- const probability=probabilityModel(data);
- const state=stateFeatures(data);
-
- return {
-  probability,
-  state,
-  spatial:spatialFeatures(results),
-  scenarios:beamSearch(data),
-  pick:probability.b>=probability.p?"B":"P",
-  confidence:Math.max(probability.b,probability.p)
- };
+  const data=decisive();
+  const probability=probabilityModel(data);
+  const state=stateFeatures(data);
+  const spatial=spatialFeatures(results);
+  const hidden=hiddenStateEstimate(data);
+  const scenarios=beamSearch(data,3,12);
+  const pick=probability.b>=probability.p?"B":"P";
+  const confidence=Math.max(probability.b,probability.p);
+  return {probability,state,spatial,hidden,scenarios,pick,confidence,boardVersion};
 }
 
-function renderScenarios(items){
- const el=$("scenarios");
- el.innerHTML="";
-
- items.forEach((item,i)=>{
-  const row=document.createElement("div");
-  row.className="scenario";
-
-  const top=document.createElement("div");
-  top.className="sc-row";
-
-  const label=document.createElement("strong");
-  label.textContent="시나리오 "+(i+1);
-
-  const prob=document.createElement("span");
-  prob.textContent=(item.prob*100).toFixed(2)+"%";
-  prob.style.color="var(--gold)";
-
-  top.append(label,prob);
-
-  const seq=document.createElement("div");
-  seq.className="sequence";
-
-  for(const ch of item.seq){
-   const ball=document.createElement("span");
-   ball.className="ball "+ch;
-   ball.textContent=ch;
-   seq.appendChild(ball);
-  }
-
-  row.append(top,seq);
-  el.appendChild(row);
- });
-}
-
-function renderStats(){
- const hits=records.filter(x=>x.hit).length;
- const total=records.length;
-
- $("hitRate").textContent=
-  hits+" / "+total+
-  (total?" ("+(hits/total*100).toFixed(1)+"%)":"");
-
- let misses=0;
-
- for(let i=records.length-1;i>=0;i--){
-  if(records[i].hit)break;
-  misses++;
- }
-
- $("missRun").textContent=misses+"회";
-}
-
-function renderAnalysis(){
- if(!currentAnalysis)return;
-
- const a=currentAnalysis;
-
- $("pick").textContent=a.pick;
- $("pick").className="pick "+a.pick;
-
- $("pickInfo").textContent=
-  "모델상 우세 "+(a.confidence*100).toFixed(1)+
-  "% · 보장 확률 아님";
-
- $("probText").textContent=
-  "B "+(a.probability.b*100).toFixed(1)+
-  "% / P "+(a.probability.p*100).toFixed(1)+"%";
-
- $("probMeter").style.width=
-  (a.probability.b*100)+"%";
-
- $("stateName").textContent=a.state.state;
- $("streak").textContent=a.state.streak+"회";
-
- $("alternate").textContent=
-  (a.state.alternation*100).toFixed(0)+"%";
-
- $("spatial").textContent=a.spatial.description;
-
- renderScenarios(a.scenarios);
- renderStats();
-}
-
-function detectBoardChange(previous,current){
- const a=boardArray(previous);
- const b=boardArray(current);
- const changed=[];
-
- for(let i=0;i<a.length;i++){
-  if(a[i]!==b[i]){
-   changed.push({
-    before:a[i],
-    after:b[i],
-    ...positionOf(i)
-   });
-  }
- }
-
- const data=current.filter(x=>x!=="T");
- const recent=data.slice(-8);
- const ratio=flipRatio(recent);
-
- let type="새 결과 입력";
-
- if(data.length>=3){
-  type=ratio>=.72?"교차 성향":
-       ratio<=.28?"연속 성향":"혼합 성향";
- }
-
- if(!changed.length)type="변화 없음";
-
- return {
-  changed,
-  type,
-  last:changed.length?changed[changed.length-1]:null,
-  strength:changed.length
- };
-}
-
-function renderChange(){
- if(!lastChange)return;
-
- $("changeStatus").textContent=
-  lastChange.changed.length?"변화 감지":"변화 없음";
-
- $("changeType").textContent=lastChange.type;
-
- const x=lastChange.last;
-
- $("changePos").textContent=
-  x?x.row+"행 "+x.col+"열":"-";
-
- $("changeStrength").textContent=
-  lastChange.strength+"칸";
-
- $("changeDetail").textContent=
-  x?
-  "변경 위치 "+x.row+"행 "+x.col+"열 · "+
-  (x.before||"빈칸")+" → "+x.after:
-  "보드 변경 사항 없음";
-}
-
-function renderVersions(){
- $("boardVer").textContent=
-  String(boardVersion).padStart(3,"0");
-
- $("analysisVer").textContent=
-  String(analysisVersion).padStart(3,"0");
-}
-
-function addLog(value){
- historyLog.unshift(
-  new Date().toLocaleTimeString("ko-KR")+
-  " · "+value+" 입력 · 보드 "+
-  boardVersion+" · 픽 "+currentPick
- );
-
- historyLog=historyLog.slice(0,30);
- $("logs").innerHTML="";
-
- historyLog.forEach(line=>{
-  const d=document.createElement("div");
-  d.textContent=line;
-  $("logs").appendChild(d);
- });
-}
-
-function addResult(value){
- if(!["B","P","T"].includes(value)||results.length>=MAX_HANDS)return;
-
- const previous=results.slice();
-
- if(value!=="T"&&pendingPick){
+function renderAnalysis(){  
+  if(!currentAnalysis)return;  
+  const a=currentAnalysis;  
+  
+  $("pick").textContent=a.pick;  
+  $("pick").className="pick "+a.pick;  
+  $("pickInfo").textContent=  
+    "모델상 우세 "+(a.confidence*100).toFixed(1)+"% · 보장 확률 아님";  
+  
+  $("probText").textContent=  
+    "B "+(a.probability.b*100).toFixed(1)+  
+    "% / P "+(a.probability.p*100).toFixed(1)+"%";  
+  
+  $("probMeter").style.width=  
+    (a.probability.b*100)+"%";  
+  
+  $("stateName").textContent=a.state.state;  
+  $("streak").textContent=a.state.streak+"회";  
+  $("alternate").textContent=  
+    (a.state.alternation*100).toFixed(0)+"%";  
+  $("spatial").textContent=a.spatial.description;  
+  
+  renderScenarios(a.scenarios);  
+  renderStats();  
+}  
+  
+function renderScenarios(items){  
+  const el=$("scenarios");  
+  el.innerHTML="";  
+  
+  items.forEach((item,i)=>{  
+    const row=document.createElement("div");  
+    row.className="scenario";  
+  
+    const top=document.createElement("div");  
+    top.className="sc-row";  
+  
+    const label=document.createElement("strong");  
+    label.textContent="시나리오 "+(i+1);  
+  
+    const prob=document.createElement("span");  
+    prob.textContent=(item.prob*100).toFixed(2)+"%";  
+    prob.style.color="var(--gold)";  
+  
+    top.append(label,prob);  
+  
+    const seq=document.createElement("div");  
+    seq.className="sequence";  
+    seq.style.marginTop="7px";  
+  
+    for(const ch of item.seq){  
+      const ball=document.createElement("span");  
+      ball.className="ball "+ch;  
+      ball.textContent=ch;  
+      seq.appendChild(ball);  
+    }  
+  
+    row.append(top,seq);  
+    el.appendChild(row);  
+  });  
+}  
+  
+/* ===============================  
+   O/X 기록  
+================================ */  
+let records=[];  
+  
+function gradePending(result,resultIndex){
+  if(!pendingPick)return;
+  const tie=result==="T";
   records.push({
-   pick:pendingPick.pick,
-   result:value,
-   hit:pendingPick.pick===value
+    pick:pendingPick.pick,
+    result,
+    hit:!tie && pendingPick.pick===result,
+    tie,
+    resultIndex,
+    sourceVersion:pendingPick.version
   });
-
   pendingPick=null;
- }
-
- results.push(value);
- boardVersion++;
-
- lastChange=detectBoardChange(previous,results);
-
- renderBoard();
-
- currentAnalysis=calculate();
- analysisVersion=boardVersion;
- currentPick=currentAnalysis.pick;
-
- pendingPick={
-  pick:currentPick,
-  version:analysisVersion
- };
-
- renderAnalysis();
- renderChange();
- renderVersions();
- addLog(value);
- saveData();
-
- $("sync").textContent="일치";
- $("sync").className="good";
+}  
+  
+function renderStats(){
+  const judged=records.filter(x=>!x.tie);
+  const hits=judged.filter(x=>x.hit).length;
+  const misses=judged.length-hits;
+  $("hitCount").textContent=hits+"회";
+  $("missCount").textContent=misses+"회";
+  $("hitRate").textContent=hits+" / "+judged.length+" ("+(judged.length?(hits/judged.length*100).toFixed(1):"0.0")+"%)";
+  let missRun=0;
+  for(let i=records.length-1;i>=0;i--){
+    if(records[i].tie) continue;
+    if(records[i].hit) break;
+    missRun++;
+  }
+  $("missRun").textContent=missRun+"회";
+  $("hitHistory").textContent=records.slice(-20).map(x=>x.tie?"T":(x.hit?"○":"×")).join(" ")||"기록 없음";
 }
 
-/* 전체 보드 재구성 */
-function rebuild(){
- records=[];
- pendingPick=null;
- currentPick=null;
- currentAnalysis=null;
- historyLog=[];
+function addResult(value){  
+  if(results.length>=MAX_HANDS){  
+    alert("80판 입력이 완료되었습니다. 초기화 후 새 슈를 시작하세요.");  
+    return;  
+  }  
+  
+  const previous=results.slice();  
+  
+  // 직전 예상픽을 이번 결과 칸에 기록한다. T는 무승부로 별도 표시한다.
+  gradePending(value,results.length);
 
- const original=results.slice();
+  results.push(value);  
+  boardVersion++;  
+  
+  lastChange=detectBoardChange(previous,results);  
+  
+  // 새 보드 입력 즉시 기존 픽 폐기  
+  currentPick=null;  
+  currentAnalysis=null;  
+  
+  $("sync").textContent="분석 중";  
+  $("sync").className="warn";  
+  
+  renderBoard();  
+  
+  // 동기 방식 즉시 재분석  
+  currentAnalysis=calculate();  
+  analysisVersion=boardVersion;  
+  currentPick=currentAnalysis.pick;  
+  
+  // 이번 분석 결과는 다음 판 결과 판정용으로 보관  
+  pendingPick={  
+    pick:currentPick,  
+    version:analysisVersion  
+  };  
+  
+  renderAnalysis();  
+  renderChange();  
+  renderVersions();  
+  addLog(value);  
+  saveData();  
+  
+  runRemoteAnalysis();
 
- results=[];
- boardVersion=0;
- analysisVersion=0;
-
- for(const value of original){
-
-  if(value!=="T"&&pendingPick){
-   records.push({
-    pick:pendingPick.pick,
-    result:value,
-    hit:pendingPick.pick===value
-   });
-  }
-
-  results.push(value);
-  boardVersion++;
-
+  // 분석이 최신 보드와 일치하는지 확인  
+  if(analysisVersion===boardVersion){  
+    $("sync").textContent="일치";  
+    $("sync").className="good";  
+  }else{  
+    $("sync").textContent="불일치";  
+    $("sync").className="bad";  
+  }  
+}  
+  
+/* ===============================  
+   변경 정보 표시  
+================================ */  
+function renderChange(){  
+  if(!lastChange)return;  
+  
+  $("changeStatus").textContent=  
+    lastChange.changed.length?"변화 감지":"변화 없음";  
+  
+  $("changeType").textContent=lastChange.type;  
+  
+  const last=lastChange.last;  
+  $("changePos").textContent=last?  
+    last.row+"행 "+last.col+"열":"-";  
+  
+  $("changeStrength").textContent=  
+    lastChange.strength+"칸";  
+  
+  if(last){  
+    $("changeDetail").textContent=  
+      "변경 위치 "+last.row+"행 "+last.col+  
+      "열 · "+(last.before||"빈칸")+" → "+last.after+  
+      " · 최신 보드로 재분석 완료";  
+  }else{  
+    $("changeDetail").textContent=  
+      "보드의 변경 사항이 없습니다.";  
+  }  
+}  
+  
+function renderVersions(){  
+  $("boardVer").textContent=  
+    String(boardVersion).padStart(3,"0");  
+  $("analysisVer").textContent=  
+    String(analysisVersion).padStart(3,"0");  
+}  
+  
+/* ===============================  
+   기록  
+================================ */  
+function addLog(value){  
+  const time=new Date().toLocaleTimeString("ko-KR");  
+  historyLog.unshift(  
+    time+" · "+value+" 입력 · 보드 "+boardVersion+  
+    " · 분석 "+analysisVersion+  
+    " · 픽 "+currentPick  
+  );  
+  historyLog=historyLog.slice(0,30);  
+  
+  $("logs").innerHTML="";  
+  historyLog.forEach(line=>{  
+    const div=document.createElement("div");  
+    div.textContent=line;  
+    $("logs").appendChild(div);  
+  });  
+}  
+  
+/* ===============================  
+   전체 재구성 / 취소  
+================================ */  
+function rebuild(){  
+  records=[];  
+  pendingPick=null;  
+  currentPick=null;  
+  currentAnalysis=null;  
+  historyLog=[];  
+  lastChange=null;  
+  
+  boardVersion=results.length;  
+  analysisVersion=0;  
+  
+  // 저장된 결과를 순서대로 재생해 O/X 기록 복원  
+  const original=results.slice();
+  results=[];
   currentAnalysis=calculate();
   currentPick=currentAnalysis.pick;
-  analysisVersion=boardVersion;
+  pendingPick={pick:currentPick,version:0};
 
-  pendingPick={
-   pick:currentPick,
-   version:analysisVersion
-  };
- }
-
- renderBoard();
- renderVersions();
- renderStats();
-
- if(results.length){
-
-  renderAnalysis();
-
-  $("sync").textContent="일치";
-  $("sync").className="good";
-
-  $("changeStatus").textContent="재구성 완료";
-  $("changeType").textContent="전체 보드 재분석";
-
- }else{
-
-  $("sync").textContent="대기";
-  $("sync").className="good";
-
-  $("pick").textContent="-";
-  $("pickInfo").textContent="결과를 입력하면 분석합니다";
-
-  $("probText").textContent="B 50.7% / P 49.3%";
-  $("probMeter").style.width="50.7%";
-
-  $("stateName").textContent="데이터 부족";
-  $("streak").textContent="0";
-  $("alternate").textContent="-";
-  $("spatial").textContent="-";
-
-  $("scenarios").textContent="결과 입력 후 표시됩니다.";
-
-  $("changeStatus").textContent="초기 상태";
-  $("changeType").textContent="-";
-  $("changePos").textContent="-";
-  $("changeStrength").textContent="-";
-  $("changeDetail").textContent="결과 입력을 기다리는 중";
- }
+  for(const value of original){  
+    if(pendingPick){
+      records.push({
+        pick:pendingPick.pick,
+        result:value,
+        hit:value!=="T" && pendingPick.pick===value,
+        tie:value==="T",
+        resultIndex:results.length,
+        sourceVersion:pendingPick.version
+      });
+      pendingPick=null;
+    }  
+  
+    results.push(value);  
+    boardVersion=results.length;  
+    currentAnalysis=calculate();  
+    currentPick=currentAnalysis.pick;  
+    analysisVersion=boardVersion;  
+  
+    pendingPick={  
+      pick:currentPick,  
+      version:analysisVersion  
+    };  
+  }  
+  
+  renderBoard();  
+  renderVersions();  
+  
+  if(results.length){  
+    renderAnalysis();  
+    $("sync").textContent="일치";  
+    $("sync").className="good";  
+    $("changeStatus").textContent="재구성 완료";  
+    $("changeType").textContent="전체 보드 재분석";  
+    $("changePos").textContent="-";  
+    $("changeStrength").textContent="-";  
+    $("changeDetail").textContent=  
+      "저장된 결과를 순서대로 재생하고 예측 기록을 복원했습니다.";  
+  }else{
+    currentAnalysis=calculate();
+    currentPick=currentAnalysis.pick;
+    pendingPick={pick:currentPick,version:0};
+    $("sync").textContent="대기";  
+    $("sync").className="good";  
+    $("pick").textContent="-";  
+    $("pickInfo").textContent="결과를 입력하면 분석합니다";  
+    $("probText").textContent="B 50.7% / P 49.3%";  
+    $("probMeter").style.width="50.7%";  
+    $("stateName").textContent="데이터 부족";  
+    $("streak").textContent="0";  
+    $("alternate").textContent="-";  
+    $("spatial").textContent="-";  
+    $("scenarios").innerHTML=  
+      '<div class="note">결과 입력 후 시나리오가 표시됩니다.</div>';  
+    $("changeStatus").textContent="초기 상태";  
+    $("changeType").textContent="-";  
+    $("changePos").textContent="-";  
+    $("changeStrength").textContent="-";  
+    $("changeDetail").textContent="결과 입력을 기다리는 중";  
+  }  
+  
+  renderStats();  
+}  
+  
+function undo(){  
+  if(!results.length)return;  
+  results.pop();
+  saveData();  
+  rebuild();  
+}  
+  
+function resetAll(){  
+  if(!confirm("입력된 80판 결과와 기록을 모두 초기화할까요?"))return;  
+  results=[];  
+  records=[];
+  historyLog=[];  
+  pendingPick=null;  
+  lastChange=null;  
+  localStorage.removeItem(STORAGE_KEY);  
+  rebuild();  
+}  
+  
+/* ===============================
+   원격 분석 서버 연결
+================================ */
+const API_KEY="BACCARAT_REMOTE_API";
+function getApiBase(){
+  const el=$("apiBase");
+  return (el ? el.value.trim() : localStorage.getItem(API_KEY)||"").replace(/\/$/,"");
 }
-
-/* 수정 1: 마지막 입력 취소 */
-function undo(){
- if(!results.length)return;
-
- results.pop();
-
- // 자동 인식 중복 방지 기록 초기화
- lastAutoSequence="";
- autoRecognizedCount=0;
-
- $("screenCount").textContent="0판";
-
- saveData();
- rebuild();
-
- screenMessage(
-  "재동기화 대기",
-  "마지막 결과를 취소했습니다. 다음 화면 인식부터 다시 동기화합니다."
- );
-}
-
-/* 전체 초기화 */
-function resetAll(){
- if(!confirm("입력된 결과를 모두 초기화할까요?"))return;
-
- results=[];
- records=[];
- historyLog=[];
- pendingPick=null;
- lastChange=null;
-
- localStorage.removeItem(STORAGE_KEY);
-
- autoRecognizedCount=0;
- lastAutoSequence="";
-
- $("screenCount").textContent="0판";
-
- rebuild();
-
- screenMessage(
-  "초기화 완료",
-  "보드와 자동 인식 기록을 초기화했습니다."
- );
-}
-
-/* Android 자동 화면 인식 브리지 */
-let lastAutoSequence="";
-let autoRecognizedCount=0;
-
-function screenMessage(status,detail){
- if($("screenState")){
-  $("screenState").textContent=status;
- }
-
- if(detail!==undefined&&$("screenDetail")){
-  $("screenDetail").textContent=detail;
- }
-
-/* 수정 2: 화면 인식 시작 */
-}
-
-function startScreenCapture(){
-
- if(!window.AndroidCapture||
-    typeof AndroidCapture.start!=="function"){
-
-  screenMessage(
-   "앱 연결 오류",
-   "Android 앱 내부에서 실행해야 화면 인식을 사용할 수 있습니다."
-  );
-
-  return;
- }
-
- try{
-
-  screenMessage(
-   "권한 요청 중",
-   "화면 공유 허용 창에서 지금 시작을 눌러주세요."
-  );
-
-  AndroidCapture.start();
-
- }catch(error){
-
-  screenMessage(
-   "시작 실패",
-   "화면 캡처 시작 오류: "+String(error)
-  );
- }
-}
-
-/* 수정 3: 화면 인식 중지 */
-function stopScreenCapture(){
-
- try{
-
-  if(window.AndroidCapture&&
-     typeof AndroidCapture.stop==="function"){
-
-   AndroidCapture.stop();
+async function connectRemote(){
+  const base=getApiBase();
+  if(!base){ $("remoteStatus").textContent="서버 주소를 먼저 입력하세요."; $("remoteStatus").className="warn"; return; }
+  localStorage.setItem(API_KEY,base);
+  $("remoteStatus").textContent="서버 확인 중…";
+  try{
+    const response=await fetch(base+"/health");
+    if(!response.ok) throw new Error("HTTP "+response.status);
+    const data=await response.json();
+    if(!data.ok) throw new Error("서버 응답 확인 실패");
+    $("remoteStatus").textContent="연결됨 · "+(data.service||"분석 서버");
+    $("remoteStatus").className="good";
+    if(results.length) runRemoteAnalysis();
+  }catch(error){
+    $("remoteStatus").textContent="연결 실패 · "+error.message;
+    $("remoteStatus").className="bad";
   }
-
-  screenMessage(
-   "인식 중지",
-   "화면 수신을 중지했습니다."
-  );
-
- }catch(error){
-
-  screenMessage(
-   "중지 오류",
-   String(error)
-  );
- }
+}
+async function runRemoteAnalysis(){
+  const base=getApiBase();
+  if(!base)return;
+  const sentVersion=boardVersion;
+  try{
+    const response=await fetch(base+"/analyze",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({results:results.slice(),boardVersion:sentVersion})
+    });
+    if(!response.ok) throw new Error("HTTP "+response.status);
+    const data=await response.json();
+    if(!data.ok) throw new Error(data.error||"분석 실패");
+    if(sentVersion!==boardVersion)return;
+    $("remoteSummary").textContent="원격 "+data.pick+" · B "+(data.probability.B*100).toFixed(1)+"% / P "+(data.probability.P*100).toFixed(1)+"% · "+data.hands+"판 · 시나리오 "+data.scenarios.length+"개";
+    $("remoteStatus").textContent="연결됨 · 최신 보드 "+sentVersion+" 분석 완료";
+    $("remoteStatus").className="good";
+  }catch(error){
+    $("remoteStatus").textContent="서버 분석 실패 · 기기 내 분석 유지";
+    $("remoteStatus").className="bad";
+    $("remoteSummary").textContent=error.message;
+  }
 }
 
-/* Android에서 전달하는 캡처 결과 수신 */
-window.ScreenBridge={
-
- onCaptureStatus:function(message){
-
-  screenMessage(
-   "연결됨",
-   String(message||"화면 인식 실행 중")
-  );
- },
-
- onScreenSequence:function(sequence){
-
-  const incoming=String(sequence||"")
-   .toUpperCase()
-   .replace(/[^BPT]/g,"")
-   .slice(0,MAX_HANDS);
-
-  if(!incoming)return;
-
-  const current=results.join("");
-
-  if(incoming===lastAutoSequence)return;
-
-  if(incoming===current){
-
-   lastAutoSequence=incoming;
-
-   screenMessage(
-    "동기화 완료",
-    "화면 결과와 V4 입력판이 일치합니다."
-   );
-
-   return;
-  }
-
-  if(!incoming.startsWith(current)){
-
-   screenMessage(
-    "입력 불일치",
-    "기존 입력판과 화면 결과가 달라 자동 입력을 보류했습니다."
-   );
-
-   return;
-  }
-
-  const additions=incoming.slice(current.length);
-  let added=0;
-
-  for(const value of additions){
-
-   if(results.length>=MAX_HANDS)break;
-
-   addResult(value);
-   added++;
-  }
-
-  lastAutoSequence=incoming;
-  autoRecognizedCount+=added;
-
-  $("screenCount").textContent=
-   autoRecognizedCount+"판";
-
-  screenMessage(
-   "자동 입력 완료",
-   added+"개 결과를 V4 보드에 반영했습니다. 인식 결과를 확인하세요."
-  );
- }
-};
-
-/* 저장 데이터 불러오기 */
-function loadData(){
-
- try{
-
-  const saved=JSON.parse(
-   localStorage.getItem(STORAGE_KEY)
-  );
-
-  if(saved&&Array.isArray(saved.results)){
-
-   results=saved.results
-    .filter(x=>["B","P","T"].includes(x))
-    .slice(0,MAX_HANDS);
-  }
-
- }catch(e){}
-
- rebuild();
-}
-
-loadData();
-
-</script>
-</body>
-</html>
+/* ===============================
+   시작
+================================ */
+const savedApi=localStorage.getItem(API_KEY);
+if(savedApi && $("apiBase")) $("apiBase").value=savedApi;
+loadData();  
+</script>  </body>  
+</html>  
