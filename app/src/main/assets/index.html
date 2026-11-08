@@ -355,8 +355,8 @@ function renderBoard(){
       const grade=gradeByIndex.get(idx);
       if(grade){
         const mark=document.createElement("span");
-        mark.className="grade "+(grade.hit?"hit":"miss");
-        mark.textContent=grade.hit?"○":"×";
+        mark.className="grade "+(grade.tie?"tie":(grade.hit?"hit":"miss"));
+        mark.textContent=grade.tie?"T":(grade.hit?"○":"×");
         mark.title=grade.pick+" 예상 / "+grade.result+" 실제";
         div.appendChild(mark);
       }
