@@ -157,8 +157,8 @@ class CaptureService : Service() {
             val density = metrics.densityDpi
 
             imageReader = ImageReader.newInstance(
-                width,
-                height,
+                (width / 2).coerceAtLeast(1),
+                (height / 2).coerceAtLeast(1),
                 PixelFormat.RGBA_8888,
                 2
             )
@@ -177,9 +177,9 @@ class CaptureService : Service() {
 
             virtualDisplay = projection?.createVirtualDisplay(
                 "BaccaratScreen",
-                width,
-                height,
-                density,
+                (width / 2).coerceAtLeast(1),
+                (height / 2).coerceAtLeast(1),
+                (density / 2).coerceAtLeast(1),
                 DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
                 imageReader?.surface,
                 null,
@@ -196,7 +196,7 @@ class CaptureService : Service() {
 
                         // 최신 프레임만 600ms 간격으로 처리해 CPU 점유율 제한
                         val now = SystemClock.elapsedRealtime()
-                        if (now - lastProcessedAt < 600L) {
+                        if (now - lastProcessedAt < 250L) {
                             return@setOnImageAvailableListener
                         }
                         lastProcessedAt = now
@@ -207,6 +207,7 @@ class CaptureService : Service() {
                         val pixelStride = plane.pixelStride
                         val rowStride = plane.rowStride
 
+                        // VirtualDisplay 자체를 절반 해상도로 생성했으므로 추가 축소/복사 금지
                         val bitmapWidth =
                             image.width +
                             (rowStride - pixelStride * image.width) /
@@ -221,17 +222,8 @@ class CaptureService : Service() {
                         buffer.rewind()
                         bitmap.copyPixelsFromBuffer(buffer)
 
-                        // 분석 전 해상도를 절반으로 낮춰 픽셀 처리량을 약 1/4로 감소
-                        val scaled = Bitmap.createScaledBitmap(
-                            bitmap,
-                            (bitmap.width / 2).coerceAtLeast(1),
-                            (bitmap.height / 2).coerceAtLeast(1),
-                            false
-                        )
+                        val sequence = readBoard(bitmap)
                         bitmap.recycle()
-
-                        val sequence = readBoard(scaled)
-                        scaled.recycle()
 
                         // 두 번 연속 같은 결과일 때만 전송
                         if (sequence.length >= 4) {
@@ -359,18 +351,22 @@ class CaptureService : Service() {
                     'T' -> green++
                 }
 
-                // 대각선으로 이웃한 서로 다른 원이 합쳐지지 않도록 4방향만 연결
-                val neighbors = intArrayOf(
-                    if (py > 0) p - w else -1,
-                    if (px > 0) p - 1 else -1,
-                    if (px < w - 1) p + 1 else -1,
-                    if (py < h - 1) p + w else -1
-                )
-                for (ni in neighbors) {
-                    if (ni >= 0 && mask[ni] && !visited[ni]) {
-                        visited[ni] = true
-                        if (tail < queue.size) queue[tail++] = ni
-                    }
+                // 픽셀마다 배열을 생성하지 않고 4방향을 직접 검사해 GC 부하 제거
+                if (py > 0) {
+                    val ni = p - w
+                    if (mask[ni] && !visited[ni]) { visited[ni] = true; queue[tail++] = ni }
+                }
+                if (px > 0) {
+                    val ni = p - 1
+                    if (mask[ni] && !visited[ni]) { visited[ni] = true; queue[tail++] = ni }
+                }
+                if (px < w - 1) {
+                    val ni = p + 1
+                    if (mask[ni] && !visited[ni]) { visited[ni] = true; queue[tail++] = ni }
+                }
+                if (py < h - 1) {
+                    val ni = p + w
+                    if (mask[ni] && !visited[ni]) { visited[ni] = true; queue[tail++] = ni }
                 }
             }
 
