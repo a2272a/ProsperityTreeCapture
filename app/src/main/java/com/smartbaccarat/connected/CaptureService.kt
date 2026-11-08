@@ -34,10 +34,13 @@ class CaptureService : Service() {
         // Fold 분할 화면 실제 결과판 위치(전체 화면 기준 비율)
         // Fold 분할 화면: 오른쪽 게임 창의 결과 비드로드 전체 영역
         // 사진 기준 세로 6행이 모두 들어오도록 상단/하단 범위를 확장
-        private const val BOARD_LEFT = 0.435f
-        private const val BOARD_WIDTH = 0.465f
-        private const val BOARD_TOP = 0.375f
-        private const val BOARD_HEIGHT = 0.215f
+        // Split-screen screenshot: game panel occupies the right half.
+        // Search the complete bead-road area with margin; coordinates are
+        // relative to the full captured display (VirtualDisplay is half-size).
+        private const val BOARD_LEFT = 0.490f
+        private const val BOARD_WIDTH = 0.510f
+        private const val BOARD_TOP = 0.315f
+        private const val BOARD_HEIGHT = 0.235f
         private const val BOARD_ROWS = 6
         private const val BOARD_COLUMNS = 14
     }
@@ -290,7 +293,7 @@ class CaptureService : Service() {
     )
 
     private fun readBoard(bitmap: Bitmap): String {
-        // 결과판 전체를 탐색: 기존 세로 범위(37.5~56.5%)는 아래쪽 행을 잘랐음
+        // 결과판 전체를 탐색: 새 범위는 실제 비드로드의 첫 행과 마지막 행을 포함
         val left = (bitmap.width * BOARD_LEFT).toInt().coerceIn(0, bitmap.width - 1)
         val right = (bitmap.width * (BOARD_LEFT + BOARD_WIDTH)).toInt().coerceIn(left + 1, bitmap.width)
         val top = (bitmap.height * BOARD_TOP).toInt().coerceIn(0, bitmap.height - 1)
@@ -378,8 +381,10 @@ class CaptureService : Service() {
             val aspect = bw.toFloat() / bh.coerceAtLeast(1)
 
             // 원형 결과 마커 크기만 통과시켜 작은 점/문자/장식은 제외
-            if (count < 50 || bw !in 12..26 || bh !in 12..26 ||
-                aspect !in 0.62f..1.48f) continue
+            // VirtualDisplay가 원본의 절반 해상도이므로 비드 지름도 작다.
+            // 기존 12px 하한은 실제 원형 기록을 통째로 누락시킬 수 있었다.
+            if (count < 18 || bw !in 6..17 || bh !in 6..17 ||
+                aspect !in 0.58f..1.62f) continue
 
             val strongest = maxOf(blue, red, green)
             if (strongest < count * 0.28f) continue
@@ -404,7 +409,7 @@ class CaptureService : Service() {
 
         // 원 중심의 실제 간격으로 행/열을 묶는다. 기기 배율 변화에 대응한다.
         val typicalDiameter = cells.map { it.diameter }.sorted()[cells.size / 2]
-        val tolerance = (typicalDiameter * 0.58f).coerceIn(7f, 14f)
+        val tolerance = (typicalDiameter * 0.58f).coerceIn(3.5f, 7.5f)
 
         fun cluster(values: List<Float>): List<Float> {
             val sorted = values.sorted()
