@@ -50,7 +50,17 @@ h1{font-size:23px;margin:0 0 6px;letter-spacing:1px}
 .cell.B{color:var(--blue);border-color:#2865b1;background:#102849}  
 .cell.P{color:var(--red);border-color:#a53c50;background:#351923}  
 .cell.T{color:var(--green);border-color:#248767;background:#10362d}  
-.cell.latest{outline:2px solid var(--gold);outline-offset:-2px}  
+.cell.latest{outline:2px solid var(--gold);outline-offset:-2px}
+.cell .grade{position:absolute;right:1px;top:0px;font-size:10px;line-height:12px;font-weight:1000;border-radius:4px;padding:0 2px;background:#07111e}
+.cell .grade.hit{color:#22d69a}
+.cell .grade.miss{color:#ff5268}
+.cell .grade.tie{color:#ffc75c}
+.cell .grade.pending{color:#ffc75c}
+.col-rate{font-size:10px;color:var(--muted);text-align:center;min-width:0;line-height:1.2}
+.col-rate b{display:block;color:var(--text);font-size:11px}
+.board-area{min-width:510px}
+.column-rates{display:grid;grid-template-columns:repeat(14,minmax(34px,1fr));gap:3px;margin-bottom:5px}
+  
 .cell.empty{color:#34445b}  
 .legend{display:flex;gap:14px;margin-top:9px;font-size:11px;color:var(--muted)}  
 .legend b{font-size:14px}  
@@ -313,22 +323,56 @@ function positionOf(index){
   };  
 }  
   
-function renderBoard(){  
-  const el=$("board");  
-  el.innerHTML="";  
-  const cells=boardArray(results);  
-  
-  for(let r=0;r<ROWS;r++){  
-    for(let c=0;c<COLS;c++){  
-      const idx=c*ROWS+r;  
-      const value=cells[idx];  
-      const div=document.createElement("div");  
-      div.className="cell "+(value||"empty");  
-      if(idx===results.length-1) div.classList.add("latest");  
-      div.textContent=value||"·";  
-      el.appendChild(div);  
-    }  
-  }  
+function renderBoard(){
+  const el=$("board");
+  el.innerHTML="";
+  const cells=boardArray(results);
+  const gradeByIndex=new Map(records.map(x=>[x.sourceVersion,x]));
+  const wrapper=document.createElement("div");
+  wrapper.className="board-area";
+  const rates=document.createElement("div");
+  rates.className="column-rates";
+  for(let col=0;col<COLS;col++){
+    const entries=[];
+    for(let row=0;row<ROWS;row++){
+      const idx=col*ROWS+row;
+      const g=gradeByIndex.get(idx);
+      if(g) entries.push(g);
+    }
+    const hit=entries.filter(x=>x.hit).length;
+    const total=entries.length;
+    const rate=document.createElement("div");
+    rate.className="col-rate";
+    rate.innerHTML="<b>"+(total?(hit+"/"+total):"—")+"</b>"+(total?(hit/total*100).toFixed(0)+"%":"승률");
+    rates.appendChild(rate);
+  }
+  wrapper.appendChild(rates);
+  el.parentNode.insertBefore(wrapper,el);
+  wrapper.appendChild(el);
+  for(let r=0;r<ROWS;r++){
+    for(let col=0;col<COLS;col++){
+      const idx=col*ROWS+r;
+      const value=cells[idx];
+      const div=document.createElement("div");
+      div.className="cell "+(value||"empty");
+      if(idx===results.length-1) div.classList.add("latest");
+      div.textContent=value||"·";
+      const grade=gradeByIndex.get(idx);
+      if(grade){
+        const mark=document.createElement("span");
+        mark.className="grade "+(grade.hit?"hit":"miss");
+        mark.textContent=grade.hit?"○":"×";
+        mark.title=grade.pick+" 예상 / "+grade.result+" 실제";
+        div.appendChild(mark);
+      }else if(value==="T" && idx>0){
+        const mark=document.createElement("span");
+        mark.className="grade tie";
+        mark.textContent="T";
+        div.appendChild(mark);
+      }
+      el.appendChild(div);
+    }
+  }
 }  
   
 /* ===============================  
