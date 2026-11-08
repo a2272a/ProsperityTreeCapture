@@ -32,10 +32,12 @@ class CaptureService : Service() {
 
         // 실제 화면의 원형 비드로드(결과 원판) 영역
         // Fold 분할 화면 실제 결과판 위치(전체 화면 기준 비율)
-        private const val BOARD_LEFT = 0.505f
-        private const val BOARD_WIDTH = 0.490f
-        private const val BOARD_TOP = 0.444f
-        private const val BOARD_HEIGHT = 0.216f
+        // Fold 분할 화면: 오른쪽 게임 창의 결과 비드로드 전체 영역
+        // 사진 기준 세로 6행이 모두 들어오도록 상단/하단 범위를 확장
+        private const val BOARD_LEFT = 0.500f
+        private const val BOARD_WIDTH = 0.499f
+        private const val BOARD_TOP = 0.435f
+        private const val BOARD_HEIGHT = 0.190f
         private const val BOARD_ROWS = 6
         private const val BOARD_COLUMNS = 14
     }
@@ -288,11 +290,11 @@ class CaptureService : Service() {
     )
 
     private fun readBoard(bitmap: Bitmap): String {
-        // 분할 화면의 게임 영역 오른쪽 절반에서 결과판 세로 구간만 탐색
-        val left = (bitmap.width * 0.50f).toInt().coerceIn(0, bitmap.width - 1)
-        val right = (bitmap.width * 0.999f).toInt().coerceIn(left + 1, bitmap.width)
-        val top = (bitmap.height * 0.375f).toInt().coerceIn(0, bitmap.height - 1)
-        val bottom = (bitmap.height * 0.565f).toInt().coerceIn(top + 1, bitmap.height)
+        // 결과판 전체를 탐색: 기존 세로 범위(37.5~56.5%)는 아래쪽 행을 잘랐음
+        val left = (bitmap.width * BOARD_LEFT).toInt().coerceIn(0, bitmap.width - 1)
+        val right = (bitmap.width * (BOARD_LEFT + BOARD_WIDTH)).toInt().coerceIn(left + 1, bitmap.width)
+        val top = (bitmap.height * BOARD_TOP).toInt().coerceIn(0, bitmap.height - 1)
+        val bottom = (bitmap.height * (BOARD_TOP + BOARD_HEIGHT)).toInt().coerceIn(top + 1, bitmap.height)
 
         val w = right - left
         val h = bottom - top
